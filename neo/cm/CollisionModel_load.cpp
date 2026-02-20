@@ -3695,7 +3695,7 @@ idCollisionModelManagerLocal::LoadMap
 */
 void idCollisionModelManagerLocal::LoadMap( const idMapFile *mapFile ) {
 
-	if ( mapFile == NULL ) {
+ 	if ( mapFile == NULL ) {
 		common->Error( "idCollisionModelManagerLocal::LoadMap: NULL mapFile" );
 		return;
 	}

@@ -54,6 +54,11 @@ void idLocalUserWin::Init( int inputDevice_, const char * gamertag_, int numLoca
 	inputDevice = inputDevice_;
 }
 
+idLocalUserWin& idLocalUserWin::operator=(const idLocalUserWin& other) {
+	gamertag= other.gamertag;
+	inputDevice = other.inputDevice;
+	return *this;
+}
 /*
 ========================
 idLocalUserWin::IsProfileReady

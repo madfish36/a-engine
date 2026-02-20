@@ -800,7 +800,7 @@ aseModel_t *ASE_Parse( const char *buffer, bool verbose ) {
 	ase.verbose = verbose;
 
 	ase.buffer = buffer;
-	ase.len = strlen( buffer );
+	ase.len = (int)strlen( buffer );
 	ase.curpos = ase.buffer;
 	ase.currentObject = NULL;
 

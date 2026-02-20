@@ -361,7 +361,20 @@ static void R_DeriveLightData( idRenderLightLocal * light ) {
 			light->falloffImage = defaultShader->LightFalloffImage();
 		}
 	}
-
+	light->environmentMap = light->lightShader->EnvironmentMap();
+	if (light->environmentMap == NULL ) {
+		const idMaterial * defaultShader;
+		defaultShader = tr.defaultAmbientLight;
+		declManager->Touch( static_cast< const idDecl *>( defaultShader ) );
+		light->environmentMap = defaultShader->EnvironmentMap();
+	}
+	light->lutMap = light->lightShader->LutMap();
+	if (light->lutMap == NULL ) {
+		const idMaterial * defaultShader;
+		defaultShader = tr.defaultAmbientLight;
+		declManager->Touch( static_cast< const idDecl *>( defaultShader ) );
+		light->lutMap = defaultShader->LutMap();
+	}
 	// ------------------------------------
 	// compute the light projection matrix
 	// ------------------------------------

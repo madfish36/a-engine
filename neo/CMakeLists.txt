@@ -1,0 +1,1225 @@
+cmake_minimum_required(VERSION 3.28)
+
+project(a-decay
+	VERSION 1.0.0
+	DESCRIPTION "3d engine"
+	LANGUAGES C CXX)
+
+add_executable(${PROJECT_NAME} WIN32)
+add_executable(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+
+
+#===============================================================================
+set(AAS_H
+	aas/AASFile.h;
+	aas/AASFileManager.h;
+	aas/AASFile_local.h)
+set(AAS_CPP
+	aas/AASFile.cpp;
+	aas/AASFileManager.cpp;
+	aas/AASFile_optimize.cpp;
+	aas/AASFile_sample.cpp)
+set(AAS
+	${AAS_H};
+	${AAS_CPP})
+set(CM_H
+	cm/CollisionModel.h;
+	cm/CollisionModel_local.h)
+set(CM_CPP
+	cm/CollisionModel_contacts.cpp;
+	cm/CollisionModel_contents.cpp;
+	cm/CollisionModel_debug.cpp;
+	cm/CollisionModel_files.cpp;
+	cm/CollisionModel_load.cpp;
+	cm/CollisionModel_rotate.cpp;
+	cm/CollisionModel_trace.cpp;
+	cm/CollisionModel_translate.cpp)
+set(CM
+	${CM_H}
+	${CM_CPP})
+set(D3XP_ROOT_H
+	d3xp/Achievements.h;
+	d3xp/Actor.h;
+	d3xp/AF.h;
+	d3xp/AFEntity.h;
+	d3xp/AimAssist.h;
+	d3xp/BrittleFracture.h;
+	d3xp/Camera.h;
+	# d3xp/EndLevel.h;
+	d3xp/Entity.h;
+	d3xp/Fx.h;
+	d3xp/Game.h;
+	d3xp/GameEdit.h;
+	d3xp/Game_local.h;
+	d3xp/Grabber.h;
+	d3xp/IK.h;
+	d3xp/Item.h;
+	d3xp/Leaderboards.h;
+	d3xp/Light.h;
+	d3xp/Misc.h;
+	d3xp/Moveable.h;
+	d3xp/Mover.h;
+	d3xp/MultiplayerGame.h;
+	d3xp/Player.h;
+	d3xp/PlayerIcon.h;
+	d3xp/PlayerView.h;
+	d3xp/PredictedValue.h;
+	d3xp/PredictedValue_impl.h;
+	d3xp/Projectile.h;
+	d3xp/Pvs.h;
+	d3xp/SecurityCamera.h;
+	d3xp/SmokeParticles.h;
+	d3xp/Sound.h;
+	d3xp/Target.h;
+	d3xp/Trigger.h;
+	d3xp/Weapon.h;
+	d3xp/WorldSpawn.h)
+set(D3XP_ROOT_CPP
+	d3xp/Achievements.cpp;
+	d3xp/Actor.cpp;
+	d3xp/AF.cpp;
+	d3xp/AFEntity.cpp;
+	d3xp/AimAssist.cpp;
+	d3xp/BrittleFracture.cpp;
+	d3xp/Camera.cpp;
+	# d3xp/EndLevel.cpp;
+	d3xp/Entity.cpp;
+	d3xp/Fx.cpp;
+	d3xp/GameEdit.cpp;
+	d3xp/Game_local.cpp;
+	d3xp/Game_network.cpp;
+	d3xp/Grabber.cpp;
+	d3xp/IK.cpp;
+	d3xp/Item.cpp;
+	d3xp/Leaderboards.cpp;
+	d3xp/Light.cpp;
+	d3xp/Misc.cpp;
+	d3xp/Moveable.cpp;
+	d3xp/Mover.cpp;
+	d3xp/MultiplayerGame.cpp;
+	d3xp/Player.cpp;
+	d3xp/PlayerIcon.cpp;
+	d3xp/PlayerView.cpp;
+	d3xp/precompiled.cpp;
+	d3xp/Projectile.cpp;
+	d3xp/Pvs.cpp;
+	d3xp/SecurityCamera.cpp;
+	d3xp/SmokeParticles.cpp;
+	d3xp/Sound.cpp;
+	d3xp/Target.cpp;
+	d3xp/Trigger.cpp;
+	d3xp/Weapon.cpp;
+	d3xp/WorldSpawn.cpp)
+set(D3XP_ROOT
+	${D3XP_ROOT_H};
+	${D3XP_ROOT_CPP})
+set(D3XP_AI_H
+	d3xp/ai/AAS.h;
+	d3xp/ai/AAS_local.h;
+	d3xp/ai/AI.h)
+set(D3XP_AI_CPP
+	d3xp/ai/AAS.cpp;
+	d3xp/ai/AAS_debug.cpp;
+	d3xp/ai/AAS_pathing.cpp;
+	d3xp/ai/AAS_routing.cpp;
+	d3xp/ai/AI.cpp;
+	d3xp/ai/AI_events.cpp;
+	d3xp/ai/AI_pathing.cpp;
+	d3xp/ai/AI_Vagary.cpp)
+set(D3XP_AI
+	${D3XP_AI_H};
+	${D3XP_AI_CPP})
+set(D3XP_ANIM_H
+	d3xp/anim/Anim.h;
+	d3xp/anim/Anim_Testmodel.h)
+set(D3XP_ANIM_CPP
+	d3xp/anim/Anim.cpp;
+	d3xp/anim/Anim_Blend.cpp;
+	d3xp/anim/Anim_Testmodel.cpp)
+set(D3XP_ANIM
+	${D3XP_ANIM_H};
+	${D3XP_ANIM_CPP})
+set(D3XP_GAMESYS_H
+	d3xp/gamesys/Class.h;
+	d3xp/gamesys/Event.h;
+	d3xp/gamesys/SaveGame.h;
+	d3xp/gamesys/SysCmds.h;
+	d3xp/gamesys/SysCvar.h)
+set(D3XP_GAMESYS_CPP
+	#d3xp/gamesys/Callbacks.cpp;
+	d3xp/gamesys/Class.cpp;
+	d3xp/gamesys/Event.cpp;
+	d3xp/gamesys/SaveGame.cpp;
+	d3xp/gamesys/SysCmds.cpp;
+	d3xp/gamesys/SysCvar.cpp)
+set(D3XP_GAMESYS
+	${D3XP_GAMESYS_H};
+	${D3XP_GAMESYS_CPP})
+set(D3XP_MENUS_H
+	d3xp/menus/MenuHandler.h;
+	d3xp/menus/MenuScreen.h;
+	d3xp/menus/MenuWidget.h)
+set(D3XP_MENUS_CPP
+	d3xp/menus/MenuHandler.cpp;
+	d3xp/menus/MenuHandler_HUD.cpp;
+	d3xp/menus/MenuHandler_PDA.cpp;
+	d3xp/menus/MenuHandler_Scoreboard.cpp;
+	d3xp/menus/MenuHandler_Shell.cpp;
+	d3xp/menus/MenuScreen.cpp;
+	d3xp/menus/MenuScreen_HUD.cpp;
+	d3xp/menus/MenuScreen_PDA_Inventory.cpp;
+	d3xp/menus/MenuScreen_PDA_UserData.cpp;
+	d3xp/menus/MenuScreen_PDA_UserEmails.cpp;
+	d3xp/menus/MenuScreen_PDA_VideoDisks.cpp;
+	d3xp/menus/MenuScreen_Scoreboard.cpp;
+	# d3xp/menus/MenuScreen_Shell_Bindings.cpp;
+	# d3xp/menus/MenuScreen_Shell_Browser.cpp;
+	# d3xp/menus/MenuScreen_Shell_ControllerLayout.cpp;
+	# d3xp/menus/MenuScreen_Shell_Controls.cpp;
+	# d3xp/menus/MenuScreen_Shell_Credits.cpp;
+	# d3xp/menus/MenuScreen_Shell_Dev.cpp;
+	# d3xp/menus/MenuScreen_Shell_Difficulty.cpp;
+	# d3xp/menus/MenuScreen_Shell_GameLobby.cpp;
+	# d3xp/menus/MenuScreen_Shell_GameOptions.cpp;
+	# d3xp/menus/MenuScreen_Shell_Gamepad.cpp;
+	# d3xp/menus/MenuScreen_Shell_Leaderboards.cpp;
+	# d3xp/menus/MenuScreen_Shell_Load.cpp;
+	# d3xp/menus/MenuScreen_Shell_MatchSettings.cpp;
+	# d3xp/menus/MenuScreen_Shell_ModeSelect.cpp;
+	# d3xp/menus/MenuScreen_Shell_NewGame.cpp;
+	# d3xp/menus/MenuScreen_Shell_PartyLobby.cpp;
+	d3xp/menus/MenuScreen_Shell_Pause.cpp;
+	# d3xp/menus/MenuScreen_Shell_Playstation.cpp;
+	# d3xp/menus/MenuScreen_Shell_PressStart.cpp;
+	# d3xp/menus/MenuScreen_Shell_Resolution.cpp;
+	d3xp/menus/MenuScreen_Shell_Root.cpp;
+	# d3xp/menus/MenuScreen_Shell_Save.cpp;
+	# d3xp/menus/MenuScreen_Shell_Settings.cpp;
+	# d3xp/menus/MenuScreen_Shell_Singleplayer.cpp;
+	# d3xp/menus/MenuScreen_Shell_Stereoscopics.cpp;
+	# d3xp/menus/MenuScreen_Shell_SystemOptions.cpp;
+	d3xp/menus/MenuWidget.cpp;
+	d3xp/menus/MenuWidget_Button.cpp;
+	d3xp/menus/MenuWidget_Carousel.cpp;
+	d3xp/menus/MenuWidget_CommandBar.cpp;
+	# d3xp/menus/MenuWidget_DevList.cpp;
+	d3xp/menus/MenuWidget_DynamicList.cpp;
+	d3xp/menus/MenuWidget_Help.cpp;
+	d3xp/menus/MenuWidget_InfoBox.cpp;
+	d3xp/menus/MenuWidget_ItemAssignment.cpp;
+	d3xp/menus/MenuWidget_List.cpp;
+	d3xp/menus/MenuWidget_LobbyList.cpp;
+	d3xp/menus/MenuWidget_MenuBar.cpp;
+	d3xp/menus/MenuWidget_NavBar.cpp;
+	d3xp/menus/MenuWidget_NavButton.cpp;
+	d3xp/menus/MenuWidget_PDA_AudioFiles.cpp;
+	d3xp/menus/MenuWidget_PDA_EmailInbox.cpp;
+	d3xp/menus/MenuWidget_PDA_Objective.cpp;
+	d3xp/menus/MenuWidget_PDA_UserData.cpp;
+	d3xp/menus/MenuWidget_PDA_VideoInfo.cpp;
+	d3xp/menus/MenuWidget_Scrollbar.cpp;
+	d3xp/menus/MenuWidget_Shell_SaveInfo.cpp)
+set(D3XP_MENUS
+	${D3XP_MENUS_H};
+	${D3XP_MENUS_CPP})
+set(D3XP_PHYSICS_H
+	d3xp/physics/Clip.h;
+	d3xp/physics/Force.h;
+	d3xp/physics/Force_Constant.h;
+	d3xp/physics/Force_Drag.h;
+	d3xp/physics/Force_Field.h;
+	d3xp/physics/Force_Grab.h;
+	d3xp/physics/Force_Spring.h;
+	d3xp/physics/Physics.h;
+	d3xp/physics/Physics_Actor.h;
+	d3xp/physics/Physics_AF.h;
+	d3xp/physics/Physics_Base.h;
+	d3xp/physics/Physics_Monster.h;
+	d3xp/physics/Physics_Parametric.h;
+	d3xp/physics/Physics_Player.h;
+	d3xp/physics/Physics_RigidBody.h;
+	d3xp/physics/Physics_Static.h;
+	d3xp/physics/Physics_StaticMulti.h;
+	d3xp/physics/Push.h)
+set(D3XP_PHYSICS_CPP
+	d3xp/physics/Clip.cpp;
+	d3xp/physics/Force.cpp;
+	d3xp/physics/Force_Constant.cpp;
+	d3xp/physics/Force_Drag.cpp;
+	d3xp/physics/Force_Field.cpp;
+	d3xp/physics/Force_Grab.cpp;
+	d3xp/physics/Force_Spring.cpp;
+	d3xp/physics/Physics.cpp;
+	d3xp/physics/Physics_Actor.cpp;
+	d3xp/physics/Physics_AF.cpp;
+	d3xp/physics/Physics_Base.cpp;
+	d3xp/physics/Physics_Monster.cpp;
+	d3xp/physics/Physics_Parametric.cpp;
+	d3xp/physics/Physics_Player.cpp;
+	d3xp/physics/Physics_RigidBody.cpp;
+	d3xp/physics/Physics_Static.cpp;
+	d3xp/physics/Physics_StaticMulti.cpp;
+	d3xp/physics/Push.cpp)
+set(D3XP_PHYSICS
+	${D3XP_PHYSICS_H};
+	${D3XP_PHYSICS_CPP})
+set(D3XP_SCRIPT_H
+	d3xp/script/Script_Compiler.h;
+	d3xp/script/Script_Interpreter.h;
+	d3xp/script/Script_Program.h;
+	d3xp/script/Script_Thread.h)
+set(D3XP_SCRIPT_CPP
+	d3xp/script/Script_Compiler.cpp;
+	d3xp/script/Script_Interpreter.cpp;
+	d3xp/script/Script_Program.cpp;
+	d3xp/script/Script_Thread.cpp)
+set(D3XP_SCRIPT
+	${D2XP_SCRIPT_H};
+	${D2XP_SCRIPT_CPP})
+set(D3XP_H
+	${D3XP_ROOT_H};
+	${D3XP_AI_H};
+	${D3XP_ANIM_H};
+	${D3XP_GAMESYS_H};
+	${D3XP_MENUS_H};
+	${D3XP_PHYSICS_H};
+	${D3XP_SCRIPT_H})
+set(D3XP_CPP
+	${D3XP_ROOT_CPP};
+	${D3XP_AI_CPP};
+	${D3XP_ANIM_CPP};
+	${D3XP_GAMESYS_CPP};
+	${D3XP_MENUS_CPP};
+	${D3XP_PHYSICS_CPP};
+	${D3XP_SCRIPT_CPP};
+	)
+set(D3XP
+	${D3XP_H};
+	${D3XP_CPP})
+set(FRAMEWORK_H
+	framework/BuildVersion.h;
+	framework/CmdSystem.h;
+	framework/Common.h;
+	framework/Common_dialog.h;
+	framework/Common_local.h;
+	framework/Compressor.h;
+	framework/Console.h;
+	framework/ConsoleHistory.h;
+	framework/CVarSystem.h;
+	framework/DebugGraph.h;
+	framework/DeclAF.h;
+	framework/DeclEntityDef.h;
+	framework/DeclFX.h;
+	framework/DeclManager.h;
+	framework/DeclParticle.h;
+	framework/DeclPDA.h;
+	framework/DeclSkin.h;
+	framework/DeclTable.h;
+	framework/DemoChecksum.h;
+	framework/DemoFile.h;
+	framework/EditField.h;
+	framework/EventLoop.h;
+	framework/File.h;
+	framework/FileSystem.h;
+	framework/File_Manifest.h;
+	framework/File_Resource.h;
+	framework/File_SaveGame.h;
+	framework/KeyInput.h;
+	framework/Licensee.h;
+	framework/PlayerProfile.h;
+	framework/Serializer.h;
+	# framework/Session_local.h;
+	framework/TokenParser.h;
+	framework/Unzip.h;
+	framework/UsercmdGen.h;
+	framework/Zip.h)
+set(FRAMEWORK_CPP
+	framework/CmdSystem.cpp;
+	framework/Common.cpp;
+	framework/Common_demos.cpp;
+	framework/Common_dialog.cpp;
+	framework/common_frame.cpp;
+	framework/Common_load.cpp;
+	framework/Common_localize.cpp;
+	framework/Common_menu.cpp;
+	framework/Common_network.cpp;
+	framework/Common_printf.cpp;
+	framework/Compressor.cpp;
+	framework/Console.cpp;
+	framework/ConsoleHistory.cpp;
+	framework/CVarSystem.cpp;
+	framework/DebugGraph.cpp;
+	framework/DeclAF.cpp;
+	framework/DeclEntityDef.cpp;
+	framework/DeclFX.cpp;
+	framework/DeclManager.cpp;
+	framework/DeclParticle.cpp;
+	framework/DeclPDA.cpp;
+	framework/DeclSkin.cpp;
+	framework/DeclTable.cpp;
+	framework/DemoFile.cpp;
+	framework/EditField.cpp;
+	framework/EventLoop.cpp;
+	framework/File.cpp;
+	framework/FileSystem.cpp;
+	framework/File_Manifest.cpp;
+	framework/File_Resource.cpp;
+	framework/File_SaveGame.cpp;
+	framework/KeyInput.cpp;
+	framework/PlayerProfile.cpp;
+	framework/precompiled.cpp;
+	# framework/Session.cpp;
+	framework/TokenParser.cpp;
+	framework/Unzip.cpp;
+	framework/UsercmdGen.cpp;
+	framework/Zip.cpp)
+set(FRAMEWORK
+	${FRAMEWORK_H};
+	${FRAMEWORK_CPP})
+set(IDLIB_ROOT_H
+	idlib/Base64.h;
+	idlib/BitMsg.h;
+	idlib/Callback.h;
+	idlib/CmdArgs.h;
+	idlib/DataQueue.h;
+	idlib/Dict.h;
+	idlib/Heap.h;
+	idlib/LangDict.h;
+	idlib/Lexer.h;
+	idlib/Lib.h;
+	idlib/MapFile.h;
+	idlib/ParallelJobList.h;
+	idlib/ParallelJobList_JobHeaders.h;
+	idlib/Parser.h;
+	idlib/precompiled.h;
+	idlib/SoftwareCache.h;
+	idlib/Str.h;
+	idlib/StrStatic.h;
+	idlib/Swap.h;
+	idlib/Thread.h;
+	idlib/Timer.h;
+	idlib/Token.h)
+set(IDLIB_ROOT_CPP
+	idlib/Base64.cpp;
+	idlib/BitMsg.cpp;
+	idlib/CmdArgs.cpp;
+	idlib/CommandLink.cpp;
+	idlib/Dict.cpp;
+	idlib/Heap.cpp;
+	idlib/LangDict.cpp;
+	idlib/Lexer.cpp;
+	idlib/Lib.cpp;
+	idlib/MapFile.cpp;
+	idlib/ParallelJobList.cpp;
+	idlib/Parser.cpp;
+	idlib/precompiled.cpp;
+	idlib/RectAllocator.cpp;
+	idlib/SoftwareCache.cpp;
+	idlib/Str.cpp;
+	idlib/Thread.cpp;
+	idlib/Timer.cpp;
+	idlib/Token.cpp)
+set(IDLIB_ROOT
+	${IDLIB_ROOT_H};
+	${IDLIB_ROOT_CPP})
+set(IDLIB_BV_H
+	idlib/bv/Bounds.h;
+	idlib/bv/Box.h;
+	idlib/bv/Sphere.h)
+set(IDLIB_BV_CPP
+	idlib/bv/Bounds.cpp;
+	idlib/bv/Box.cpp;
+	idlib/bv/Sphere.cpp)
+set(IDLIB_BV
+	${IDLIB_BV_H};
+	${IDLIB_BV_CPP})
+set(IDLIB_CONTAINERS_H
+	idlib/containers/Array.h;
+	idlib/containers/BinSearch.h;
+	idlib/containers/BTree.h;
+	idlib/containers/HashIndex.h;
+	idlib/containers/HashTable.h;
+	idlib/containers/Hierarchy.h;
+	idlib/containers/LinkList.h;
+	idlib/containers/List.h;
+	idlib/containers/PlaneSet.h;
+	idlib/containers/Queue.h;
+	idlib/containers/Sort.h;
+	idlib/containers/Stack.h;
+	idlib/containers/StaticList.h;
+	idlib/containers/StrList.h;
+	idlib/containers/StrPool.h;
+	idlib/containers/VectorSet.h)
+set(IDLIB_CONTAINERS_CPP
+	idlib/containers/HashIndex.cpp)
+set(IDLIB_CONTAINERS
+	${IDLIB_CONTAINERS_H};
+	${IDLIB_CONTAINERS_CPP})
+set(IDLIB_GEOMETRY_H
+	idlib/geometry/DrawVert.h;
+	idlib/geometry/DrawVert_intrinsics.h;
+	idlib/geometry/JointTransform.h;
+	idlib/geometry/RenderMatrix.h;
+	idlib/geometry/Surface.h;
+	idlib/geometry/Surface_Patch.h;
+	idlib/geometry/Surface_Polytope.h;
+	idlib/geometry/Surface_SweptSpline.h;
+	idlib/geometry/TraceModel.h;
+	idlib/geometry/Winding.h;
+	idlib/geometry/Winding2D.h)
+set(IDLIB_GEOMETRY_CPP
+	idlib/geometry/DrawVert.cpp;
+	idlib/geometry/JointTransform.cpp;
+	idlib/geometry/RenderMatrix.cpp;
+	idlib/geometry/Surface.cpp;
+	idlib/geometry/Surface_Patch.cpp;
+	idlib/geometry/Surface_Polytope.cpp;
+	idlib/geometry/Surface_SweptSpline.cpp;
+	idlib/geometry/TraceModel.cpp;
+	idlib/geometry/Winding.cpp;
+	idlib/geometry/Winding2D.cpp)
+set(IDLIB_GEOMETRY
+	${IDLIB_GEOMETRY_H};
+	${IDLIB_GEOMETRY_CPP})
+set(IDLIB_HASHING_H
+	idlib/hashing/CRC32.h;
+	idlib/hashing/MD4.h;
+	idlib/hashing/MD5.h)
+set(IDLIB_HASHING_CPP
+	idlib/hashing/CRC32.cpp;
+	idlib/hashing/MD4.cpp;
+	idlib/hashing/MD5.cpp)
+set(IDLIB_HASHING
+	${IDLIB_HASHING_H};
+	${IDLIB_HASHING_CPP})
+set(IDLIB_MATH_H
+	idlib/math/Angles.h;
+	idlib/math/Complex.h;
+	idlib/math/Curve.h;
+	idlib/math/Extrapolate.h;
+	idlib/math/Interpolate.h;
+	idlib/math/Lcp.h;
+	idlib/math/Math.h;
+	idlib/math/Matrix.h;
+	idlib/math/MatX.h;
+	idlib/math/Ode.h;
+	idlib/math/Plane.h;
+	idlib/math/Pluecker.h;
+	idlib/math/Polynomial.h;
+	idlib/math/Quat.h;
+	idlib/math/Random.h;
+	idlib/math/Rotation.h;
+	idlib/math/Simd.h;
+	idlib/math/Simd_Generic.h;
+	idlib/math/Simd_SSE.h;
+	idlib/math/Vector.h;
+	idlib/math/VectorI.h;
+	idlib/math/VecX.h)
+set(IDLIB_MATH_CPP
+	idlib/math/Angles.cpp;
+	idlib/math/Complex.cpp;
+	idlib/math/Lcp.cpp;
+	idlib/math/Math.cpp;
+	idlib/math/Matrix.cpp;
+	idlib/math/MatX.cpp;
+	idlib/math/Ode.cpp;
+	idlib/math/Plane.cpp;
+	idlib/math/Pluecker.cpp;
+	idlib/math/Polynomial.cpp;
+	idlib/math/Quat.cpp;
+	idlib/math/Rotation.cpp;
+	idlib/math/Simd.cpp;
+	idlib/math/Simd_Generic.cpp;
+	idlib/math/Simd_SSE.cpp;
+	idlib/math/Vector.cpp;
+	idlib/math/VecX.cpp)
+set(IDLIB_MATH
+	${IDLIB_MATH_H};
+	${IDLIB_MATH_CPP})
+set(IDLIB_SYS_H
+	idlib/sys/sys_alloc_tags.h;
+	idlib/sys/sys_assert.h;
+	idlib/sys/sys_builddefines.h;
+	idlib/sys/sys_defines.h;
+	idlib/sys/sys_filesystem.h;
+	idlib/sys/sys_includes.h;
+	idlib/sys/sys_intrinsics.h;
+	idlib/sys/sys_threading.h;
+	idlib/sys/sys_types.h)
+set(IDLIB_SYS_CPP
+	idlib/sys/sys_assert.cpp)
+set(IDLIB_SYS
+	${IDLIB_SYS_H};
+	${IDLIB_SYS_CPP})
+set(IDLIB_SYS_WIN32_CPP
+	idlib/sys/win32/win_thread.cpp)
+set(IDLIB_SYS_WIN32
+	${IDLIB_SYS_WIN32_CPP})
+set(IDLIB_H
+	${IDLIB_ROOT_H};
+	${IDLIB_BV_H};
+	${IDLIB_CONTAINERS_H};
+	${IDLIB_GEOMETRY_H};
+	${IDLIB_HASHING_H};
+	${IDLIB_MATH_H};
+	${IDLIB_SYS_H})
+set(IDLIB_CPP
+	${IDLIB_ROOT_CPP};
+	${IDLIB_BV_CPP};
+	${IDLIB_CONTAINERS_CPP};
+	${IDLIB_GEOMETRY_CPP};
+	${IDLIB_HASHING_CPP};
+	${IDLIB_CPPASHING_CPP};
+	${IDLIB_MATH_CPP};
+	${IDLIB_SYS_CPP};
+	${IDLIB_SYS_WIN32_CPP})
+set(IDLIB
+	${IDLIB_H};
+	${IDLIB_CPP})
+set(RENDER_ROOT_H
+	renderer/AutoRender.h;
+	renderer/AutoRenderBink.h;
+	renderer/BinaryImage.h;
+	renderer/BinaryImageData.h;
+	renderer/BoundsTrack.h;
+	renderer/BufferObject.h;
+	renderer/Cinematic.h;
+	renderer/Font.h;
+	renderer/GLMatrix.h;
+	renderer/GLState.h;
+	renderer/GraphicsAPIWrapper.h;
+	renderer/GuiModel.h;
+	renderer/Image.h;
+	renderer/ImageOpts.h;
+	renderer/Image_dds.h;
+	renderer/Interaction.h;
+	renderer/Material.h;
+	renderer/Model.h;
+	renderer/ModelDecal.h;
+	renderer/ModelManager.h;
+	renderer/ModelOverlay.h;
+	renderer/Model_ase.h;
+	renderer/Model_local.h;
+	renderer/Model_lwo.h;
+	renderer/Model_ma.h;
+	renderer/Model_md3.h;
+	renderer/RenderContext.h;
+	renderer/RenderLog.h;
+	renderer/RenderProgs.h;
+	renderer/RenderSystem.h;
+	renderer/RenderTexture.h;
+	renderer/RenderWorld.h;
+	renderer/RenderWorld_local.h;
+	renderer/ResolutionScale.h;
+	renderer/ScreenRect.h;
+	renderer/simplex.h;
+	renderer/tr_local.h;
+	renderer/VertexCache.h)
+set(RENDER_ROOT_CPP
+	renderer/AutoRender.cpp;
+	renderer/AutoRenderBink.cpp;
+	renderer/BinaryImage.cpp;
+	renderer/BoundsTrack.cpp;
+	renderer/BufferObject.cpp;
+	renderer/Cinematic.cpp;
+	renderer/Font.cpp;
+	renderer/GLMatrix.cpp;
+	renderer/GuiModel.cpp;
+	renderer/ImageManager.cpp;
+	renderer/Image_files.cpp;
+	renderer/Image_intrinsic.cpp;
+	renderer/Image_load.cpp;
+	renderer/Image_process.cpp;
+	renderer/Image_program.cpp;
+	renderer/Interaction.cpp;
+	renderer/Material.cpp;
+	renderer/Model.cpp;
+	renderer/ModelDecal.cpp;
+	renderer/ModelManager.cpp;
+	renderer/ModelOverlay.cpp;
+	renderer/Model_ase.cpp;
+	renderer/Model_beam.cpp;
+	renderer/Model_liquid.cpp;
+	renderer/Model_lwo.cpp;
+	renderer/Model_ma.cpp;
+	renderer/Model_md3.cpp;
+	renderer/Model_md5.cpp;
+	renderer/Model_prt.cpp;
+	renderer/Model_sprite.cpp;
+	renderer/RenderEntity.cpp;
+	renderer/RenderLog.cpp;
+	renderer/RenderProgs.cpp;
+	renderer/RenderProgs_GLSL.cpp;
+	renderer/RenderSystem.cpp;
+	renderer/RenderSystem_init.cpp;
+	renderer/RenderWorld.cpp;
+	renderer/RenderWorld_defs.cpp;
+	renderer/RenderWorld_demo.cpp;
+	renderer/RenderWorld_load.cpp;
+	renderer/RenderWorld_portals.cpp;
+	renderer/ResolutionScale.cpp;
+	renderer/ScreenRect.cpp;
+	renderer/tr_backend_draw.cpp;
+	renderer/tr_backend_rendertools.cpp;
+	renderer/tr_frontend_addlights.cpp;
+	renderer/tr_frontend_addmodels.cpp;
+	renderer/tr_frontend_deform.cpp;
+	renderer/tr_frontend_guisurf.cpp;
+	renderer/tr_frontend_main.cpp;
+	renderer/tr_frontend_subview.cpp;
+	renderer/tr_trace.cpp;
+	renderer/tr_trisurf.cpp;
+	renderer/VertexCache.cpp)
+set(RENDER_ROOT
+	${RENDER_ROOT_H};
+	${RENDER_ROOT_CPP})
+set(RENDER_COLOR_H
+	renderer/Color/ColorSpace.h)
+set(RENDER_COLOR_CPP
+	renderer/Color/ColorSpace.cpp)
+set(RENDER_COLOR
+	${RENDER_COLOR_H};
+	${RENDER_COLOR_CPP})
+set(RENDER_DXT_H
+	renderer/DXT/DXTCodec.h;
+	renderer/DXT/DXTCodec_local.h)
+set(RENDER_DXT_CPP
+	renderer/DXT/DXTDecoder.cpp;
+	renderer/DXT/DXTEncoder.cpp;
+	renderer/DXT/DXTEncoder_SSE2.cpp)
+set(RENDER_DXT
+	${RENDER_DXT_H};
+	${RENDER_DXT_CPP})
+set(RENDER_JOBS_ROOT_H
+	renderer/jobs/ShadowShared.h)
+set(RENDER_JOBS_ROOT_CPP
+	renderer/jobs/ShadowShared.cpp)
+set(RENDER_JOBS_ROOT
+	${RENDER_JOBS_ROOT_H};
+	${RENDER_JOBS_ROOT_CPP})
+set(RENDER_JOBS_DYNAMICSHADOWVOLUME_H
+	renderer/jobs/dynamicshadowvolume/DynamicShadowVolume.h;
+	renderer/jobs/dynamicshadowvolume/DynamicShadowVolume_local.h)
+set(RENDER_JOBS_DYNAMICSHADOWVOLUME_CPP
+	renderer/jobs/dynamicshadowvolume/DynamicShadowVolume.cpp)
+set(RENDER_JOBS_DYNAMICSHADOWVOLUME
+	${RENDER_JOBS_DYNAMICSHADOWVOLUME_H};
+	${RENDER_JOBS_DYNAMICSHADOWVOLUME_CPP})
+set(RENDER_JOBS_STATICSHADOWVOLUME_H
+	renderer/jobs/staticshadowvolume/StaticShadowVolume.h;
+	renderer/jobs/staticshadowvolume/StaticShadowVolume_local.h)
+set(RENDER_JOBS_STATICSHADOWVOLUME_CPP
+	renderer/jobs/staticshadowvolume/StaticShadowVolume.cpp)
+set(RENDER_JOBS_STATICSHADOWVOLUME
+	${RENDER_JOBS_STATICSHADOWVOLUME_H};
+	${RENDER_JOBS_STATICSHADOWVOLUME_CPP})
+set(RENDER_JOBS_PRELIGHTSHADOWVOLUME_H
+	renderer/jobs/prelightshadowvolume/PreLightShadowVolume.h;
+	renderer/jobs/prelightshadowvolume/PreLightShadowVolume_local.h)
+set(RENDER_JOBS_PRELIGHTSHADOWVOLUME_CPP
+	renderer/jobs/prelightshadowvolume/PreLightShadowVolume.cpp)
+set(RENDER_JOBS_PRELIGHTSHADOWVOLUME
+	${RENDER_JOBS_PRELIGHTSHADOWVOLUME_H};
+	${RENDER_JOBS_PRELIGHTSHADOWVOLUME_CPP})
+set(RENDER_JOBS_H
+	${RENDER_JOBS_ROOT_H};
+	${RENDER_JOBS_DYNAMICSHADOWVOLUME_H};
+	${RENDER_JOBS_STATICSHADOWVOLUME_H};
+	${RENDER_JOBS_PRELIGHTSHADOWVOLUME_H})
+set(RENDER_JOBS_CPP
+	${RENDER_JOBS_ROOT_CPP};
+	${RENDER_JOBS_DYNAMICSHADOWVOLUME_CPP};
+	${RENDER_JOBS_STATICSHADOWVOLUME_CPP};
+	${RENDER_JOBS_PRELIGHTSHADOWVOLUME_CPP})
+set(RENDER_JOBS
+	${RENDER_JOBS_H};
+	${RENDER_JOBS_CPP})
+set(RENDERER_OPENGL_H
+	renderer/OpenGL/glext.h;
+	renderer/OpenGL/qgl.h;
+	renderer/OpenGL/qgl_linked.h;
+	renderer/OpenGL/wglext.h)
+set(RENDERER_OPENGL_CPP
+	renderer/OpenGL/gl_backend.cpp;
+	renderer/OpenGL/gl_GraphicsAPIWrapper.cpp;
+	renderer/OpenGL/gl_Image.cpp)
+set(RENDERER_OPENGL
+	${RENDERER_OPENGL_H};
+	${RENDERER_OPENGL_CPP})
+set(RENDER_H
+	${RENDER_ROOT_H};
+	${RENDER_COLOR_H};
+	${RENDER_DXT_H};
+	${RENDER_JOBS_H};
+	${RENDERER_OPENGL_H})
+set(RENDER_CPP
+	${RENDER_ROOT_CPP};
+	${RENDER_COLOR_CPP};
+	${RENDER_DXT_CPP};
+	${RENDER_JOBS_CPP};
+	${RENDERER_OPENGL_CPP})
+set(RENDER
+	${RENDER_H};
+	${RENDER_CPP})
+set(SOUND_ROOT_H
+	sound/CinematicAudio.h;
+	sound/snd_local.h;
+	sound/sound.h;
+	sound/SoundVoice.h;
+	sound/WaveFile.h)
+set(SOUND_ROOT_CPP
+	#sound/snd_decoder.cpp;
+	sound/snd_emitter.cpp;
+	sound/snd_shader.cpp;
+	sound/snd_system.cpp;
+	sound/snd_world.cpp;
+	sound/SoundVoice.cpp;
+	sound/WaveFile.cpp)
+set(SOUND_ROOT
+	${SOUND_ROOT_H};
+	${SOUND_ROOT_CPP})
+set(SOUND_OPENAL_H
+	sound/OpenAL/AL_CinematicAudio.h;
+	sound/OpenAL/AL_SoundHardware.h;
+	sound/OpenAL/AL_SoundSample.h;
+	sound/OpenAL/AL_SoundVoice.h)
+set(SOUND_OPENAL_CPP
+	sound/OpenAL/AL_CinematicAudio.cpp;
+	sound/OpenAL/AL_SoundHardware.cpp;
+	sound/OpenAL/AL_SoundSample.cpp;
+	sound/OpenAL/AL_SoundVoice.cpp)
+set(SOUND_OPENAL
+	${SOUND_OPENAL_H};
+	${SOUND_OPENAL_CPP})
+set(SOUND_H
+	${SOUND_ROOT_H};
+	${SOUND_OPENAL_H})
+set(SOUND_CPP
+	${SOUND_ROOT_CPP};
+	${SOUND_OPENAL_CPP})
+set(SOUND
+	${SOUND_H};
+	${SOUND_CPP})
+set(SWF_H
+	swf/SWF.h;
+	swf/SWF_Bitstream.h;
+	swf/SWF_Enums.h;
+	swf/SWF_ParmList.h;
+	swf/SWF_ScriptFunction.h;
+	swf/SWF_ScriptObject.h;
+	swf/SWF_ScriptVar.h;
+	swf/SWF_ShapeParser.h;
+	swf/SWF_SpriteInstance.h;
+	swf/SWF_Sprites.h;
+	swf/SWF_TextInstance.h;
+	swf/SWF_Types.h)
+set(SWF_CPP
+	swf/SWF_Bitstream.cpp;
+	swf/SWF_Dictionary.cpp;
+	swf/SWF_Events.cpp;
+	swf/SWF_Image.cpp;
+	swf/SWF_Load.cpp;
+	swf/SWF_Main.cpp;
+	swf/SWF_Names.cpp;
+	swf/SWF_ParmList.cpp;
+	swf/SWF_PlaceObject.cpp;
+	swf/SWF_Render.cpp;
+	swf/SWF_ScriptFunction.cpp;
+	swf/SWF_ScriptObject.cpp;
+	swf/SWF_ScriptVar.cpp;
+	swf/SWF_ShapeParser.cpp;
+	swf/SWF_Shapes.cpp;
+	swf/SWF_Sounds.cpp;
+	swf/SWF_SpriteInstance.cpp;
+	swf/SWF_Sprites.cpp;
+	swf/SWF_Text.cpp;
+	swf/SWF_TextInstance.cpp;
+	swf/SWF_Zlib.cpp)
+set(SWF
+	${SWF_H};
+	${SWF_CPP})
+set(SYS_ROOT_H
+	sys/LightweightCompression.h;
+	sys/PacketProcessor.h;
+	sys/Snapshot.h;
+	sys/SnapshotProcessor.h;
+	sys/Snapshot_Jobs.h;
+	sys/sys_achievements.h;
+	sys/sys_dedicated_server_search.h;
+	sys/sys_leaderboards.h;
+	sys/sys_lobby.h;
+	sys/sys_lobby_backend.h;
+	sys/sys_lobby_backend_direct.h;
+	sys/sys_local.h;
+	sys/sys_localuser.h;
+	sys/sys_profile.h;
+	sys/sys_public.h;
+	sys/sys_savegame.h;
+	sys/sys_session.h;
+	sys/sys_session_local.h;
+	sys/sys_session_savegames.h;
+	sys/sys_signin.h;
+	sys/sys_stats.h;
+	sys/sys_stats_misc.h;
+	sys/sys_voicechat.h)
+set(SYS_ROOT_CPP
+	sys/LightweightCompression.cpp;
+	sys/PacketProcessor.cpp;
+	sys/Snapshot.cpp;
+	sys/SnapshotProcessor.cpp;
+	sys/Snapshot_Jobs.cpp;
+	sys/sys_achievements.cpp;
+	sys/sys_dedicated_server_search.cpp;
+	sys/sys_lobby.cpp;
+	sys/sys_lobby_backend_direct.cpp;
+	sys/sys_lobby_migrate.cpp;
+	sys/sys_lobby_snapshot.cpp;
+	sys/sys_lobby_users.cpp;
+	sys/sys_local.cpp;
+	sys/sys_localuser.cpp;
+	sys/sys_profile.cpp;
+	sys/sys_savegame.cpp;
+	sys/sys_session_callbacks.cpp;
+	sys/sys_session_local.cpp;
+	sys/sys_session_savegames.cpp;
+	sys/sys_signin.cpp;
+	sys/sys_voicechat.cpp)
+set(SYS_ROOT
+	${SYS_ROOT_H};
+	${SYS_ROOT_CPP})
+set(SYS_WIN32_H
+	sys/win32/win_achievements.h;
+	sys/win32/win_input.h;
+	sys/win32/win_local.h;
+	sys/win32/win_localuser.h;
+	sys/win32/win_nanoafx.h;
+	sys/win32/win_signin.h;
+	sys/win32/win_stats.h;
+	sys/win32/rc/doom_resource.h)
+set(SYS_WIN32_CPP
+	sys/win32/win_achievements.cpp;
+	sys/win32/win_cpu.cpp;
+	# sys/win32/win_gamma.cpp;
+	sys/win32/win_glimp.cpp;
+	sys/win32/win_input.cpp;
+	sys/win32/win_localuser.cpp;
+	sys/win32/win_main.cpp;
+	sys/win32/win_net.cpp;
+	sys/win32/win_qgl.cpp;
+	sys/win32/win_savegame.cpp;
+	sys/win32/win_session_local.cpp;
+	sys/win32/win_shared.cpp;
+	sys/win32/win_signin.cpp;
+	sys/win32/win_snd.cpp;
+	sys/win32/win_stats.cpp;
+	sys/win32/win_syscon.cpp;
+	sys/win32/win_taskkeyhook.cpp;
+	sys/win32/win_wndproc.cpp)
+set(SYS_WIN32
+	${SYS_WIN32_H};
+	${SYS_WIN32_CPP})
+set(SYS_H
+	${SYS_ROOT_H};
+	${SYS_WIN32_H})
+set(SYS_CPP
+	${SYS_ROOT_CPP};
+	${SYS_WIN32_CPP})
+set(SYS
+	${SYS_H};
+	${SYS_CPP})
+set(UI_H
+	ui/BindWindow.h;
+	ui/ChoiceWindow.h;
+	ui/DeviceContext.h;
+	ui/EditWindow.h;
+	ui/FieldWindow.h;
+	ui/GameBearShootWindow.h;
+	ui/GameBustOutWindow.h;
+	ui/GameSSDWindow.h;
+	ui/GameWindow.h;
+	ui/GuiScript.h;
+	ui/ListGUI.h;
+	ui/ListGUILocal.h;
+	ui/ListWindow.h;
+	ui/Rectangle.h;
+	ui/RegExp.h;
+	ui/RegExp_old.h;
+	ui/RenderWindow.h;
+	ui/SimpleWindow.h;
+	ui/SliderWindow.h;
+	ui/UserInterface.h;
+	ui/UserInterfaceLocal.h;
+	ui/Window.h;
+	ui/Winvar.h)
+set(UI_CPP
+	ui/BindWindow.cpp;
+	ui/ChoiceWindow.cpp;
+	ui/DeviceContext.cpp;
+	ui/EditWindow.cpp;
+	ui/FieldWindow.cpp;
+	ui/GameBearShootWindow.cpp;
+	ui/GameBustOutWindow.cpp;
+	ui/GameSSDWindow.cpp;
+	ui/GameWindow.cpp;
+	ui/GuiScript.cpp;
+	ui/ListGUI.cpp;
+	ui/ListWindow.cpp;
+	ui/RegExp.cpp;
+	ui/RenderWindow.cpp;
+	ui/SimpleWindow.cpp;
+	ui/SliderWindow.cpp;
+	ui/UserInterface.cpp;
+	ui/Window.cpp;
+	ui/Winvar.cpp)
+set(UI
+	${UI_H};
+	${UI_CPP})
+set(LIBS_JPEG_H
+	libs/libjpeg/jconfig.h;
+	libs/libjpeg/jdct.h;
+	libs/libjpeg/jerror.h;
+	libs/libjpeg/jinclude.h;
+	libs/libjpeg/jmemsys.h;
+	libs/libjpeg/jmorecfg.h;
+	libs/libjpeg/jpegint.h;
+	libs/libjpeg/jpeglib.h;
+	libs/libjpeg/jversion.h)
+set(LIBS_JPEG_C
+	libs/libjpeg/jaricom.c;
+	libs/libjpeg/jcapimin.c;
+	libs/libjpeg/jcapistd.c;
+	libs/libjpeg/jcarith.c;
+	libs/libjpeg/jccoefct.c;
+	libs/libjpeg/jccolor.c;
+	libs/libjpeg/jcdctmgr.c;
+	libs/libjpeg/jchuff.c;
+	libs/libjpeg/jcinit.c;
+	libs/libjpeg/jcmainct.c;
+	libs/libjpeg/jcmarker.c;
+	libs/libjpeg/jcmaster.c;
+	libs/libjpeg/jcomapi.c;
+	libs/libjpeg/jcparam.c;
+	libs/libjpeg/jcprepct.c;
+	libs/libjpeg/jcsample.c;
+	libs/libjpeg/jctrans.c;
+	libs/libjpeg/jdapimin.c;
+	libs/libjpeg/jdapistd.c;
+	libs/libjpeg/jdarith.c;
+	libs/libjpeg/jdatadst.c;
+	libs/libjpeg/jdatasrc.c;
+	libs/libjpeg/jdcoefct.c;
+	libs/libjpeg/jdcolor.c;
+	libs/libjpeg/jddctmgr.c;
+	libs/libjpeg/jdhuff.c;
+	libs/libjpeg/jdinput.c;
+	libs/libjpeg/jdmainct.c;
+	libs/libjpeg/jdmarker.c;
+	libs/libjpeg/jdmaster.c;
+	libs/libjpeg/jdmerge.c;
+	libs/libjpeg/jdpostct.c;
+	libs/libjpeg/jdsample.c;
+	libs/libjpeg/jdtrans.c;
+	libs/libjpeg/jerror.c;
+	libs/libjpeg/jfdctflt.c;
+	libs/libjpeg/jfdctfst.c;
+	libs/libjpeg/jfdctint.c;
+	libs/libjpeg/jidctflt.c;
+	libs/libjpeg/jidctfst.c;
+	libs/libjpeg/jidctint.c;
+	libs/libjpeg/jmemmgr.c;
+	libs/libjpeg/jmemnobs.c;
+	libs/libjpeg/jquant1.c;
+	libs/libjpeg/jquant2.c;
+	libs/libjpeg/jutils.c)
+set(LIBS_JPEG
+	${LIBS_JPEG_H},
+	${LIBS_JPEG_C})
+set(LIBS_ZLIB_H
+	libs/zlib/crc32.h;
+	libs/zlib/deflate.h;
+	libs/zlib/gzguts.h;
+	libs/zlib/inffast.h;
+	libs/zlib/inffixed.h;
+	libs/zlib/inflate.h;
+	libs/zlib/inftrees.h;
+	libs/zlib/trees.h;
+	libs/zlib/zconf.h;
+	libs/zlib/zlib.h;
+	libs/zlib/zutil.h)
+set(LIBS_ZLIB_C
+	libs/zlib/adler32.c;
+	libs/zlib/compress.c;
+	libs/zlib/crc32.c;
+	libs/zlib/deflate.c;
+	libs/zlib/gzclose.c;
+	libs/zlib/gzlib.c;
+	libs/zlib/gzread.c;
+	libs/zlib/gzwrite.c;
+	libs/zlib/infback.c;
+	libs/zlib/inffast.c;
+	libs/zlib/inflate.c;
+	libs/zlib/inftrees.c;
+	libs/zlib/trees.c;
+	libs/zlib/uncompr.c;
+	libs/zlib/zutil.c)
+set(LIBS_ZLIB
+	${LIBS_ZLIB_H};
+	${LIBS_ZLIB_C})
+set(LIBS_OPEN_AL_INCLUDE_H
+	libs/openal-soft/include/AL/al.h;
+	libs/openal-soft/include/AL/alc.h;
+	libs/openal-soft/include/AL/alext.h;
+	libs/openal-soft/include/AL/efx-creative.h;
+	libs/openal-soft/include/AL/efx-presets.h;
+	libs/openal-soft/include/AL/efx.h)
+set(LIBS_OPEN_AL_H
+	${LIBS_OPEN_AL_INCLUDE_H})
+set(LIBS_OPEN_AL
+	${LIBS_OPEN_AL_H})
+set(LIBS_H
+	${LIB_JPEG_H};
+	${LIBS_ZLIB_H};
+	${LIBS_OPEN_AL_H})
+set(LIBS_C
+	${LIB_JPEG_C};
+	${LIBS_ZIP_C})
+set(LIBS
+	${LIBS_H};
+	${LIBS_C})
+
+#===============================================================================
+
+
+set(${PROJECT_NAME}_INCLUDES
+	${AAS_H};
+	${CM_H};
+	${D3XP_ROOT_H};
+	${D3XP_AI_H};
+	${D3XP_ANIM_H};
+	${D3XP_GAMESYS_H};
+	${D3XP_MENUS_H};
+	${D3XP_PHYSICS_H};
+	${D3XP_SCRIPT_H};
+	${D3XP_H};
+	${FRAMEWORK_H};
+	${IDLIB_ROOT_H};
+	${IDLIB_BV_H};
+	${IDLIB_CONTAINERS_H};
+	${IDLIB_GEOMETRY_H};
+	${IDLIB_HASHING_H};
+	${IDLIB_H};
+	${IDLIB_H};
+	${IDLIB_MATH_H};
+	${IDLIB_SYS_H};
+	${IDLIB_H};
+	${RENDER_ROOT_H};
+	${RENDER_COLOR_H};
+	${RENDER_DXT_H};
+	${RENDER_JOBS_ROOT_H};
+	${RENDER_JOBS_DYNAMICSHADOWVOLUME_H};
+	${RENDER_JOBS_STATICSHADOWVOLUME_H};
+	${RENDER_JOBS_PRELIGHTSHADOWVOLUME_H};
+	${RENDER_JOBS_H};
+	${RENDERER_OPENGL_H};
+	${RENDER_H};
+	${SOUND_ROOT_H};
+	${SOUND_OPENAL_H};
+	${SOUND_H};
+	${SWF_H};
+	${SYS_ROOT_H};
+	${SYS_WIN32_H};
+	${SYS_H};
+	${UI_H};
+	${LIBS_ZLIB_H};
+	${LIBS_JPEG_H};
+	${LIBS_OPEN_AL_INCLUDE_H};
+	${LIBS_OPEN_AL_H})
+
+set(${PROJECT_NAME}_SOURCES
+	${AAS_CPP};
+	${CM_CPP};
+	${D3XP_ROOT_CPP};
+	${D3XP_AI_CPP};
+	${D3XP_ANIM_CPP};
+	${D3XP_GAMESYS_CPP};
+	${D3XP_MENUS_CPP};
+	${D3XP_PHYSICS_CPP};
+	${D3XP_SCRIPT_CPP};
+	${D3XP_CPP};
+	${FRAMEWORK_CPP};
+	${IDLIB_ROOT_CPP};
+	${IDLIB_BV_CPP};
+	${IDLIB_CONTAINERS_H};
+	${IDLIB_CONTAINERS_CPP};
+	${IDLIB_CONTAINERS};
+	${IDLIB_GEOMETRY_CPP};
+	${IDLIB_HASHING_CPP};
+	${IDLIB_MATH_CPP};
+	${IDLIB_SYS_CPP};
+	${IDLIB_SYS_WIN32_CPP};
+	${IDLIB_CPP};
+	${RENDER_ROOT_CPP};
+	${RENDER_COLOR_H};
+	${RENDER_COLOR_CPP};
+	${RENDER_COLOR};
+	${RENDER_DXT_CPP};
+	${RENDER_JOBS_ROOT_CPP};
+	${RENDER_JOBS_DYNAMICSHADOWVOLUME_CPP};
+	${RENDER_JOBS_STATICSHADOWVOLUME_CPP};
+	${RENDER_JOBS_PRELIGHTSHADOWVOLUME_CPP};
+	${RENDER_JOBS_CPP};
+	${RENDERER_OPENGL_CPP};
+	${RENDER_CPP};
+	${SOUND_ROOT_CPP};
+	${SOUND_OPENAL_CPP};
+	${SOUND_CPP};
+	${SWF_CPP};
+	${SYS_ROOT_CPP};
+	${SYS_WIN32_CPP};
+	${SYS_CPP};
+	${UI_CPP};
+	${LIBS_ZLIB_C};
+	${LIBS_JPEG_C})
+
+set(${PROJECT_NAME}_FILES
+	${${PROJECT_NAME}_INCLUDES};
+	${${PROJECT_NAME}_SOURCES})
+
+
+add_definitions(
+	-DNTDDI_VERSION=0x06020000
+	-D_WIN32_WINNT=0x0602
+	-DWINVER=0x0602)
+
+add_definitions(-DWIN64
+#	-D_WINDOWS
+#	-D_CRT_SECURE_NO_DEPRECATE
+#	-D_CRT_NONSTDC_NO_DEPRECATE
+#	-D_CRT_SECURE_NO_WARNINGS
+#	-D_MBCS
+#	-DSAL_NO_ATTRIBUTE_DECLARATIONS
+#	-DUSE_EXCEPTIONS
+#	-WITH_GZFILEOP
+	-DFORCE_SSE2)
+
+add_definitions(
+		-DDEBUG
+		-D_DEBUG)
+
+#zlib
+add_definitions(-D_LARGEFILE64_SOURCE=1)
+
+set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 17)
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD  17)
+
+
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}  FILES ${${PROJECT_NAME}_FILES} )
+target_sources( ${PROJECT_NAME} PUBLIC  ${${PROJECT_NAME}_FILES} )
+
+set(CMAKE_CXX_FLAGS "/std:c++17 /W4 /WX /MP /EHsc /wd26494 /wd26495 /wd4456 /wd4457 /wd4458 /wd4459 /wd4595 /wd4499  /wd4644 /wd4100 /wd4127 /D_CRT_NONSTDC_NO_WARNINGS /D_CRT_SECURE_NO_WARNINGS ")
+
+target_link_libraries(${PROJECT_NAME} PUBLIC opengl32 )
+target_link_libraries(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/libs/openal-soft/libs/Win64/OpenAL32.lib )
+
+set(DirectX_LIBRARIES dinput8 dsound dxguid Xinput)
+target_link_libraries(${PROJECT_NAME} PUBLIC ${DirectX_LIBRARIES} winmm.lib Dbghelp.lib)

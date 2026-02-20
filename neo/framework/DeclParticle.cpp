@@ -1072,7 +1072,7 @@ void idParticleStage::ParticleOrigin( particleGen_t *g, idVec3 &origin ) const {
 			case PDIST_CYLINDER: {	// ( sizeX sizeY sizeZ ringFraction )
 				angle1 = ( ( randomDistribution ) ? g->random.CRandomFloat() : 1.0f ) * idMath::TWO_PI;
 
-				idMath::SinCos16( angle1, origin[0], origin[1] );
+				idMath::SinCos( angle1, origin[0], origin[1] );
 				origin[2] = ( ( randomDistribution ) ? g->random.CRandomFloat() : 1.0f );
 
 				// reproject points that are inside the ringFraction to the outer band
@@ -1146,8 +1146,8 @@ void idParticleStage::ParticleOrigin( particleGen_t *g, idVec3 &origin ) const {
 				angle2 = g->random.CRandomFloat() * idMath::PI;
 		
 				float s1, c1, s2, c2;
-				idMath::SinCos16( angle1, s1, c1 );
-				idMath::SinCos16( angle2, s2, c2 );
+				idMath::SinCos( angle1, s1, c1 );
+				idMath::SinCos( angle2, s2, c2 );
 
 				dir[0] = s1 * c2;
 				dir[1] = s1 * s2;
@@ -1179,7 +1179,7 @@ void idParticleStage::ParticleOrigin( particleGen_t *g, idVec3 &origin ) const {
 				angle1 = g->random.RandomFloat() * idMath::TWO_PI + customPathParms[3] * speed1 * g->age;
 
 				float s1, c1;
-				idMath::SinCos16( angle1, s1, c1 );
+				idMath::SinCos( angle1, s1, c1 );
 
 				origin[0] = c1 * customPathParms[0];
 				origin[1] = s1 * customPathParms[1];
@@ -1193,8 +1193,8 @@ void idParticleStage::ParticleOrigin( particleGen_t *g, idVec3 &origin ) const {
 				angle2 = g->random.RandomFloat() * idMath::PI * 2 + customPathParms[1] * speed1 * g->age;
 
 				float s1, c1, s2, c2;
-				idMath::SinCos16( angle1, s1, c1 );
-				idMath::SinCos16( angle2, s2, c2 );
+				idMath::SinCos( angle1, s1, c1 );
+				idMath::SinCos( angle2, s2, c2 );
 
 				origin[0] = c1 * c2;
 				origin[1] = s1 * c2;
@@ -1206,7 +1206,7 @@ void idParticleStage::ParticleOrigin( particleGen_t *g, idVec3 &origin ) const {
 				angle1 = g->random.RandomFloat() * idMath::TWO_PI + customPathParms[1] * g->age;
 
 				float s1, c1;
-				idMath::SinCos16( angle1, s1, c1 );
+				idMath::SinCos( angle1, s1, c1 );
 
 				origin[0] = c1 * customPathParms[0];
 				origin[1] = s1 * customPathParms[0];
@@ -1346,8 +1346,8 @@ int	idParticleStage::ParticleVerts( particleGen_t *g, idVec3 origin, idDrawVert 
 	}
 
 	angle = angle / 180 * idMath::PI;
-	float c = idMath::Cos16( angle );
-	float s = idMath::Sin16( angle );
+	float c = idMath::Cos( angle );
+	float s = idMath::Sin( angle );
 
 	if ( orientation  == POR_Z ) {
 		// oriented in entity space

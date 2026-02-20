@@ -2,9 +2,9 @@
 ===========================================================================
 
 Doom 3 BFG Edition GPL Source Code
-Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company. 
+Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company.
 
-This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").  
+This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").
 
 Doom 3 BFG Edition Source Code is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -118,7 +118,7 @@ idRenderModelManagerLocal::ListModels_f
 ==============
 */
 void idRenderModelManagerLocal::ListModels_f( const idCmdArgs &args ) {
-	int		totalMem = 0;
+	size_t		totalMem = 0;
 	int		inUse = 0;
 
 	common->Printf( " mem   srf verts tris\n" );
@@ -338,7 +338,7 @@ idRenderModel *idRenderModelManagerLocal::GetModel( const char *_modelName, bool
 			} /* else {
 				idLib::Printf( "loaded binary model %s from file %s\n", model->Name(), generatedFileName.c_str() );
 			} */
-		} 
+		}
 	}
 
 	// Not one of the known formats
@@ -410,7 +410,7 @@ void idRenderModelManagerLocal::FreeModel( idRenderModel *model ) {
 		common->Error( "idRenderModelManager::FreeModel: can't free the beam model" );
 		return;
 	}
-	if ( model == spriteModel ) { 
+	if ( model == spriteModel ) {
 		common->Error( "idRenderModelManager::FreeModel: can't free the sprite model" );
 		return;
 	}
@@ -535,7 +535,7 @@ void idRenderModelManagerLocal::BeginLevelLoad() {
 	for ( int i = 0; i < models.Num(); i++ ) {
 		idRenderModel *model = models[i];
 
-		// always reload all models 
+		// always reload all models
 		if ( model->IsReloadable() ) {
 			R_CheckForEntityDefsUsingModel( model );
 			model->PurgeModel();
@@ -584,7 +584,7 @@ void idRenderModelManagerLocal::Preload( const idPreloadManifest &manifest  ) {
 				}
 			}
 		}
-		
+
 		preloadSort.SortWithTemplate( idSort_Preload() );
 
 		for ( int i = 0; i < preloadSort.Num(); i++ ) {
@@ -664,8 +664,6 @@ void idRenderModelManagerLocal::EndLevelLoad() {
 	// create static vertex/index buffers for all models
 	for ( int i = 0; i < models.Num(); i++ ) {
 		common->UpdateLevelLoadPacifier();
-
-
 		idRenderModel *model = models[i];
 		if ( model->IsLoaded() ) {
 			for ( int j = 0; j < model->NumSurfaces(); j++ ) {
@@ -691,10 +689,10 @@ idRenderModelManagerLocal::PrintMemInfo
 =================
 */
 void idRenderModelManagerLocal::PrintMemInfo( MemInfo_t *mi ) {
-	int i, j, totalMem = 0;
+	int i, j ;
 	int *sortIndex;
 	idFile *f;
-
+	int 	totalMem = 0;
 	f = fileSystem->OpenFileWrite( mi->filebase + "_models.txt" );
 	if ( !f ) {
 		return;
@@ -726,9 +724,9 @@ void idRenderModelManagerLocal::PrintMemInfo( MemInfo_t *mi ) {
 			continue;
 		}
 
-		mem = model->Memory();
+		mem = (int)model->Memory();
 		totalMem += mem;
-		f->Printf( "%s %s\n", idStr::FormatNumber( mem ).c_str(), model->Name() );
+		f->Printf( "%s %s\n", idStr::FormatNumber( (int)mem ).c_str(), model->Name() );
 	}
 
 	delete [] sortIndex;

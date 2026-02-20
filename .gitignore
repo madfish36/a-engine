@@ -1,0 +1,80 @@
+﻿# === Результаты компиляции и бинарные файлы ===
+*.o
+*.obj
+*.so
+*.a
+*.lib
+*.dll
+*.exe
+*.out
+*.app
+*.pdb
+*.ilk
+
+*.d
+*.slo
+*.lo
+*.gch
+*.pch
+*.dylib
+*.so.*
+*.mod
+*.smod
+*.lai
+*.la
+*.dwo
+*.tmp 
+*.log 
+*.bak 
+*.swp 
+
+# test output & cache
+Testing/
+.cache/
+
+# === Системы сборки (CMake, Make) ===
+build/
+Build/
+build-*/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+install_manifest.txt
+compile_commands.json
+CMakeUserPresets.json
+_deps/
+
+# === Visual Studio ===
+.vs/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.suo
+*.sdf
+*.opensdf
+
+# === CLion / JetBrains ===
+.idea/
+/neo/.idea/
+cmake-build-*/
+
+# === Зависимости (vcpkg, conan) ===
+vcpkg_installed/
+conanfile.txt.user
+
+# === Временные файлы ОС ===
+.DS_Store
+Thumbs.db
+
+
+
+
+
+
+

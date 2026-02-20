@@ -36,7 +36,7 @@ If you have questions concerning this license or the applicable additional terms
 //===============================================================
 
 float	idMatX::temp[MATX_MAX_TEMP+4];
-float *	idMatX::tempPtr = (float *) ( ( (int) idMatX::temp + 15 ) & ~15 );
+float *	idMatX::tempPtr = (float *) ( ( (intptr_t) idMatX::temp + 15 ) & ~15 );
 int		idMatX::tempIndex = 0;
 
 
@@ -170,8 +170,6 @@ idMatX::CopyLowerToUpperTriangle
 void idMatX::CopyLowerToUpperTriangle() {
 	assert( ( GetNumColumns() & 3 ) == 0 );
 	assert( GetNumColumns() >= GetNumRows() );
-
-#ifdef ID_WIN_X86_SSE_INTRIN
 
 	const int n = GetNumColumns();
 	const int m = GetNumRows();
@@ -308,28 +306,6 @@ void idMatX::CopyLowerToUpperTriangle() {
 		_mm_store_ps( basePtr + n0, r0 );
 	}
 
-#else
-
-	const int n = GetNumColumns();
-	const int m = GetNumRows();
-	for ( int i = 0; i < m; i++ ) {
-		const float * __restrict ptr = ToFloatPtr() + ( i + 1 ) * n + i;
-		float * __restrict dstPtr = ToFloatPtr() + i * n;
-		for ( int j = i + 1; j < m; j++ ) {
-			dstPtr[j] = ptr[0];
-			ptr += n;
-		}
-	}
-
-#endif
-
-#ifdef _DEBUG
-	for ( int i = 0; i < numRows; i++ ) {
-		for ( int j = 0; j < numRows; j++ ) {
-			assert( mat[ i * numColumns + j ] == mat[ j * numColumns + i ] );
-		}
-	}
-#endif
 }
 /*
 ============

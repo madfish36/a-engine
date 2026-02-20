@@ -132,23 +132,13 @@ long baseClocks = 0;
 
 long saved_ebx = 0;
 
+unsigned int AUX;
+
 #define StartRecordTime( start )			\
-	__asm mov saved_ebx, ebx				\
-	__asm xor eax, eax						\
-	__asm cpuid								\
-	__asm rdtsc								\
-	__asm mov start, eax					\
-	__asm xor eax, eax						\
-	__asm cpuid
+	start = __rdtscp(&AUX);
 
 #define StopRecordTime( end )				\
-	__asm xor eax, eax						\
-	__asm cpuid								\
-	__asm rdtsc								\
-	__asm mov end, eax						\
-	__asm mov ebx, saved_ebx				\
-	__asm xor eax, eax						\
-	__asm cpuid
+	end = __rdtscp(&AUX);
 
 
 #define GetBest( start, end, best )			\
@@ -900,13 +890,13 @@ void TestMath() {
 	tst = rnd.RandomFloat();
 	for ( i = 0; i < NUMTESTS; i++ ) {
 		StartRecordTime( start );
-		tst = idMath::Sqrt16( tst );
+		tst = idMath::Sqrt( tst );
 		StopRecordTime( end );
 		GetBest( start, end, bestClocks );
 		testvar = ( testvar + tst ) * tst;
 		tst = rnd.RandomFloat();
 	}
-	PrintClocks( "  idMath::Sqrt16( tst )", 1, bestClocks );
+	PrintClocks( "  idMath::Sqrt( tst )", 1, bestClocks );
 
 	bestClocks = 0;
 	tst = rnd.CRandomFloat();
@@ -924,13 +914,13 @@ void TestMath() {
 	tst = rnd.CRandomFloat();
 	for ( i = 0; i < NUMTESTS; i++ ) {
 		StartRecordTime( start );
-		tst = idMath::Sin16( tst );
+		tst = idMath::Sin( tst );
 		StopRecordTime( end );
 		GetBest( start, end, bestClocks );
 		testvar = ( testvar + tst ) * tst;
 		tst = rnd.CRandomFloat();
 	}
-	PrintClocks( "   idMath::Sin16( tst )", 1, bestClocks );
+	PrintClocks( "   idMath::Sin( tst )", 1, bestClocks );
 
 	bestClocks = 0;
 	tst = rnd.CRandomFloat();
@@ -948,13 +938,13 @@ void TestMath() {
 	tst = rnd.CRandomFloat();
 	for ( i = 0; i < NUMTESTS; i++ ) {
 		StartRecordTime( start );
-		tst = idMath::Cos16( tst );
+		tst = idMath::Cos( tst );
 		StopRecordTime( end );
 		GetBest( start, end, bestClocks );
 		testvar = ( testvar + tst ) * tst;
 		tst = rnd.CRandomFloat();
 	}
-	PrintClocks( "   idMath::Cos16( tst )", 1, bestClocks );
+	PrintClocks( "   idMath::Cos( tst )", 1, bestClocks );
 
 	bestClocks = 0;
 	tst = rnd.CRandomFloat();
@@ -972,13 +962,13 @@ void TestMath() {
 	tst = rnd.CRandomFloat();
 	for ( i = 0; i < NUMTESTS; i++ ) {
 		StartRecordTime( start );
-		idMath::SinCos16( tst, tst, tst2 );
+		idMath::SinCos( tst, tst, tst2 );
 		StopRecordTime( end );
 		GetBest( start, end, bestClocks );
 		testvar = ( testvar + tst ) * tst;
 		tst = rnd.CRandomFloat();
 	}
-	PrintClocks( "idMath::SinCos16( tst )", 1, bestClocks );
+	PrintClocks( "idMath::SinCos( tst )", 1, bestClocks );
 
 	bestClocks = 0;
 	tst = rnd.CRandomFloat();
@@ -996,13 +986,13 @@ void TestMath() {
 	tst = rnd.CRandomFloat();
 	for ( i = 0; i < NUMTESTS; i++ ) {
 		StartRecordTime( start );
-		tst = idMath::Tan16( tst );
+		tst = idMath::Tan( tst );
 		StopRecordTime( end );
 		GetBest( start, end, bestClocks );
 		testvar = ( testvar + tst ) * tst;
 		tst = rnd.CRandomFloat();
 	}
-	PrintClocks( "   idMath::Tan16( tst )", 1, bestClocks );
+	PrintClocks( "   idMath::Tan( tst )", 1, bestClocks );
 
 	bestClocks = 0;
 	tst = rnd.CRandomFloat();
@@ -1020,13 +1010,13 @@ void TestMath() {
 	tst = rnd.CRandomFloat();
 	for ( i = 0; i < NUMTESTS; i++ ) {
 		StartRecordTime( start );
-		tst = idMath::ASin16( tst );
+		tst = idMath::ASin( tst );
 		StopRecordTime( end );
 		GetBest( start, end, bestClocks );
 		testvar = ( testvar + tst ) * tst * ( 1.0f / idMath::PI );
 		tst = rnd.CRandomFloat();
 	}
-	PrintClocks( "  idMath::ASin16( tst )", 1, bestClocks );
+	PrintClocks( "  idMath::ASin( tst )", 1, bestClocks );
 
 	bestClocks = 0;
 	tst = rnd.CRandomFloat();
@@ -1044,13 +1034,13 @@ void TestMath() {
 	tst = rnd.CRandomFloat();
 	for ( i = 0; i < NUMTESTS; i++ ) {
 		StartRecordTime( start );
-		tst = idMath::ACos16( tst );
+		tst = idMath::ACos( tst );
 		StopRecordTime( end );
 		GetBest( start, end, bestClocks );
 		testvar = ( testvar + tst ) * tst * ( 1.0f / idMath::PI );
 		tst = rnd.CRandomFloat();
 	}
-	PrintClocks( "  idMath::ACos16( tst )", 1, bestClocks );
+	PrintClocks( "  idMath::ACos( tst )", 1, bestClocks );
 
 	bestClocks = 0;
 	tst = rnd.CRandomFloat();
@@ -1068,13 +1058,13 @@ void TestMath() {
 	tst = rnd.CRandomFloat();
 	for ( i = 0; i < NUMTESTS; i++ ) {
 		StartRecordTime( start );
-		tst = idMath::ATan16( tst );
+		tst = idMath::ATan( tst );
 		StopRecordTime( end );
 		GetBest( start, end, bestClocks );
 		testvar = ( testvar + tst ) * tst;
 		tst = rnd.CRandomFloat();
 	}
-	PrintClocks( "  idMath::ATan16( tst )", 1, bestClocks );
+	PrintClocks( "  idMath::ATan( tst )", 1, bestClocks );
 
 	bestClocks = 0;
 	tst = rnd.CRandomFloat();
@@ -1092,13 +1082,13 @@ void TestMath() {
 	tst = rnd.CRandomFloat();
 	for ( i = 0; i < NUMTESTS; i++ ) {
 		StartRecordTime( start );
-		tst = idMath::Pow16( 2.7f, tst );
+		tst = idMath::Pow( 2.7f, tst );
 		StopRecordTime( end );
 		GetBest( start, end, bestClocks );
 		testvar = ( testvar + tst ) * tst * 0.1f;
 		tst = rnd.CRandomFloat();
 	}
-	PrintClocks( "  idMath::Pow16( tst )", 1, bestClocks );
+	PrintClocks( "  idMath::Pow( tst )", 1, bestClocks );
 
 	bestClocks = 0;
 	tst = rnd.CRandomFloat();
@@ -1116,13 +1106,13 @@ void TestMath() {
 	tst = rnd.CRandomFloat();
 	for ( i = 0; i < NUMTESTS; i++ ) {
 		StartRecordTime( start );
-		tst = idMath::Exp16( tst );
+		tst = idMath::Exp( tst );
 		StopRecordTime( end );
 		GetBest( start, end, bestClocks );
 		testvar = ( testvar + tst ) * tst * 0.1f;
 		tst = rnd.CRandomFloat();
 	}
-	PrintClocks( "  idMath::Exp16( tst )", 1, bestClocks );
+	PrintClocks( "  idMath::Exp( tst )", 1, bestClocks );
 
 	bestClocks = 0;
 	tst = rnd.CRandomFloat();
@@ -1142,13 +1132,13 @@ void TestMath() {
 	for ( i = 0; i < NUMTESTS; i++ ) {
 		tst = fabs( tst ) + 1.0f;
 		StartRecordTime( start );
-		tst = idMath::Log16( tst );
+		tst = idMath::Log( tst );
 		StopRecordTime( end );
 		GetBest( start, end, bestClocks );
 		testvar = ( testvar + tst ) * tst;
 		tst = rnd.CRandomFloat();
 	}
-	PrintClocks( "  idMath::Log16( tst )", 1, bestClocks );
+	PrintClocks( "  idMath::Log( tst )", 1, bestClocks );
 
 	idLib::common->Printf( "testvar = %f\n", testvar );
 

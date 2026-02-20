@@ -44,8 +44,6 @@ const float LCP_DELTA_FORCE_EPSILON		= 1e-9f;
 #define IGNORE_UNSATISFIABLE_VARIABLES
 
 
-#if defined( ID_WIN_X86_SSE_ASM ) || defined( ID_WIN_X86_SSE_INTRIN )
-
 ALIGN16( const __m128 SIMD_SP_zero )							= { 0.0f, 0.0f, 0.0f, 0.0f };
 ALIGN16( const __m128 SIMD_SP_one )								= { 1.0f, 1.0f, 1.0f, 1.0f };
 ALIGN16( const __m128 SIMD_SP_two )								= { 2.0f, 2.0f, 2.0f, 2.0f };
@@ -68,7 +66,6 @@ ALIGN16( const unsigned int SIMD_DW_four[4] )					= { 4, 4, 4, 4 };
 ALIGN16( const unsigned int SIMD_DW_index[4] )					= { 0, 1, 2, 3 };
 ALIGN16( const int SIMD_DW_not3[4] )							= { ~3, ~3, ~3, ~3 };
 
-#endif
 
 /*
 ========================
@@ -81,11 +78,10 @@ Assumes the source and destination have the same memory alignment.
 */
 static void Multiply_SIMD( float * dst, const float * src0, const float * src1, const int count ) {
 	int i = 0;
-	for ( ; ( (unsigned int)dst & 0xF ) != 0 && i < count; i++ ) {
+	for ( ; ( (intptr_t)dst & 0xF ) != 0 && i < count; i++ ) {
 		dst[i] = src0[i] * src1[i];
 	}
 
-#ifdef ID_WIN_X86_SSE_INTRIN
 
 	for ( ; i + 4 <= count; i += 4 ) {
 		assert_16_byte_aligned( &dst[i] );
@@ -97,21 +93,6 @@ static void Multiply_SIMD( float * dst, const float * src0, const float * src1, 
 		s0 = _mm_mul_ps( s0, s1 );
 		_mm_store_ps( dst + i, s0 );
 	}
-
-#else
-
-	for ( ; i + 4 <= count; i += 4 ) {
-		assert_16_byte_aligned( &dst[i] );
-		assert_16_byte_aligned( &src0[i] );
-		assert_16_byte_aligned( &src1[i] );
-
-		dst[i+0] = src0[i+0] * src1[i+0];
-		dst[i+1] = src0[i+1] * src1[i+1];
-		dst[i+2] = src0[i+2] * src1[i+2];
-		dst[i+3] = src0[i+3] * src1[i+3];
-	}
-
-#endif
 
 	for ( ; i < count; i++ ) {
 		dst[i] = src0[i] * src1[i];
@@ -129,11 +110,9 @@ Assumes the source and destination have the same memory alignment.
 */
 static void MultiplyAdd_SIMD( float * dst, const float constant, const float * src, const int count ) {
 	int i = 0;
-	for ( ; ( (unsigned int)dst & 0xF ) != 0 && i < count; i++ ) {
+	for ( ; ( (intptr_t)dst & 0xF ) != 0 && i < count; i++ ) {
 		dst[i] += constant * src[i];
 	}
-
-#ifdef ID_WIN_X86_SSE_INTRIN
 
 	__m128 c = _mm_load1_ps( & constant );
 	for ( ; i + 4 <= count; i += 4 ) {
@@ -145,20 +124,6 @@ static void MultiplyAdd_SIMD( float * dst, const float constant, const float * s
 		s = _mm_add_ps( _mm_mul_ps( s, c ), d );
 		_mm_store_ps( dst + i, s );
 	}
-
-#else
-
-	for ( ; i + 4 <= count; i += 4 ) {
-		assert_16_byte_aligned( &src[i] );
-		assert_16_byte_aligned( &dst[i] );
-
-		dst[i+0] += constant * src[i+0];
-		dst[i+1] += constant * src[i+1];
-		dst[i+2] += constant * src[i+2];
-		dst[i+3] += constant * src[i+3];
-	}
-
-#endif
 
 	for ( ; i < count; i++ ) {
 		dst[i] += constant * src[i];
@@ -175,8 +140,6 @@ dot = src0[0] * src1[0] + src0[1] * src1[1] + src0[2] * src1[2] + ...
 static float DotProduct_SIMD( const float * src0, const float * src1, const int count ) {
 	assert_16_byte_aligned( src0 );
 	assert_16_byte_aligned( src1 );
-
-#ifdef ID_WIN_X86_SSE_INTRIN
 
 	__m128 sum = (__m128 &) SIMD_SP_zero;
 	int i = 0;
@@ -195,30 +158,6 @@ static float DotProduct_SIMD( const float * src0, const float * src1, const int 
 	_mm_store_ss( & dot, sum );
 	return dot;
 
-#else
-
-	float s0 = 0.0f;
-	float s1 = 0.0f;
-	float s2 = 0.0f;
-	float s3 = 0.0f;
-	int i = 0;
-	for ( ; i < count - 3; i += 4 ) {
-		s0 += src0[i+4] * src1[i+4];
-		s1 += src0[i+5] * src1[i+5];
-		s2 += src0[i+6] * src1[i+6];
-		s3 += src0[i+7] * src1[i+7];
-	}
-	switch( count - i ) {
-		NODEFAULT;
-		case 3: s0 += src0[i+2] * src1[i+2];
-		case 2: s1 += src0[i+1] * src1[i+1];
-		case 1: s2 += src0[i+0] * src1[i+0];
-		case 0:
-			break;
-	}
-	return s0 + s1 + s2 + s3;
-
-#endif
 }
 
 /*
@@ -297,8 +236,6 @@ static void LowerTriangularSolve_SIMD( const idMatX & L, float * x, const float 
 	lptr = L[skip];
 
 	int i = skip;
-
-#ifdef ID_WIN_X86_SSE_INTRIN
 
 	// work up to a multiple of 4 rows
 	for ( ; ( i & 3 ) != 0 && i < n; i++ ) {
@@ -396,122 +333,6 @@ static void LowerTriangularSolve_SIMD( const idMatX & L, float * x, const float 
 		lptr += nc;
 	}
 
-#else
-
-	// work up to a multiple of 4 rows
-	for ( ; ( i & 3 ) != 0 && i < n; i++ ) {
-		float sum = b[i];
-		for ( int j = 0; j < i; j++ ) {
-			sum -= lptr[j] * x[j];
-		}
-		x[i] = sum;
-		lptr += nc;
-	}
-
-	assert_16_byte_aligned( x );
-
-	for ( ; i + 3 < n; i += 4 ) {
-		const float * lptr0 = &lptr[0*nc];
-		const float * lptr1 = &lptr[1*nc];
-		const float * lptr2 = &lptr[2*nc];
-		const float * lptr3 = &lptr[3*nc];
-
-		assert_16_byte_aligned( lptr0 );
-		assert_16_byte_aligned( lptr1 );
-		assert_16_byte_aligned( lptr2 );
-		assert_16_byte_aligned( lptr3 );
-
-		float a0 = - lptr0[0] * x[0] + b[i+0];
-		float a1 = - lptr0[1] * x[1];
-		float a2 = - lptr0[2] * x[2];
-		float a3 = - lptr0[3] * x[3];
-
-		float b0 = - lptr1[0] * x[0] + b[i+1];
-		float b1 = - lptr1[1] * x[1];
-		float b2 = - lptr1[2] * x[2];
-		float b3 = - lptr1[3] * x[3];
-
-		float c0 = - lptr2[0] * x[0] + b[i+2];
-		float c1 = - lptr2[1] * x[1];
-		float c2 = - lptr2[2] * x[2];
-		float c3 = - lptr2[3] * x[3];
-
-		float d0 = - lptr3[0] * x[0] + b[i+3];
-		float d1 = - lptr3[1] * x[1];
-		float d2 = - lptr3[2] * x[2];
-		float d3 = - lptr3[3] * x[3];
-
-		for ( int j = 4; j < i; j += 4 ) {
-			a0 -= lptr0[j+0] * x[j+0];
-			a1 -= lptr0[j+1] * x[j+1];
-			a2 -= lptr0[j+2] * x[j+2];
-			a3 -= lptr0[j+3] * x[j+3];
-
-			b0 -= lptr1[j+0] * x[j+0];
-			b1 -= lptr1[j+1] * x[j+1];
-			b2 -= lptr1[j+2] * x[j+2];
-			b3 -= lptr1[j+3] * x[j+3];
-
-			c0 -= lptr2[j+0] * x[j+0];
-			c1 -= lptr2[j+1] * x[j+1];
-			c2 -= lptr2[j+2] * x[j+2];
-			c3 -= lptr2[j+3] * x[j+3];
-
-			d0 -= lptr3[j+0] * x[j+0];
-			d1 -= lptr3[j+1] * x[j+1];
-			d2 -= lptr3[j+2] * x[j+2];
-			d3 -= lptr3[j+3] * x[j+3];
-		}
-
-		b0 -= lptr1[i+0] * a0;
-		b1 -= lptr1[i+0] * a1;
-		b2 -= lptr1[i+0] * a2;
-		b3 -= lptr1[i+0] * a3;
-
-		c0 -= lptr2[i+0] * a0;
-		c1 -= lptr2[i+0] * a1;
-		c2 -= lptr2[i+0] * a2;
-		c3 -= lptr2[i+0] * a3;
-
-		c0 -= lptr2[i+1] * b0;
-		c1 -= lptr2[i+1] * b1;
-		c2 -= lptr2[i+1] * b2;
-		c3 -= lptr2[i+1] * b3;
-
-		d0 -= lptr3[i+0] * a0;
-		d1 -= lptr3[i+0] * a1;
-		d2 -= lptr3[i+0] * a2;
-		d3 -= lptr3[i+0] * a3;
-
-		d0 -= lptr3[i+1] * b0;
-		d1 -= lptr3[i+1] * b1;
-		d2 -= lptr3[i+1] * b2;
-		d3 -= lptr3[i+1] * b3;
-
-		d0 -= lptr3[i+2] * c0;
-		d1 -= lptr3[i+2] * c1;
-		d2 -= lptr3[i+2] * c2;
-		d3 -= lptr3[i+2] * c3;
-
-		x[i+0] = a0 + a1 + a2 + a3;
-		x[i+1] = b0 + b1 + b2 + b3;
-		x[i+2] = c0 + c1 + c2 + c3;
-		x[i+3] = d0 + d1 + d2 + d3;
-
-		lptr += 4 * nc;
-	}
-
-	// go through any remaining rows
-	for ( ; i < n; i++ ) {
-		float sum = b[i];
-		for ( int j = 0; j < i; j++ ) {
-			sum -= lptr[j] * x[j];
-		}
-		x[i] = sum;
-		lptr += nc;
-	}
-
-#endif
 
 }
 
@@ -551,8 +372,6 @@ static void LowerTriangularSolveTranspose_SIMD( const idMatX & L, float * x, con
 
 	const float * lptr = L.ToFloatPtr() + m * nc + m - 4;
 	float * xptr = x + m;
-
-#ifdef ID_WIN_X86_SSE2_INTRIN
 
 	// process 4 rows at a time
 	for ( int i = m; i >= 4; i -= 4 ) {
@@ -601,78 +420,6 @@ static void LowerTriangularSolveTranspose_SIMD( const idMatX & L, float * x, con
 		xptr -= 4;
 	}
 
-#else
-
-	// process 4 rows at a time
-	for ( int i = m; i >= 4; i -= 4 ) {
-		assert_16_byte_aligned( b );
-		assert_16_byte_aligned( xptr );
-		assert_16_byte_aligned( lptr );
-
-		float s0 = b[i-4];
-		float s1 = b[i-3];
-		float s2 = b[i-2];
-		float s3 = b[i-1];
-		// process 4x4 blocks
-		const float * xptr2 = xptr;	// x + i;
-		const float * lptr2 = lptr;	// ptr = L[i] + i - 4;
-		for ( int j = i; j < m; j += 4 ) {
-			float t0 = xptr2[0];
-			s0 -= lptr2[0] * t0;
-			s1 -= lptr2[1] * t0;
-			s2 -= lptr2[2] * t0;
-			s3 -= lptr2[3] * t0;
-			lptr2 += nc;
-			float t1 = xptr2[1];
-			s0 -= lptr2[0] * t1;
-			s1 -= lptr2[1] * t1;
-			s2 -= lptr2[2] * t1;
-			s3 -= lptr2[3] * t1;
-			lptr2 += nc;
-			float t2 = xptr2[2];
-			s0 -= lptr2[0] * t2;
-			s1 -= lptr2[1] * t2;
-			s2 -= lptr2[2] * t2;
-			s3 -= lptr2[3] * t2;
-			lptr2 += nc;
-			float t3 = xptr2[3];
-			s0 -= lptr2[0] * t3;
-			s1 -= lptr2[1] * t3;
-			s2 -= lptr2[2] * t3;
-			s3 -= lptr2[3] * t3;
-			lptr2 += nc;
-			xptr2 += 4;
-		}
-		for ( int j = 0; j < r; j++ ) {
-			float t = xptr2[j];
-			s0 -= lptr2[0] * t;
-			s1 -= lptr2[1] * t;
-			s2 -= lptr2[2] * t;
-			s3 -= lptr2[3] * t;
-			lptr2 += nc;
-		}
-		// process left over of the 4 rows
-		lptr -= nc;
-		s0 -= lptr[0] * s3;
-		s1 -= lptr[1] * s3;
-		s2 -= lptr[2] * s3;
-		lptr -= nc;
-		s0 -= lptr[0] * s2;
-		s1 -= lptr[1] * s2;
-		lptr -= nc;
-		s0 -= lptr[0] * s1;
-		lptr -= nc;
-		// store result
-		xptr[-4] = s0;
-		xptr[-3] = s1;
-		xptr[-2] = s2;
-		xptr[-1] = s3;
-		// update pointers for next four rows
-		lptr -= 4;
-		xptr -= 4;
-	}
-
-#endif
 
 }
 
@@ -882,8 +629,6 @@ static bool LDLT_Factor_SIMD( idMatX & mat, idVecX & invDiag, const int n ) {
 		mptr[j*nc+3] = ( mptr[j*nc+3] - v[0] * mptr[j*nc+0] - v[1] * mptr[j*nc+1] - v[2] * mptr[j*nc+2] ) * d;
 	}
 
-#ifdef ID_WIN_X86_SSE2_INTRIN
-
 	__m128 vzero = _mm_setzero_ps();
 	for ( int i = 4; i < n; i += 4 ) {
 		_mm_store_ps( diag + i, vzero );
@@ -1027,210 +772,6 @@ static bool LDLT_Factor_SIMD( idMatX & mat, idVecX & invDiag, const int n ) {
 	}
 	return true;
 
-#else
-
-	for ( int i = 4; i < n; i += 4 ) {
-		diag[i+0] = 0.0f;
-		diag[i+1] = 0.0f;
-		diag[i+2] = 0.0f;
-		diag[i+3] = 0.0f;
-	}
-
-	for ( int i = 4; i < n; i++ ) {
-		mptr = mat[i];
-
-		assert_16_byte_aligned( v );
-		assert_16_byte_aligned( mptr );
-		assert_16_byte_aligned( diag );
-
-		v[0] = diag[0] * mptr[0];
-		v[1] = diag[1] * mptr[1];
-		v[2] = diag[2] * mptr[2];
-		v[3] = diag[3] * mptr[3];
-
-		float t0 = - mptr[0] * v[0] + mptr[i];
-		float t1 = - mptr[1] * v[1];
-		float t2 = - mptr[2] * v[2];
-		float t3 = - mptr[3] * v[3];
-
-		int k = 4;
-		for ( ; k < i - 3; k += 4 ) {
-			v[k+0] = diag[k+0] * mptr[k+0];
-			v[k+1] = diag[k+1] * mptr[k+1];
-			v[k+2] = diag[k+2] * mptr[k+2];
-			v[k+3] = diag[k+3] * mptr[k+3];
-
-			t0 -= mptr[k+0] * v[k+0];
-			t1 -= mptr[k+1] * v[k+1];
-			t2 -= mptr[k+2] * v[k+2];
-			t3 -= mptr[k+3] * v[k+3];
-		}
-
-		float m0 = ( i - k > 0 ) ? mptr[k+0] : 0.0f;
-		float m1 = ( i - k > 1 ) ? mptr[k+1] : 0.0f;
-		float m2 = ( i - k > 2 ) ? mptr[k+2] : 0.0f;
-		float m3 = ( i - k > 3 ) ? mptr[k+3] : 0.0f;
-
-		v[k+0] = diag[k+0] * m0;
-		v[k+1] = diag[k+1] * m1;
-		v[k+2] = diag[k+2] * m2;
-		v[k+3] = diag[k+3] * m3;
-
-		t0 -= m0 * v[k+0];
-		t1 -= m1 * v[k+1];
-		t2 -= m2 * v[k+2];
-		t3 -= m3 * v[k+3];
-
-		sum = t0 + t1 + t2 + t3;
-
-		if ( fabs( sum ) < idMath::FLT_SMALLEST_NON_DENORMAL ) {
-			return false;
-		}
-
-		mat[i][i] = sum;
-		diag[i] = sum;
-		invDiagPtr[i] = d = 1.0f / sum;
-
-		if ( i + 1 >= n ) {
-			return true;
-		}
-
-		int j = i + 1;
-		for ( ; j < n - 3; j += 4 ) {
-			float * ra = mat[j+0];
-			float * rb = mat[j+1];
-			float * rc = mat[j+2];
-			float * rd = mat[j+3];
-
-			assert_16_byte_aligned( v );
-			assert_16_byte_aligned( ra );
-			assert_16_byte_aligned( rb );
-			assert_16_byte_aligned( rc );
-			assert_16_byte_aligned( rd );
-
-			float a0 = - ra[0] * v[0] + ra[i];
-			float a1 = - ra[1] * v[1];
-			float a2 = - ra[2] * v[2];
-			float a3 = - ra[3] * v[3];
-
-			float b0 = - rb[0] * v[0] + rb[i];
-			float b1 = - rb[1] * v[1];
-			float b2 = - rb[2] * v[2];
-			float b3 = - rb[3] * v[3];
-
-			float c0 = - rc[0] * v[0] + rc[i];
-			float c1 = - rc[1] * v[1];
-			float c2 = - rc[2] * v[2];
-			float c3 = - rc[3] * v[3];
-
-			float d0 = - rd[0] * v[0] + rd[i];
-			float d1 = - rd[1] * v[1];
-			float d2 = - rd[2] * v[2];
-			float d3 = - rd[3] * v[3];
-
-			int k = 4;
-			for ( ; k < i - 3; k += 4 ) {
-				a0 -= ra[k+0] * v[k+0];
-				a1 -= ra[k+1] * v[k+1];
-				a2 -= ra[k+2] * v[k+2];
-				a3 -= ra[k+3] * v[k+3];
-
-				b0 -= rb[k+0] * v[k+0];
-				b1 -= rb[k+1] * v[k+1];
-				b2 -= rb[k+2] * v[k+2];
-				b3 -= rb[k+3] * v[k+3];
-
-				c0 -= rc[k+0] * v[k+0];
-				c1 -= rc[k+1] * v[k+1];
-				c2 -= rc[k+2] * v[k+2];
-				c3 -= rc[k+3] * v[k+3];
-
-				d0 -= rd[k+0] * v[k+0];
-				d1 -= rd[k+1] * v[k+1];
-				d2 -= rd[k+2] * v[k+2];
-				d3 -= rd[k+3] * v[k+3];
-			}
-
-			float ra0 = ( i - k > 0 ) ? ra[k+0] : 0.0f;
-			float ra1 = ( i - k > 1 ) ? ra[k+1] : 0.0f;
-			float ra2 = ( i - k > 2 ) ? ra[k+2] : 0.0f;
-			float ra3 = ( i - k > 3 ) ? ra[k+3] : 0.0f;
-
-			float rb0 = ( i - k > 0 ) ? rb[k+0] : 0.0f;
-			float rb1 = ( i - k > 1 ) ? rb[k+1] : 0.0f;
-			float rb2 = ( i - k > 2 ) ? rb[k+2] : 0.0f;
-			float rb3 = ( i - k > 3 ) ? rb[k+3] : 0.0f;
-
-			float rc0 = ( i - k > 0 ) ? rc[k+0] : 0.0f;
-			float rc1 = ( i - k > 1 ) ? rc[k+1] : 0.0f;
-			float rc2 = ( i - k > 2 ) ? rc[k+2] : 0.0f;
-			float rc3 = ( i - k > 3 ) ? rc[k+3] : 0.0f;
-
-			float rd0 = ( i - k > 0 ) ? rd[k+0] : 0.0f;
-			float rd1 = ( i - k > 1 ) ? rd[k+1] : 0.0f;
-			float rd2 = ( i - k > 2 ) ? rd[k+2] : 0.0f;
-			float rd3 = ( i - k > 3 ) ? rd[k+3] : 0.0f;
-
-			a0 -= ra0 * v[k+0];
-			a1 -= ra1 * v[k+1];
-			a2 -= ra2 * v[k+2];
-			a3 -= ra3 * v[k+3];
-
-			b0 -= rb0 * v[k+0];
-			b1 -= rb1 * v[k+1];
-			b2 -= rb2 * v[k+2];
-			b3 -= rb3 * v[k+3];
-
-			c0 -= rc0 * v[k+0];
-			c1 -= rc1 * v[k+1];
-			c2 -= rc2 * v[k+2];
-			c3 -= rc3 * v[k+3];
-
-			d0 -= rd0 * v[k+0];
-			d1 -= rd1 * v[k+1];
-			d2 -= rd2 * v[k+2];
-			d3 -= rd3 * v[k+3];
-
-			ra[i] = ( a0 + a1 + a2 + a3 ) * d;
-			rb[i] = ( b0 + b1 + b2 + b3 ) * d;
-			rc[i] = ( c0 + c1 + c2 + c3 ) * d;
-			rd[i] = ( d0 + d1 + d2 + d3 ) * d;
-		}
-		for ( ; j < n; j++ ) {
-			mptr = mat[j];
-
-			assert_16_byte_aligned( v );
-			assert_16_byte_aligned( mptr );
-
-			float a0 = - mptr[0] * v[0] + mptr[i];
-			float a1 = - mptr[1] * v[1];
-			float a2 = - mptr[2] * v[2];
-			float a3 = - mptr[3] * v[3];
-
-			int k = 4;
-			for ( ; k < i - 3; k += 4 ) {
-				a0 -= mptr[k+0] * v[k+0];
-				a1 -= mptr[k+1] * v[k+1];
-				a2 -= mptr[k+2] * v[k+2];
-				a3 -= mptr[k+3] * v[k+3];
-			}
-
-			float m0 = ( i - k > 0 ) ? mptr[k+0] : 0.0f;
-			float m1 = ( i - k > 1 ) ? mptr[k+1] : 0.0f;
-			float m2 = ( i - k > 2 ) ? mptr[k+2] : 0.0f;
-			float m3 = ( i - k > 3 ) ? mptr[k+3] : 0.0f;
-
-			a0 -= m0 * v[k+0];
-			a1 -= m1 * v[k+1];
-			a2 -= m2 * v[k+2];
-			a3 -= m3 * v[k+3];
-
-			mptr[i] = ( a0 + a1 + a2 + a3 ) * d;
-		}
-	}
-	return true;
-
-#endif
 }
 
 /*
@@ -1242,7 +783,6 @@ static void GetMaxStep_SIMD( const float * f, const float * a, const float * del
 							const float * lo, const float * hi, const int * side, int numUnbounded, int numClamped,
 							int d, float dir, float & maxStep, int & limit, int & limitSide ) {
 
-#ifdef ID_WIN_X86_SSE2_INTRIN
 
 	__m128 vMaxStep;
 	__m128i vLimit;
@@ -1366,64 +906,6 @@ static void GetMaxStep_SIMD( const float * f, const float * a, const float * del
 	limit = _mm_cvtsi128_si32( vLimit );
 	limitSide = _mm_cvtsi128_si32( vLimitSide );
 
-#else
-
-	// default to a full step for the current variable
-	{
-		float negAccel = -a[d];
-		float deltaAccel = delta_a[d];
-		int m0 = ( fabs( deltaAccel ) > LCP_DELTA_ACCEL_EPSILON );
-		float step = negAccel / ( m0 ? deltaAccel : 1.0f );
-		maxStep = m0 ? step : 0.0f;
-		limit = d;
-		limitSide = 0;
-	}
-
-	// test the current variable
-	{
-		float deltaForce = dir;
-		float forceLimit = ( deltaForce < 0.0f ) ? lo[d] : hi[d];
-		float step = ( forceLimit - f[d] ) / deltaForce;
-		int setSide = ( deltaForce < 0.0f ) ? -1 : 1;
-		int m0 = ( fabs( deltaForce ) > LCP_DELTA_FORCE_EPSILON );
-		int m1 = ( fabs( forceLimit ) != idMath::INFINITY );
-		int m2 = ( step < maxStep );
-		int m3 = ( m0 & m1 & m2 );
-		maxStep = m3 ? step : maxStep;
-		limit = m3 ? d : limit;
-		limitSide = m3 ? setSide : limitSide;
-	}
-
-	// test the clamped bounded variables
-	for ( int i = numUnbounded; i < numClamped; i++ ) {
-		float deltaForce = delta_f[i];
-		float forceLimit = ( deltaForce < 0.0f ) ? lo[i] : hi[i];
-		int m0 = ( fabs( deltaForce ) > LCP_DELTA_FORCE_EPSILON );
-		float step = ( forceLimit - f[i] ) / ( m0 ? deltaForce : 1.0f );
-		int setSide = ( deltaForce < 0.0f ) ? -1 : 1;
-		int m1 = ( fabs( forceLimit ) != idMath::INFINITY );
-		int m2 = ( step < maxStep );
-		int m3 = ( m0 & m1 & m2 );
-		maxStep = m3 ? step : maxStep;
-		limit = m3 ? i : limit;
-		limitSide = m3 ? setSide : limitSide;
-	}
-
-	// test the not clamped bounded variables
-	for ( int i = numClamped; i < d; i++ ) {
-		float negAccel = -a[i];
-		float deltaAccel = delta_a[i];
-		int m0 = ( side[i] * deltaAccel > LCP_DELTA_ACCEL_EPSILON );
-		float step = negAccel / ( m0 ? deltaAccel : 1.0f );
-		int m1 = ( lo[i] < -LCP_BOUND_EPSILON || hi[i] > LCP_BOUND_EPSILON );
-		int m2 = ( step < maxStep );
-		int m3 = ( m0 & m1 & m2 );
-		maxStep = m3 ? step : maxStep;
-		limit = m3 ? i : limit;
-		limitSide = m3 ? 0 : limitSide;
-	}
-
-#endif
 }
 
 /*

@@ -249,8 +249,6 @@ public:
 	virtual int				GetPlatform( bool realPlatform = false );
 	virtual void			PlaySound( menuSounds_t type, int channel = -1 );
 	virtual void			StopSound( int channel = SCHANNEL_ANY );
-	
-	idMenuWidget_CommandBar *	GetCmdBar() { return cmdBar; }
 
 protected:
 
@@ -266,8 +264,6 @@ protected:
 	idList< idMenuWidget *, TAG_IDLIB_LIST_MENU>	children;
 	
 	idStaticList< idStr, NUM_GUI_SOUNDS >		sounds;
-
-	idMenuWidget_CommandBar *	cmdBar;
 };
 
 /*
@@ -296,25 +292,11 @@ public:
 	idMenuHandler_Shell() : 
 		state( SHELL_STATE_INVALID ),
 		nextState( SHELL_STATE_INVALID ),
-		smallFrameShowing( false ),
-		largeFrameShowing( false ),
-		bgShowing( true ),
-		nextPeerUpdateMs( 0 ),
 		inGame( false ),
-		waitForBinding( false ),
-		waitBind( NULL ),
-		newGameType( 0 ),
-		menuBar( NULL ),
-		pacifier( NULL ),
 		showingIntro( false ),
 		introGui( NULL ),
-		doom3Intro( NULL ),
-		roeIntro( NULL ),
-		lmIntro( NULL ),
 		typeSoundShader( NULL ),
-		continueWaitForEnumerate( false ),
-		gameComplete( false ),
-		marsRotation( NULL ) {
+		gameComplete( false ) {
 	}
 	virtual void			Update();
 	virtual void			ActivateMenu( bool show );
@@ -325,39 +307,12 @@ public:
 	virtual bool			HandleGuiEvent( const sysEvent_t * sev );
 	
 	void					UpdateSavedGames();
-	void					ShowSmallFrame( bool show );
-	void					ShowMPFrame( bool show );
-	void					ShowLogo( bool show );
 	void					SetShellState( shellState_t s ) { nextState = s; }
-	bool					IsSmallFrameShowing() { return smallFrameShowing; }
-	void					UpdateBGState();
 	void					GetMapName( int index, idStr & name );
-	void					GetModeName( int index, idStr & name );
-
-	idMenuWidget *			GetPacifier() { return pacifier; }
-	idMenuWidget_MenuBar *	GetMenuBar() { return menuBar; }
-	bool					IsPacifierVisible() const { return ( pacifier != NULL && pacifier->GetSprite() != NULL ) ? pacifier->GetSprite()->IsVisible() : false; }
-	void					ShowPacifier( const idStr & msg );
-	void					HidePacifier();
-
-	void					SetTimeRemaining( int time ) { timeRemaining = time; }
-	int						GetTimeRemaining() { return timeRemaining; }
-	void					SetNewGameType( int type ) { newGameType = type; }
-	int						GetNewGameType() { return newGameType; }
 	void					SetInGame( bool val ) { inGame = val; }
 	bool					GetInGame() { return inGame; }
 	void					HandleExitGameBtn();
-	void					SetupPCOptions();
-	void					SetWaitForBinding( const char * bind ) { waitForBinding = true; waitBind = bind; }
-	void					ClearWaitForBinding() { waitForBinding = false; }
-	void					UpdateLeaderboard( const idLeaderboardCallback * callback );
-	void					UpdateLobby( idMenuWidget_LobbyList * lobbyList );
-	void					ShowDoomIntro();
-	void					ShowROEIntro();
-	void					ShowLEIntro();
 	void					StartGame( int index );
-	void					SetContinueWaitForEnumerate( bool wait ) { continueWaitForEnumerate = wait; }
-	void					SetCanContinue( bool valid );
 	void					SetGameComplete() { gameComplete = true; }
 	bool					GetGameComplete() { return gameComplete; }
 
@@ -365,31 +320,14 @@ private:
 
 	shellState_t			state;
 	shellState_t			nextState;
-	bool					smallFrameShowing;
-	bool					largeFrameShowing;
-	bool					bgShowing;
-	bool					waitForBinding;
-	const char *			waitBind;
-	//idSysSignal				deviceRequestedSignal;
-		
+
 	idList<const char *, TAG_IDLIB_LIST_MENU>	mpGameModes;
-	idList<mpMap_t, TAG_IDLIB_LIST_MENU>			mpGameMaps;
-	idMenuWidget_MenuBar *	menuBar;
-	idMenuWidget *			pacifier;
-	int						timeRemaining;
-	int						nextPeerUpdateMs;
-	int						newGameType;
+	idList<mpMap_t, TAG_IDLIB_LIST_MENU>		mpGameMaps;
 	bool					inGame;
 	bool					showingIntro;
-	bool					continueWaitForEnumerate;
 	bool					gameComplete;
 	idSWF *					introGui;
 	const idSoundShader *	typeSoundShader;
-	const idMaterial *		doom3Intro;
-	const idMaterial *		roeIntro;
-	const idMaterial *		lmIntro;
-	const idMaterial *		marsRotation;
-	idList< idStr, TAG_IDLIB_LIST_MENU>			navOptions;
 
 };
 

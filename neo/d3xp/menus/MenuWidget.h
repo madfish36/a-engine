@@ -430,6 +430,7 @@ public:
 	//------------------------
 	// Event Handling
 	//------------------------
+	virtual bool						RegHandler( idStr name,  WrapWidgetSWFEvent * handler );
 	virtual bool						HandleAction( idWidgetAction & action, const idWidgetEvent & event, idMenuWidget * widget, bool forceHandled = false );
 	virtual void						ObserveEvent( const idMenuWidget & widget, const idWidgetEvent & event ) { }
 	void								SendEventToObservers( const idWidgetEvent & event );

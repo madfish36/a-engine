@@ -76,7 +76,7 @@ idEventDef::idEventDef( const char *command, const char *formatspec, char return
 	this->formatspec = formatspec;
 	this->returnType = returnType;
 
-	numargs = strlen( formatspec );
+	numargs = (int) strlen( formatspec );
 	assert( numargs <= D_EVENT_MAXARGS );
 	if ( numargs > D_EVENT_MAXARGS ) {
 		eventError = true;
@@ -89,7 +89,7 @@ idEventDef::idEventDef( const char *command, const char *formatspec, char return
 	argsize = 0;
 	memset( argOffset, 0, sizeof( argOffset ) );
 	for( i = 0; i < numargs;i++ ) {
-		argOffset[ i ] = argsize;
+		argOffset[ i ] = (int) argsize;
 		switch( formatspec[ i ] ) {
 		case D_EVENT_FLOAT :
 			bits |= 1 << i;
@@ -239,7 +239,7 @@ idEvent::Alloc
 */
 idEvent *idEvent::Alloc( const idEventDef *evdef, int numargs, va_list args ) {
 	idEvent		*ev;
-	size_t		size;
+	int			size;
 	const char	*format;
 	idEventArg	*arg;
 	byte		*dataPtr;
@@ -259,7 +259,7 @@ idEvent *idEvent::Alloc( const idEventDef *evdef, int numargs, va_list args ) {
 		gameLocal.Error( "idEvent::Alloc : Wrong number of args for '%s' event.", evdef->GetName() );
 	}
 
-	size = evdef->GetArgSize();
+	size = (int) evdef->GetArgSize();
 	if ( size ) {
 		ev->data = eventDataAllocator.Alloc( size );
 		memset( ev->data, 0, size );
@@ -757,7 +757,7 @@ void idEvent::Save( idSaveGame *savefile ) {
 		savefile->WriteString( event->eventdef->GetName() );
 		savefile->WriteString( event->typeinfo->classname );
 		savefile->WriteObject( event->object );
-		savefile->WriteInt( event->eventdef->GetArgSize() );
+		savefile->WriteInt((int) event->eventdef->GetArgSize() );
 		format = event->eventdef->GetArgFormat();
 		for ( i = 0, size = 0; i < event->eventdef->GetNumArgs(); ++i) {
 			dataPtr = &event->data[ event->eventdef->GetArgOffset( i ) ];
@@ -808,8 +808,8 @@ void idEvent::Save( idSaveGame *savefile ) {
 		savefile->WriteString( event->eventdef->GetName() );
 		savefile->WriteString( event->typeinfo->classname );
 		savefile->WriteObject( event->object );
-		savefile->WriteInt( event->eventdef->GetArgSize() );
-		savefile->Write( event->data, event->eventdef->GetArgSize() );
+		savefile->WriteInt((int) event->eventdef->GetArgSize() );
+		savefile->Write(event->data, (int) event->eventdef->GetArgSize() );
 
 		event = event->eventNode.Next();
 	}

@@ -47,22 +47,17 @@ public:
 	virtual cpuid_t			GetProcessorId();
 	virtual const char *	GetProcessorString();
 	virtual const char *	FPU_GetState();
-	virtual bool			FPU_StackIsEmpty();
 	virtual void			FPU_SetFTZ( bool enable );
 	virtual void			FPU_SetDAZ( bool enable );
 
 	virtual void			FPU_EnableExceptions( int exceptions );
 
-	virtual void			GetCallStack( address_t *callStack, const int callStackSize );
-	virtual const char *	GetCallStackStr( const address_t *callStack, const int callStackSize );
-	virtual const char *	GetCallStackCurStr( int depth );
-	virtual void			ShutdownSymbols();
 
 	virtual bool			LockMemory( void *ptr, int bytes );
 	virtual bool			UnlockMemory( void *ptr, int bytes );
 
-	virtual int				DLL_Load( const char *dllName );
-	virtual void *			DLL_GetProcAddress( int dllHandle, const char *procName );
+	virtual intptr_t		DLL_Load( const char *dllName );
+	virtual void *			DLL_GetProcAddress( intptr_t dllHandle, const char *procName );
 	virtual void			DLL_Unload( int dllHandle );
 	virtual void			DLL_GetFileName( const char *baseName, char *dllName, int maxLength );
 

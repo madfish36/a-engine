@@ -2,9 +2,9 @@
 ===========================================================================
 
 Doom 3 BFG Edition GPL Source Code
-Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company. 
+Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company.
 
-This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").  
+This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").
 
 Doom 3 BFG Edition Source Code is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -135,7 +135,7 @@ static void RB_SimpleSurfaceSetup( const drawSurf_t *drawSurf ) {
 
 	// change the scissor if needed
 	if ( !backEnd.currentScissor.Equals( drawSurf->scissorRect ) && r_useScissor.GetBool() ) {
-		GL_Scissor( backEnd.viewDef->viewport.x1 + drawSurf->scissorRect.x1, 
+		GL_Scissor( backEnd.viewDef->viewport.x1 + drawSurf->scissorRect.x1,
 					backEnd.viewDef->viewport.y1 + drawSurf->scissorRect.y1,
 					drawSurf->scissorRect.x2 + 1 - drawSurf->scissorRect.x1,
 					drawSurf->scissorRect.y2 + 1 - drawSurf->scissorRect.y1 );
@@ -419,7 +419,7 @@ static void RB_ShowIntensity() {
 	qglMatrixMode( GL_PROJECTION );
 	GL_State( GLS_DEPTHFUNC_ALWAYS );
 	qglPushMatrix();
-	qglLoadIdentity(); 
+	qglLoadIdentity();
     qglOrtho( 0, 1, 0, 1, -1, 1 );
 	qglRasterPos2f( 0, 0 );
 	qglPopMatrix();
@@ -451,7 +451,7 @@ static void RB_ShowDepthBuffer() {
 	qglLoadIdentity();
 	qglMatrixMode( GL_PROJECTION );
 	qglPushMatrix();
-	qglLoadIdentity(); 
+	qglLoadIdentity();
     qglOrtho( 0, 1, 0, 1, -1, 1 );
 	qglRasterPos2f( 0, 0 );
 	qglPopMatrix();
@@ -469,8 +469,8 @@ static void RB_ShowDepthBuffer() {
 
 #if 0
 	for ( i = 0; i < renderSystem->GetWidth() * renderSystem->GetHeight(); i++ ) {
-		((byte *)depthReadback)[i*4] = 
-		((byte *)depthReadback)[i*4+1] = 
+		((byte *)depthReadback)[i*4] =
+		((byte *)depthReadback)[i*4+1] =
 		((byte *)depthReadback)[i*4+2] = 255 * ((float *)depthReadback)[i];
 		((byte *)depthReadback)[i*4+3] = 1;
 	}
@@ -634,7 +634,9 @@ static void RB_RenderDrawSurfListWithFunction( drawSurf_t **drawSurfs, int numDr
 
 			// change the matrix if needed
 			if ( drawSurf->space != backEnd.currentSpace ) {
+				backEnd.currentSpace = drawSurf->space;
 				RB_LoadMatrixWithBypass( drawSurf->space->modelViewMatrix );
+				RB_SetMVP(drawSurf->space->mvp);
 			}
 
 			if ( drawSurf->space->weaponDepthHack ) {
@@ -649,7 +651,7 @@ static void RB_RenderDrawSurfListWithFunction( drawSurf_t **drawSurfs, int numDr
 		// change the scissor if needed
 		if ( r_useScissor.GetBool() && !backEnd.currentScissor.Equals( drawSurf->scissorRect ) ) {
 			backEnd.currentScissor = drawSurf->scissorRect;
-			GL_Scissor( backEnd.viewDef->viewport.x1 + backEnd.currentScissor.x1, 
+			GL_Scissor( backEnd.viewDef->viewport.x1 + backEnd.currentScissor.x1,
 				backEnd.viewDef->viewport.y1 + backEnd.currentScissor.y1,
 				backEnd.currentScissor.x2 + 1 - backEnd.currentScissor.x1,
 				backEnd.currentScissor.y2 + 1 - backEnd.currentScissor.y1 );
@@ -697,7 +699,7 @@ static void RB_ShowSilhouette() {
 
 	GL_Cull( CT_TWO_SIDED );
 
-	RB_RenderDrawSurfListWithFunction( backEnd.viewDef->drawSurfs, backEnd.viewDef->numDrawSurfs, 
+	RB_RenderDrawSurfListWithFunction( backEnd.viewDef->drawSurfs, backEnd.viewDef->numDrawSurfs,
 		RB_DrawElementsWithCounters );
 
 
@@ -721,8 +723,8 @@ static void RB_ShowSilhouette() {
 					continue;
 				}
 
-				qglBindBufferARB( GL_ARRAY_BUFFER_ARB, (GLuint)vertexBuffer.GetAPIObject() );
-				int vertOffset = vertexBuffer.GetOffset();
+				qglBindBufferARB( GL_ARRAY_BUFFER_ARB, vertexBuffer.GetAPIObject() );
+				GLintptrARB vertOffset = vertexBuffer.GetOffset();
 
 				qglVertexPointer( 3, GL_FLOAT, sizeof( idShadowVert ), (void *)vertOffset );
 				qglBegin( GL_LINES );
@@ -772,8 +774,8 @@ static void RB_ShowTris( drawSurf_t **drawSurfs, int numDrawSurfs ) {
 	float color[4] = { 1, 1, 1, 1 };
 
 	GL_PolygonOffset( -1.0f, -2.0f );
-	
-	switch ( r_showTris.GetInteger() ) {			
+
+	switch ( r_showTris.GetInteger() ) {
 		case 1: // only draw visible ones
 			GL_State( GLS_DEPTHMASK | GLS_ALPHAMASK | GLS_POLYMODE_LINE | GLS_POLYGON_OFFSET );
 			break;
@@ -811,7 +813,7 @@ Debugging tool
 static void RB_ShowSurfaceInfo( drawSurf_t **drawSurfs, int numDrawSurfs ) {
 	modelTrace_t mt;
 	idVec3 start, end;
-	
+
 	if ( !r_showSurfaceInfo.GetBool() ) {
 		return;
 	}
@@ -842,7 +844,7 @@ static void RB_ShowSurfaceInfo( drawSurf_t **drawSurfs, int numDrawSurfs ) {
 
 	tr.primaryWorld->DrawText( mt.entity->hModel->Name(), mt.point + tr.primaryView->renderView.viewaxis[2] * 12,
 		0.35f, colorRed, tr.primaryView->renderView.viewaxis );
-	tr.primaryWorld->DrawText( mt.material->GetName(), mt.point, 
+	tr.primaryWorld->DrawText( mt.material->GetName(), mt.point,
 		0.35f, colorBlue, tr.primaryView->renderView.viewaxis );
 }
 
@@ -905,10 +907,10 @@ static void RB_ShowViewEntitys( viewEntity_t *vModels ) {
 			idVec3 corner;
 			R_LocalPointToGlobal( vModel->modelMatrix, edef->localReferenceBounds[1], corner );
 
-			tr.primaryWorld->DrawText( 
-				va( "%i:%s", edef->index, edef->parms.hModel->Name() ), 
+			tr.primaryWorld->DrawText(
+				va( "%i:%s", edef->index, edef->parms.hModel->Name() ),
 				corner,
-				0.25f, color, 
+				0.25f, color,
 				tr.primaryView->renderView.viewaxis );
 		}
 
@@ -1086,15 +1088,15 @@ static void RB_ShowTangentSpace( drawSurf_t **drawSurfs, int numDrawSurfs ) {
 
 			if ( r_showTangentSpace.GetInteger() == 1 ) {
 				const idVec3 vertexTangent = v->GetTangent();
-				GL_Color( 0.5 + 0.5 * vertexTangent[0],  0.5 + 0.5 * vertexTangent[1],  
+				GL_Color( 0.5 + 0.5 * vertexTangent[0],  0.5 + 0.5 * vertexTangent[1],
 					0.5 + 0.5 * vertexTangent[2], 0.5 );
 			} else if ( r_showTangentSpace.GetInteger() == 2 ) {
 				const idVec3 vertexBiTangent = v->GetBiTangent();
-				GL_Color( 0.5 + 0.5 *vertexBiTangent[0],  0.5 + 0.5 * vertexBiTangent[1],  
+				GL_Color( 0.5 + 0.5 *vertexBiTangent[0],  0.5 + 0.5 * vertexBiTangent[1],
 					0.5 + 0.5 * vertexBiTangent[2], 0.5 );
 			} else {
 				const idVec3 vertexNormal = v->GetNormal();
-				GL_Color( 0.5 + 0.5 * vertexNormal[0],  0.5 + 0.5 * vertexNormal[1],  
+				GL_Color( 0.5 + 0.5 * vertexNormal[0],  0.5 + 0.5 * vertexNormal[1],
 					0.5 + 0.5 * vertexNormal[2], 0.5 );
 			}
 			qglVertex3fv( v->xyz.ToFloatPtr() );
@@ -1224,7 +1226,7 @@ static void RB_ShowNormals( drawSurf_t **drawSurfs, int numDrawSurfs ) {
 			if ( !tri->verts ) {
 				continue;
 			}
-			
+
 			for ( j = 0; j < tri->numVerts; j++ ) {
 				const idVec3 normal = tri->verts[j].GetNormal();
 				const idVec3 tangent = tri->verts[j].GetTangent();
@@ -1381,7 +1383,7 @@ static void RB_ShowTextureVectors( drawSurf_t **drawSurfs, int numDrawSurfs ) {
 			temp[2] = (d0[2] * d1[4] - d0[4] * d1[2]) * inva;
 			temp.Normalize();
 			tangents[0] = temp;
-        
+
 			temp[0] = (d0[3] * d1[0] - d0[0] * d1[3]) * inva;
 			temp[1] = (d0[3] * d1[1] - d0[1] * d1[3]) * inva;
 			temp[2] = (d0[3] * d1[2] - d0[2] * d1[3]) * inva;
@@ -1579,7 +1581,7 @@ static void RB_ShowLights() {
 
 	// we use the 'vLight->invProjectMVPMatrix'
 	qglMatrixMode( GL_PROJECTION );
-	qglLoadIdentity(); 
+	qglLoadIdentity();
 
 	globalImages->BindNull();
 
@@ -1717,7 +1719,7 @@ float RB_DrawTextLength( const char *text, float scale, int len ) {
 
 	if ( text && *text ) {
 		if ( !len ) {
-			len = strlen(text);
+			len = (int)strlen(text);
 		}
 		for ( i = 0; i < len; i++ ) {
 			charIndex = text[i] - 32;
@@ -1728,18 +1730,18 @@ float RB_DrawTextLength( const char *text, float scale, int len ) {
 			spacing = simplex[charIndex][1];
 			index = 2;
 
-			while( index - 2 < num ) {   
-				if ( simplex[charIndex][index] < 0) {  
+			while( index - 2 < num ) {
+				if ( simplex[charIndex][index] < 0) {
 					index++;
-					continue; 
-				} 
+					continue;
+				}
 				index += 2;
-				if ( simplex[charIndex][index] < 0) {  
+				if ( simplex[charIndex][index] < 0) {
 					index++;
-					continue; 
-				} 
-			}   
-			textLen += spacing * scale;  
+					continue;
+				}
+			}
+			textLen += spacing * scale;
 		}
 	}
 	return textLen;
@@ -1757,8 +1759,8 @@ static void RB_DrawText( const char *text, const idVec3 &origin, float scale, co
 	renderProgManager.BindShader_Color();
 
 
-
-	int i, j, len, num, index, charIndex, line;
+	size_t len;
+	int i, j, num, index, charIndex, line;
 	float textLen = 1.0f, spacing = 1.0f;
 	idVec3 org, p1, p2;
 
@@ -1804,9 +1806,9 @@ static void RB_DrawText( const char *text, const idVec3 &origin, float scale, co
 			index = 2;
 
 			while( index - 2 < num ) {
-				if ( simplex[charIndex][index] < 0) {  
+				if ( simplex[charIndex][index] < 0) {
 					index++;
-					continue; 
+					continue;
 				}
 				p1 = org + scale * simplex[charIndex][index] * -viewAxis[1] + scale * simplex[charIndex][index+1] * viewAxis[2];
 				index += 2;
@@ -2252,7 +2254,7 @@ void RB_TestGamma() {
 	GL_State( GLS_DEPTHFUNC_ALWAYS );
 	GL_Color( 1, 1, 1 );
 	qglPushMatrix();
-	qglLoadIdentity(); 
+	qglLoadIdentity();
 	qglDisable( GL_TEXTURE_2D );
     qglOrtho( 0, 1, 0, 1, -1, 1 );
 	qglRasterPos2f( 0.01f, 0.01f );
@@ -2301,7 +2303,7 @@ static void RB_TestGammaBias() {
 	GL_State( GLS_DEPTHFUNC_ALWAYS );
 	GL_Color( 1, 1, 1 );
 	qglPushMatrix();
-	qglLoadIdentity(); 
+	qglLoadIdentity();
 	qglDisable( GL_TEXTURE_2D );
     qglOrtho( 0, 1, 0, 1, -1, 1 );
 	qglRasterPos2f( 0.01f, 0.01f );
@@ -2417,7 +2419,7 @@ void RB_TestImage() {
 		// Set Shader
 		renderProgManager.BindShader_Texture();
 	}
-	
+
 	// Draw!
 	RB_DrawElementsWithCounters( &backEnd.testImageSurface );
 }
@@ -2592,6 +2594,7 @@ void RB_RenderDebugTools( drawSurf_t **drawSurfs, int numDrawSurfs ) {
 				backEnd.viewDef->scissor.x2 + 1 - backEnd.viewDef->scissor.x1,
 				backEnd.viewDef->scissor.y2 + 1 - backEnd.viewDef->scissor.y1 );
 	backEnd.currentScissor = backEnd.viewDef->scissor;
+
 
 	RB_ShowLightCount();
 	RB_ShowTexturePolarity( drawSurfs, numDrawSurfs );

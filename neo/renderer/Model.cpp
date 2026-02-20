@@ -117,8 +117,8 @@ void idRenderModelStatic::Print() const {
 idRenderModelStatic::Memory
 ==============
 */
-int idRenderModelStatic::Memory() const {
-	int	totalBytes = 0;
+size_t idRenderModelStatic::Memory() const {
+	size_t	totalBytes = 0;
 
 	totalBytes += sizeof( *this );
 	totalBytes += name.DynamicMemoryUsed();
@@ -143,7 +143,7 @@ idRenderModelStatic::List
 void idRenderModelStatic::List() const {
 	int	totalTris = 0;
 	int	totalVerts = 0;
-	int	totalBytes = 0;
+	size_t	totalBytes = 0;
 
 	totalBytes = Memory();
 
@@ -956,7 +956,7 @@ void idRenderModelStatic::FinishSurfaces() {
 	}
 
 	// clean the surfaces
-	for ( i = 0; i < surfaces.Num(); i++ ) {
+	for  ( i = 0; i < surfaces.Num(); i++ ) {
 		const modelSurface_t	*surf = &surfaces[i];
 
 		R_CleanupTriangles( surf->geometry, surf->geometry->generateNormals, true, surf->shader->UseUnsmoothedTangents() );

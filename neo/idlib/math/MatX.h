@@ -389,13 +389,9 @@ idMatX::operator=
 ID_INLINE idMatX &idMatX::operator=( const idMatX &a ) {
 	SetSize( a.numRows, a.numColumns );
 	int s = a.numRows * a.numColumns;
-#if defined(ID_WIN_X86_SSE_INTRIN) && defined(MATX_SIMD)
 	for ( int i = 0; i < s; i += 4 ) {
 		_mm_store_ps( mat + i, _mm_load_ps( a.mat + i ) );
 	}
-#else
-	memcpy( mat, a.mat, s * sizeof( float ) );
-#endif
 	idMatX::tempIndex = 0;
 	return *this;
 }
@@ -410,16 +406,10 @@ ID_INLINE idMatX idMatX::operator*( const float a ) const {
 
 	m.SetTempSize( numRows, numColumns );
 	int s = numRows * numColumns;
-#if defined(ID_WIN_X86_SSE_INTRIN) && defined(MATX_SIMD)
 	__m128 va = _mm_load1_ps( & a );
 	for ( int i = 0; i < s; i += 4 ) {
 		_mm_store_ps( m.mat + i, _mm_mul_ps( _mm_load_ps( mat + i ), va ) );
 	}
-#else
-	for ( int i = 0; i < s; i++ ) {
-		m.mat[i] = mat[i] * a;
-	}
-#endif
 	return m;
 }
 
@@ -462,15 +452,9 @@ ID_INLINE idMatX idMatX::operator+( const idMatX &a ) const {
 	assert( numRows == a.numRows && numColumns == a.numColumns );
 	m.SetTempSize( numRows, numColumns );
 	int s = numRows * numColumns;
-#if defined(ID_WIN_X86_SSE_INTRIN) && defined(MATX_SIMD)
 	for ( int i = 0; i < s; i += 4 ) {
 		_mm_store_ps( m.mat + i, _mm_add_ps( _mm_load_ps( mat + i ), _mm_load_ps( a.mat + i ) ) );
 	}
-#else
-	for ( int i = 0; i < s; i++ ) {
-		m.mat[i] = mat[i] + a.mat[i];
-	}
-#endif
 	return m;
 }
 
@@ -485,15 +469,9 @@ ID_INLINE idMatX idMatX::operator-( const idMatX &a ) const {
 	assert( numRows == a.numRows && numColumns == a.numColumns );
 	m.SetTempSize( numRows, numColumns );
 	int s = numRows * numColumns;
-#if defined(ID_WIN_X86_SSE_INTRIN) && defined(MATX_SIMD)
 	for ( int i = 0; i < s; i += 4 ) {
 		_mm_store_ps( m.mat + i, _mm_sub_ps( _mm_load_ps( mat + i ), _mm_load_ps( a.mat + i ) ) );
 	}
-#else
-	for ( int i = 0; i < s; i++ ) {
-		m.mat[i] = mat[i] - a.mat[i];
-	}
-#endif
 	return m;
 }
 
@@ -504,16 +482,10 @@ idMatX::operator*=
 */
 ID_INLINE idMatX &idMatX::operator*=( const float a ) {
 	int s = numRows * numColumns;
-#if defined(ID_WIN_X86_SSE_INTRIN) && defined(MATX_SIMD)
 	__m128 va = _mm_load1_ps( & a );
 	for ( int i = 0; i < s; i += 4 ) {
 		_mm_store_ps( mat + i, _mm_mul_ps( _mm_load_ps( mat + i ), va ) );
 	}
-#else
-	for ( int i = 0; i < s; i++ ) {
-		mat[i] *= a;
-	}
-#endif
 	idMatX::tempIndex = 0;
 	return *this;
 }
@@ -537,15 +509,9 @@ idMatX::operator+=
 ID_INLINE idMatX &idMatX::operator+=( const idMatX &a ) {
 	assert( numRows == a.numRows && numColumns == a.numColumns );
 	int s = numRows * numColumns;
-#if defined(ID_WIN_X86_SSE_INTRIN) && defined(MATX_SIMD)
 	for ( int i = 0; i < s; i += 4 ) {
 		_mm_store_ps( mat + i, _mm_add_ps( _mm_load_ps( mat + i ), _mm_load_ps( a.mat + i ) ) );
 	}
-#else
-	for ( int i = 0; i < s; i++ ) {
-		mat[i] += a.mat[i];
-	}
-#endif
 	idMatX::tempIndex = 0;
 	return *this;
 }
@@ -558,15 +524,9 @@ idMatX::operator-=
 ID_INLINE idMatX &idMatX::operator-=( const idMatX &a ) {
 	assert( numRows == a.numRows && numColumns == a.numColumns );
 	int s = numRows * numColumns;
-#if defined(ID_WIN_X86_SSE_INTRIN) && defined(MATX_SIMD)
 	for ( int i = 0; i < s; i += 4 ) {
 		_mm_store_ps( mat + i, _mm_sub_ps( _mm_load_ps( mat + i ), _mm_load_ps( a.mat + i ) ) );
 	}
-#else
-	for ( int i = 0; i < s; i++ ) {
-		mat[i] -= a.mat[i];
-	}
-#endif
 	idMatX::tempIndex = 0;
 	return *this;
 }
@@ -744,14 +704,9 @@ idMatX::Zero
 */
 ID_INLINE void idMatX::Zero() {
 	int s = numRows * numColumns;
-#if defined(ID_WIN_X86_SSE_INTRIN) && defined(MATX_SIMD)
 	for ( int i = 0; i < s; i += 4 ) {
 		_mm_store_ps( mat + i, _mm_setzero_ps() );
 	}
-#else
-	s;
-	memset( mat, 0, numRows * numColumns * sizeof( float ) );
-#endif
 }
 
 /*
@@ -838,16 +793,10 @@ idMatX::Negate
 */
 ID_INLINE void idMatX::Negate() {
 	int s = numRows * numColumns;
-#if defined(ID_WIN_X86_SSE_INTRIN) && defined(MATX_SIMD)
 	ALIGN16( const unsigned int signBit[4] ) = { IEEE_FLT_SIGN_MASK, IEEE_FLT_SIGN_MASK, IEEE_FLT_SIGN_MASK, IEEE_FLT_SIGN_MASK };
 	for ( int i = 0; i < s; i += 4 ) {
 		_mm_store_ps( mat + i, _mm_xor_ps( _mm_load_ps( mat + i ), (__m128 &) signBit[0] ) );
 	}
-#else
-	for ( int i = 0; i < s; i++ ) {
-		mat[i] = -mat[i];
-	}
-#endif
 }
 
 /*

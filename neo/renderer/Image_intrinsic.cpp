@@ -2,9 +2,9 @@
 ===========================================================================
 
 Doom 3 BFG Edition GPL Source Code
-Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company. 
+Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company.
 
-This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").  
+This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").
 
 Doom 3 BFG Edition Source Code is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -90,8 +90,8 @@ void idImage::MakeDefault() {
 		}
 	}
 
-	GenerateImage( (byte *)data, 
-		DEFAULT_SIZE, DEFAULT_SIZE, 
+	GenerateImage( (byte *)data,
+		DEFAULT_SIZE, DEFAULT_SIZE,
 		TF_DEFAULT, TR_REPEAT, TD_DEFAULT );
 
 	defaulted = true;
@@ -106,7 +106,7 @@ static void R_WhiteImage( idImage *image ) {
 
 	// solid white texture
 	memset( data, 255, sizeof( data ) );
-	image->GenerateImage( (byte *)data, DEFAULT_SIZE, DEFAULT_SIZE, 
+	image->GenerateImage( (byte *)data, DEFAULT_SIZE, DEFAULT_SIZE,
 		TF_DEFAULT, TR_REPEAT, TD_DEFAULT );
 }
 
@@ -115,7 +115,7 @@ static void R_BlackImage( idImage *image ) {
 
 	// solid black texture
 	memset( data, 0, sizeof( data ) );
-	image->GenerateImage( (byte *)data, DEFAULT_SIZE, DEFAULT_SIZE, 
+	image->GenerateImage( (byte *)data, DEFAULT_SIZE, DEFAULT_SIZE,
 		TF_DEFAULT, TR_REPEAT, TD_DEFAULT );
 }
 
@@ -169,6 +169,19 @@ static void R_FlatNormalImage( idImage *image ) {
 	image->GenerateImage( (byte *)data, 2, 2, TF_DEFAULT, TR_REPEAT, TD_BUMP );
 }
 
+static void R_SpecDefaultImage( idImage *image ) {
+	byte	data[DEFAULT_SIZE][DEFAULT_SIZE][4];
+
+	// flat normal map for default bunp mapping
+	for ( int i = 0 ; i < 4 ; i++ ) {
+		data[0][i][0] = 11;
+		data[0][i][1] = 128;
+		data[0][i][2] = 255;
+		data[0][i][3] = 0;
+	}
+	image->GenerateImage( (byte *)data, 2, 2, TF_DEFAULT, TR_REPEAT, TD_DEFAULT );
+}
+
 /*
 ================
 R_CreateNoFalloffImage
@@ -219,7 +232,7 @@ void R_FogImage( idImage *image ) {
 		for (y=0 ; y<FOG_SIZE ; y++) {
 			float	d;
 
-			d = idMath::Sqrt( (x - FOG_SIZE/2) * (x - FOG_SIZE/2) 
+			d = idMath::Sqrt( (x - FOG_SIZE/2) * (x - FOG_SIZE/2)
 				+ (y - FOG_SIZE/2) * (y - FOG_SIZE / 2) );
 			d /= FOG_SIZE/2-1;
 
@@ -374,7 +387,7 @@ void R_QuadraticImage( idImage *image ) {
 			d = idMath::Fabs( d );
 			d -= 0.5;
 			d /= QUADRATIC_WIDTH/2;
-		
+
 			d = 1.0 - d;
 			d = d * d;
 
@@ -405,6 +418,7 @@ void idImageManager::CreateIntrinsicImages() {
 	whiteImage = ImageFromFunction( "_white", R_WhiteImage );
 	blackImage = ImageFromFunction( "_black", R_BlackImage );
 	flatNormalMap = ImageFromFunction( "_flat", R_FlatNormalImage );
+	specDefaultMap = ImageFromFunction( "_spec", R_SpecDefaultImage );
 	alphaNotchImage = ImageFromFunction( "_alphaNotch", R_AlphaNotchImage );
 	fogImage = ImageFromFunction( "_fog", R_FogImage );
 	fogEnterImage = ImageFromFunction( "_fogEnter", R_FogEnterImage );
@@ -422,8 +436,9 @@ void idImageManager::CreateIntrinsicImages() {
 	// reassigned during stereo rendering
 	originalCurrentRenderImage = currentRenderImage;
 
-	loadingIconImage = ImageFromFile("textures/loadingicon2", TF_DEFAULT, TR_CLAMP, TD_DEFAULT, CF_2D );
-	hellLoadingIconImage = ImageFromFile("textures/loadingicon3", TF_DEFAULT, TR_CLAMP, TD_DEFAULT, CF_2D );
+	loadingIconImage = ImageFromFile("guis/assets/loadicons/loadingicon2", TF_DEFAULT, TR_CLAMP, TD_DEFAULT, CF_2D );
+	hellLoadingIconImage = ImageFromFile("guis/assets/loadicons/loadingicon3", TF_DEFAULT, TR_CLAMP, TD_DEFAULT, CF_2D );
+
 
 	release_assert( loadingIconImage->referencedOutsideLevelLoad );
 	release_assert( hellLoadingIconImage->referencedOutsideLevelLoad );

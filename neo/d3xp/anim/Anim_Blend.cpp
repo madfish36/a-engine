@@ -2930,7 +2930,7 @@ int idDeclModelDef::GetAnim( const char *name ) const {
 	const int		MAX_ANIMS = 64;
 	int				animList[ MAX_ANIMS ];
 	int				numAnims;
-	int				len;
+	size_t			len;
 
 	len = strlen( name );
 	if ( len && idStr::CharIsNumeric( name[ len - 1 ] ) ) {

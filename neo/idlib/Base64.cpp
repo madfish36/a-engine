@@ -95,7 +95,7 @@ idBase64::Decode
 int idBase64::Decode( byte *to ) const {
 	unsigned long w;
 	int i, j;
-	size_t n;
+	int n;
 	static char base64_to_sixtet[256];
 	static int tab_init = 0;
 	byte *from = data;
@@ -150,7 +150,7 @@ idBase64::Decode
 */
 void idBase64::Decode( idStr &dest ) const {
 	byte *buf = new (TAG_IDLIB) byte[ DecodeLength()+1 ]; // +1 for trailing \0
-	int out = Decode( buf );
+	size_t out = Decode( buf );
 	buf[out] = '\0';
 	dest = (const char *)buf;
 	delete[] buf;

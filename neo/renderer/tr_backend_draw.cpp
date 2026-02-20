@@ -2,9 +2,9 @@
 ===========================================================================
 
 Doom 3 BFG Edition GPL Source Code
-Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company. 
+Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company.
 
-This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").  
+This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").
 
 Doom 3 BFG Edition Source Code is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -77,7 +77,7 @@ static ID_INLINE void SetFragmentParm( renderParm_t rp, const float * value ) {
 RB_SetMVP
 ================
 */
-void RB_SetMVP( const idRenderMatrix & mvp ) { 
+void RB_SetMVP( const idRenderMatrix & mvp ) {
 	SetVertexParms( RENDERPARM_MVPMATRIX_X, mvp[0], 4 );
 }
 
@@ -86,7 +86,7 @@ void RB_SetMVP( const idRenderMatrix & mvp ) {
 RB_SetMVPWithStereoOffset
 ================
 */
-static void RB_SetMVPWithStereoOffset( const idRenderMatrix & mvp, const float stereoOffset ) { 
+static void RB_SetMVPWithStereoOffset( const idRenderMatrix & mvp, const float stereoOffset ) {
 	idRenderMatrix offset = mvp;
 	offset[0][3] += stereoOffset;
 
@@ -96,13 +96,14 @@ static void RB_SetMVPWithStereoOffset( const idRenderMatrix & mvp, const float s
 static const float zero[4] = { 0, 0, 0, 0 };
 static const float one[4] = { 1, 1, 1, 1 };
 static const float negOne[4] = { -1, -1, -1, -1 };
+static const colorStage_t defaultMask={{1,1,1,1}};
 
 /*
 ================
 RB_SetVertexColorParms
 ================
 */
-static void RB_SetVertexColorParms( stageVertexColor_t svc ) {
+static void RB_SetVertexColorParms( stageVertexColor_t svc , colorStage_t colorMask=defaultMask ) {
 	switch ( svc ) {
 		case SVC_IGNORE:
 			SetVertexParm( RENDERPARM_VERTEXCOLOR_MODULATE, zero );
@@ -115,6 +116,15 @@ static void RB_SetVertexColorParms( stageVertexColor_t svc ) {
 		case SVC_INVERSE_MODULATE:
 			SetVertexParm( RENDERPARM_VERTEXCOLOR_MODULATE, negOne );
 			SetVertexParm( RENDERPARM_VERTEXCOLOR_ADD, one );
+			break;
+		case SVC_COLOR_MASK:
+			float color[4];
+			for ( int i = 0; i < 4; i++ ) {
+				// In mask only 1 and 0 allowed.
+				color[i] = colorMask.registers[i]>0 ? 1 : 0;
+			}
+			SetVertexParm( RENDERPARM_VERTEXCOLOR_MODULATE, color );
+			SetVertexParm( RENDERPARM_VERTEXCOLOR_ADD, zero );
 			break;
 	}
 }
@@ -153,7 +163,7 @@ void RB_DrawElementsWithCounters( const drawSurf_t *surf ) {
 		}
 		indexBuffer = &vertexCache.frameData[vertexCache.drawListNum].indexBuffer;
 	}
-	const int indexOffset = (int)( ibHandle >> VERTCACHE_OFFSET_SHIFT ) & VERTCACHE_OFFSET_MASK;
+	const GLintptrARB indexOffset = ( ibHandle >> VERTCACHE_OFFSET_SHIFT ) & VERTCACHE_OFFSET_MASK;
 
 	RENDERLOG_PRINTF( "Binding Buffers: %p:%i %p:%i\n", vertexBuffer, vertOffset, indexBuffer, indexOffset );
 
@@ -176,20 +186,20 @@ void RB_DrawElementsWithCounters( const drawSurf_t *surf ) {
 		}
 		assert( ( jointBuffer.GetOffset() & ( glConfig.uniformBufferOffsetAlignment - 1 ) ) == 0 );
 
-		const GLuint ubo = reinterpret_cast< GLuint >( jointBuffer.GetAPIObject() );
+		const GLuint ubo =  jointBuffer.GetAPIObject() ;
 		qglBindBufferRange( GL_UNIFORM_BUFFER, 0, ubo, jointBuffer.GetOffset(), jointBuffer.GetNumJoints() * sizeof( idJointMat ) );
 	}
 
 	renderProgManager.CommitUniforms();
 
-	if ( backEnd.glState.currentIndexBuffer != (GLuint)indexBuffer->GetAPIObject() || !r_useStateCaching.GetBool() ) {
-		qglBindBufferARB( GL_ELEMENT_ARRAY_BUFFER_ARB, (GLuint)indexBuffer->GetAPIObject() );
-		backEnd.glState.currentIndexBuffer = (GLuint)indexBuffer->GetAPIObject();
+	if ( backEnd.glState.currentIndexBuffer != indexBuffer->GetAPIObject() || !r_useStateCaching.GetBool() ) {
+		qglBindBufferARB( GL_ELEMENT_ARRAY_BUFFER_ARB, indexBuffer->GetAPIObject() );
+		backEnd.glState.currentIndexBuffer = indexBuffer->GetAPIObject();
 	}
 
-	if ( ( backEnd.glState.vertexLayout != LAYOUT_DRAW_VERT ) || ( backEnd.glState.currentVertexBuffer != (GLuint)vertexBuffer->GetAPIObject() ) || !r_useStateCaching.GetBool() ) {
-		qglBindBufferARB( GL_ARRAY_BUFFER_ARB, (GLuint)vertexBuffer->GetAPIObject() );
-		backEnd.glState.currentVertexBuffer = (GLuint)vertexBuffer->GetAPIObject();
+	if ( ( backEnd.glState.vertexLayout != LAYOUT_DRAW_VERT ) || ( backEnd.glState.currentVertexBuffer != vertexBuffer->GetAPIObject() ) || !r_useStateCaching.GetBool() ) {
+		qglBindBufferARB( GL_ARRAY_BUFFER_ARB, vertexBuffer->GetAPIObject() );
+		backEnd.glState.currentVertexBuffer = vertexBuffer->GetAPIObject();
 
 		qglEnableVertexAttribArrayARB( PC_ATTRIB_INDEX_VERTEX );
 		qglEnableVertexAttribArrayARB( PC_ATTRIB_INDEX_NORMAL );
@@ -207,13 +217,13 @@ void RB_DrawElementsWithCounters( const drawSurf_t *surf ) {
 
 		backEnd.glState.vertexLayout = LAYOUT_DRAW_VERT;
 	}
-	
-	qglDrawElementsBaseVertex( GL_TRIANGLES, 
+
+	qglDrawElementsBaseVertex( GL_TRIANGLES,
 							  r_singleTriangle.GetBool() ? 3 : surf->numIndexes,
 							  GL_INDEX_TYPE,
 							  (triIndex_t *)indexOffset,
 							  vertOffset / sizeof ( idDrawVert ) );
-							  
+
 
 }
 
@@ -258,7 +268,7 @@ static void RB_GetShaderTextureMatrix( const float *shaderRegisters, const textu
 RB_LoadShaderTextureMatrix
 ======================
 */
-static void RB_LoadShaderTextureMatrix( const float *shaderRegisters, const textureStage_t *texture ) {	
+static void RB_LoadShaderTextureMatrix( const float *shaderRegisters, const textureStage_t *texture ) {
 	float texS[4] = { 1.0f, 0.0f, 0.0f, 0.0f };
 	float texT[4] = { 0.0f, 1.0f, 0.0f, 0.0f };
 
@@ -269,7 +279,7 @@ static void RB_LoadShaderTextureMatrix( const float *shaderRegisters, const text
 		texS[1] = matrix[1*4+0];
 		texS[2] = matrix[2*4+0];
 		texS[3] = matrix[3*4+0];
-	
+
 		texT[0] = matrix[0*4+1];
 		texT[1] = matrix[1*4+1];
 		texT[2] = matrix[2*4+1];
@@ -280,7 +290,7 @@ static void RB_LoadShaderTextureMatrix( const float *shaderRegisters, const text
 		RENDERLOG_PRINTF( "Texture Matrix S : %4.3f, %4.3f, %4.3f, %4.3f\n", texS[0], texS[1], texS[2], texS[3] );
 		RENDERLOG_PRINTF( "Texture Matrix T : %4.3f, %4.3f, %4.3f, %4.3f\n", texT[0], texT[1], texT[2], texT[3] );
 		renderLog.Outdent();
-	} 
+	}
 
 	SetVertexParm( RENDERPARM_TEXTUREMATRIX_S, texS );
 	SetVertexParm( RENDERPARM_TEXTUREMATRIX_T, texT );
@@ -357,7 +367,7 @@ static void RB_BindVariableStageImage( const textureStage_t *texture, const floa
 			cin.imageCb->Bind();
 		} else {
 			globalImages->blackImage->Bind();
-			// because the shaders may have already been set - we need to make sure we are not using a bink shader which would 
+			// because the shaders may have already been set - we need to make sure we are not using a bink shader which would
 			// display incorrectly.  We may want to get rid of RB_BindVariableStageImage and inline the code so that the
 			// SWF GUI case is handled better, too
 			renderProgManager.BindShader_TextureVertexColor();
@@ -499,7 +509,7 @@ static void RB_PrepareStageTexturing( const shaderStage_t * pStage,  const drawS
 		plane[1] = mat[1*4+3];
 		plane[2] = mat[2*4+3];
 		plane[3] = mat[3*4+3];
-		SetVertexParm( RENDERPARM_TEXGEN_0_Q, plane );	
+		SetVertexParm( RENDERPARM_TEXGEN_0_Q, plane );
 		RENDERLOG_PRINTF( "TEXGEN_Q = %4.3f, %4.3f, %4.3f, %4.3f\n",  plane[0], plane[1], plane[2], plane[3] );
 
 		renderLog.Outdent();
@@ -578,7 +588,7 @@ static void RB_FillDepthBufferGeneric( const drawSurf_t * const * drawSurfs, int
 
 		// if all stages of a material have been conditioned off, don't do anything
 		int stage = 0;
-		for ( ; stage < shader->GetNumStages(); stage++ ) {		
+		for ( ; stage < shader->GetNumStages(); stage++ ) {
 			const shaderStage_t * pStage = shader->GetStage( stage );
 			// check the stage enable condition
 			if ( regs[ pStage->conditionRegister ] != 0 ) {
@@ -632,7 +642,7 @@ static void RB_FillDepthBufferGeneric( const drawSurf_t * const * drawSurfs, int
 			bool didDraw = false;
 
 			// perforated surfaces may have multiple alpha tested stages
-			for ( stage = 0; stage < shader->GetNumStages(); stage++ ) {		
+			for ( stage = 0; stage < shader->GetNumStages(); stage++ ) {
 				const shaderStage_t *pStage = shader->GetStage(stage);
 
 				if ( !pStage->hasAlphaTest ) {
@@ -860,13 +870,16 @@ const int INTERACTION_TEXUNIT_FALLOFF		= 1;
 const int INTERACTION_TEXUNIT_PROJECTION	= 2;
 const int INTERACTION_TEXUNIT_DIFFUSE		= 3;
 const int INTERACTION_TEXUNIT_SPECULAR		= 4;
+const int INTERACTION_TEXUNIT_ENVIRONMENT	= 5;
+//const int INTERACTION_TEXUNIT_BRDFLUT		= 5;
+
 
 /*
 ==================
 RB_SetupInteractionStage
 ==================
 */
-static void RB_SetupInteractionStage( const shaderStage_t *surfaceStage, const float *surfaceRegs, const float lightColor[4],
+static void  RB_SetupInteractionStage( const shaderStage_t *surfaceStage, const float *surfaceRegs, const float lightColor[4],
 									idVec4 matrix[2], float color[4] ) {
 
 	if ( surfaceStage->texture.hasMatrix ) {
@@ -927,7 +940,7 @@ static void RB_DrawSingleInteraction( drawInteraction_t * din ) {
 		din->diffuseImage = globalImages->blackImage;
 	}
 	if ( din->specularImage == NULL || r_skipSpecular.GetBool() || din->ambientLight ) {
-		din->specularImage = globalImages->blackImage;
+		din->specularImage = globalImages->specDefaultMap;
 	}
 	if ( r_skipBump.GetBool() ) {
 		din->bumpImage = globalImages->flatNormalMap;
@@ -954,7 +967,7 @@ static void RB_DrawSingleInteraction( drawInteraction_t * din ) {
 	SetVertexParm( RENDERPARM_SPECULARMATRIX_S, din->specularMatrix[0].ToFloatPtr() );
 	SetVertexParm( RENDERPARM_SPECULARMATRIX_T, din->specularMatrix[1].ToFloatPtr() );
 
-	RB_SetVertexColorParms( din->vertexColor );
+	RB_SetVertexColorParms( din->vertexColor, din->vertexColorMask );
 
 	SetFragmentParm( RENDERPARM_DIFFUSEMODIFIER, din->diffuseColor.ToFloatPtr() );
 	SetFragmentParm( RENDERPARM_SPECULARMODIFIER, din->specularColor.ToFloatPtr() );
@@ -1017,7 +1030,7 @@ static void RB_RenderInteractions( const drawSurf_t *surfList, const viewLight_t
 
 	// change the scissor if needed, it will be constant across all the surfaces lit by the light
 	if ( !backEnd.currentScissor.Equals( vLight->scissorRect ) && r_useScissor.GetBool() ) {
-		GL_Scissor( backEnd.viewDef->viewport.x1 + vLight->scissorRect.x1, 
+		GL_Scissor( backEnd.viewDef->viewport.x1 + vLight->scissorRect.x1,
 					backEnd.viewDef->viewport.y1 + vLight->scissorRect.y1,
 					vLight->scissorRect.x2 + 1 - vLight->scissorRect.x1,
 					vLight->scissorRect.y2 + 1 - vLight->scissorRect.y1 );
@@ -1108,6 +1121,15 @@ static void RB_RenderInteractions( const drawSurf_t *surfList, const viewLight_t
 		// texture 2 will be the light projection texture
 		GL_SelectTexture( INTERACTION_TEXUNIT_PROJECTION );
 		lightStage->texture.image->Bind();
+
+		// texture 5 will be the BRDF LUT
+		// GL_SelectTexture( INTERACTION_TEXUNIT_BRDFLUT );
+		// vLight->lutMap->Bind();
+
+		// texture 5 will be the enviroment cubemap texture
+		GL_SelectTexture( INTERACTION_TEXUNIT_ENVIRONMENT );
+		vLight->environmentMap->Bind();
+
 
 		// force the light textures to not use anisotropic filtering, which is wasted on them
 		// all of the texture sampler parms should be constant for all interactions, only
@@ -1217,7 +1239,7 @@ static void RB_RenderInteractions( const drawSurf_t *surfList, const viewLight_t
 				renderLog.CloseBlock();
 				continue;
 			}
-			
+
 			renderLog.OpenBlock( surf->material->GetName() );
 
 			inter.bumpImage = NULL;
@@ -1273,6 +1295,7 @@ static void RB_RenderInteractions( const drawSurf_t *surfList, const viewLight_t
 						}
 						inter.diffuseImage = surfaceStage->texture.image;
 						inter.vertexColor = surfaceStage->vertexColor;
+						inter.vertexColorMask = surfaceStage->vertexColorMask;
 						RB_SetupInteractionStage( surfaceStage, surfaceRegs, diffuseColor.ToFloatPtr(),
 												inter.diffuseMatrix, inter.diffuseColor.ToFloatPtr() );
 						break;
@@ -1288,6 +1311,7 @@ static void RB_RenderInteractions( const drawSurf_t *surfList, const viewLight_t
 						}
 						inter.specularImage = surfaceStage->texture.image;
 						inter.vertexColor = surfaceStage->vertexColor;
+						inter.vertexColorMask = surfaceStage->vertexColorMask;
 						RB_SetupInteractionStage( surfaceStage, surfaceRegs, specularColor.ToFloatPtr(),
 												inter.specularMatrix, inter.specularColor.ToFloatPtr() );
 						break;
@@ -1363,7 +1387,7 @@ static void RB_StencilShadowPass( const drawSurf_t *drawSurfs, const viewLight_t
 	// the actual stencil func will be set in the draw code, but we need to make sure it isn't
 	// disabled here, and that the value will get reset for the interactions without looking
 	// like a no-change-required
-	GL_State( glState | GLS_STENCIL_OP_FAIL_KEEP | GLS_STENCIL_OP_ZFAIL_KEEP | GLS_STENCIL_OP_PASS_INCR | 
+	GL_State( glState | GLS_STENCIL_OP_FAIL_KEEP | GLS_STENCIL_OP_ZFAIL_KEEP | GLS_STENCIL_OP_PASS_INCR |
 		GLS_STENCIL_MAKE_REF( STENCIL_SHADOW_TEST_VALUE ) | GLS_STENCIL_MAKE_MASK( STENCIL_SHADOW_MASK_VALUE ) | GLS_POLYGON_OFFSET );
 
 	// Two Sided Stencil reduces two draw calls to one for slightly faster shadows
@@ -1498,9 +1522,9 @@ static void RB_StencilShadowPass( const drawSurf_t *drawSurfs, const viewLight_t
 		RENDERLOG_PRINTF( "Binding Buffers: %p %p\n", vertexBuffer, indexBuffer );
 
 
-		if ( backEnd.glState.currentIndexBuffer != (GLuint)indexBuffer->GetAPIObject() || !r_useStateCaching.GetBool() ) {
-			qglBindBufferARB( GL_ELEMENT_ARRAY_BUFFER_ARB, (GLuint)indexBuffer->GetAPIObject() );
-			backEnd.glState.currentIndexBuffer = (GLuint)indexBuffer->GetAPIObject();
+		if ( backEnd.glState.currentIndexBuffer != indexBuffer->GetAPIObject() || !r_useStateCaching.GetBool() ) {
+			qglBindBufferARB( GL_ELEMENT_ARRAY_BUFFER_ARB, indexBuffer->GetAPIObject() );
+			backEnd.glState.currentIndexBuffer = indexBuffer->GetAPIObject();
 		}
 
 		if ( drawSurf->jointCache ) {
@@ -1513,12 +1537,12 @@ static void RB_StencilShadowPass( const drawSurf_t *drawSurfs, const viewLight_t
 			}
 			assert( ( jointBuffer.GetOffset() & ( glConfig.uniformBufferOffsetAlignment - 1 ) ) == 0 );
 
-			const GLuint ubo = reinterpret_cast< GLuint >( jointBuffer.GetAPIObject() );
+			const GLuint ubo =  jointBuffer.GetAPIObject() ;
 			qglBindBufferRange( GL_UNIFORM_BUFFER, 0, ubo, jointBuffer.GetOffset(), jointBuffer.GetNumJoints() * sizeof( idJointMat ) );
 
-			if ( ( backEnd.glState.vertexLayout != LAYOUT_DRAW_SHADOW_VERT_SKINNED) || ( backEnd.glState.currentVertexBuffer != (GLuint)vertexBuffer->GetAPIObject() ) || !r_useStateCaching.GetBool() ) {
-				qglBindBufferARB( GL_ARRAY_BUFFER_ARB, (GLuint)vertexBuffer->GetAPIObject() );
-				backEnd.glState.currentVertexBuffer = (GLuint)vertexBuffer->GetAPIObject();
+			if ( ( backEnd.glState.vertexLayout != LAYOUT_DRAW_SHADOW_VERT_SKINNED) || ( backEnd.glState.currentVertexBuffer != vertexBuffer->GetAPIObject() ) || !r_useStateCaching.GetBool() ) {
+				qglBindBufferARB( GL_ARRAY_BUFFER_ARB, vertexBuffer->GetAPIObject() );
+				backEnd.glState.currentVertexBuffer = vertexBuffer->GetAPIObject();
 
 				qglEnableVertexAttribArrayARB( PC_ATTRIB_INDEX_VERTEX );
 				qglDisableVertexAttribArrayARB( PC_ATTRIB_INDEX_NORMAL );
@@ -1536,9 +1560,9 @@ static void RB_StencilShadowPass( const drawSurf_t *drawSurfs, const viewLight_t
 
 		} else {
 
-			if ( ( backEnd.glState.vertexLayout != LAYOUT_DRAW_SHADOW_VERT ) || ( backEnd.glState.currentVertexBuffer != (GLuint)vertexBuffer->GetAPIObject() ) || !r_useStateCaching.GetBool() ) {
-				qglBindBufferARB( GL_ARRAY_BUFFER_ARB, (GLuint)vertexBuffer->GetAPIObject() );
-				backEnd.glState.currentVertexBuffer = (GLuint)vertexBuffer->GetAPIObject();
+			if ( ( backEnd.glState.vertexLayout != LAYOUT_DRAW_SHADOW_VERT ) || ( backEnd.glState.currentVertexBuffer != vertexBuffer->GetAPIObject() ) || !r_useStateCaching.GetBool() ) {
+				qglBindBufferARB( GL_ARRAY_BUFFER_ARB, vertexBuffer->GetAPIObject() );
+				backEnd.glState.currentVertexBuffer = vertexBuffer->GetAPIObject();
 
 				qglEnableVertexAttribArrayARB( PC_ATTRIB_INDEX_VERTEX );
 				qglDisableVertexAttribArrayARB( PC_ATTRIB_INDEX_NORMAL );
@@ -1593,7 +1617,7 @@ static void RB_StencilShadowPass( const drawSurf_t *drawSurfs, const viewLight_t
 RB_StencilSelectLight
 
 Deform the zeroOneCubeModel to exactly cover the light volume. Render the deformed cube model to the stencil buffer in
-such a way that only fragments that are directly visible and contained within the volume will be written creating a 
+such a way that only fragments that are directly visible and contained within the volume will be written creating a
 mask to be used by the following stencil shadow and draw interaction passes.
 ==================
 */
@@ -1602,7 +1626,7 @@ static void RB_StencilSelectLight( const viewLight_t * vLight ) {
 
 	// enable the light scissor
 	if ( !backEnd.currentScissor.Equals( vLight->scissorRect ) && r_useScissor.GetBool() ) {
-		GL_Scissor( backEnd.viewDef->viewport.x1 + vLight->scissorRect.x1, 
+		GL_Scissor( backEnd.viewDef->viewport.x1 + vLight->scissorRect.x1,
 					backEnd.viewDef->viewport.y1 + vLight->scissorRect.y1,
 					vLight->scissorRect.x2 + 1 - vLight->scissorRect.x1,
 					vLight->scissorRect.y2 + 1 - vLight->scissorRect.y1 );
@@ -1814,7 +1838,7 @@ If we are rendering Guis, the drawSurf_t::sort value is a depth offset that can
 be multiplied by guiEye for polarity and screenSeparation for scale.
 =====================
 */
-static int RB_DrawShaderPasses( const drawSurf_t * const * const drawSurfs, const int numDrawSurfs, 
+static int RB_DrawShaderPasses( const drawSurf_t * const * const drawSurfs, const int numDrawSurfs,
 									const float guiStereoScreenOffset, const int stereoEye ) {
 	// only obey skipAmbient if we are rendering a view
 	if ( backEnd.viewDef->viewEntitys && r_skipAmbient.GetBool() ) {
@@ -1864,7 +1888,7 @@ static int RB_DrawShaderPasses( const drawSurf_t * const * const drawSurfs, cons
 			break;
 		}
 
-		// if we are rendering a 3D view and the surface's eye index doesn't match 
+		// if we are rendering a 3D view and the surface's eye index doesn't match
 		// the current view's eye index then we skip the surface
 		// if the stereoEye value of a surface is 0 then we need to draw it for both eyes.
 		const int shaderStereoEye = shader->GetStereoEye();
@@ -1875,7 +1899,7 @@ static int RB_DrawShaderPasses( const drawSurf_t * const * const drawSurfs, cons
 
 		renderLog.OpenBlock( shader->GetName() );
 
-		// determine the stereoDepth offset 
+		// determine the stereoDepth offset
 		// guiStereoScreenOffset will always be zero for 3D views, so the !=
 		// check will never force an update due to the current sort value.
 		const float thisGuiStereoOffset = guiStereoScreenOffset * surf->sort;
@@ -1911,7 +1935,7 @@ static int RB_DrawShaderPasses( const drawSurf_t * const * const drawSurfs, cons
 
 		// change the scissor if needed
 		if ( !backEnd.currentScissor.Equals( surf->scissorRect ) && r_useScissor.GetBool() ) {
-			GL_Scissor( backEnd.viewDef->viewport.x1 + surf->scissorRect.x1, 
+			GL_Scissor( backEnd.viewDef->viewport.x1 + surf->scissorRect.x1,
 						backEnd.viewDef->viewport.y1 + surf->scissorRect.y1,
 						surf->scissorRect.x2 + 1 - surf->scissorRect.x1,
 						surf->scissorRect.y2 + 1 - surf->scissorRect.y1 );
@@ -1936,7 +1960,7 @@ static int RB_DrawShaderPasses( const drawSurf_t * const * const drawSurfs, cons
 			surfGLState = GLS_POLYGON_OFFSET;
 		}
 
-		for ( int stage = 0; stage < shader->GetNumStages(); stage++ ) {		
+		for ( int stage = 0; stage < shader->GetNumStages(); stage++ ) {
 			const shaderStage_t *pStage = shader->GetStage(stage);
 
 			// check the enable condition
@@ -1973,7 +1997,7 @@ static int RB_DrawShaderPasses( const drawSurf_t * const * const drawSurfs, cons
 				renderLog.OpenBlock( "New Shader Stage" );
 
 				GL_State( stageGLState );
-			
+
 				renderProgManager.BindShader( newStage->glslProgram, newStage->glslProgram );
 
 				for ( int j = 0; j < newStage->numVertexParms; j++ ) {
@@ -2039,7 +2063,7 @@ static int RB_DrawShaderPasses( const drawSurf_t * const * const drawSurfs, cons
 			color[3] = regs[ pStage->color.registers[3] ];
 
 			// skip the entire stage if an add would be black
-			if ( ( stageGLState & ( GLS_SRCBLEND_BITS | GLS_DSTBLEND_BITS ) ) == ( GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE ) 
+			if ( ( stageGLState & ( GLS_SRCBLEND_BITS | GLS_DSTBLEND_BITS ) ) == ( GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE )
 				&& color[0] <= 0 && color[1] <= 0 && color[2] <= 0 ) {
 				continue;
 			}
@@ -2092,8 +2116,8 @@ static int RB_DrawShaderPasses( const drawSurf_t * const * const drawSurfs, cons
 					renderProgManager.BindShader_TextureVertexColor();
 				}
 			}
-		
-			RB_SetVertexColorParms( svc );
+
+			RB_SetVertexColorParms( svc, pStage->vertexColorMask );
 
 			// bind the texture
 			RB_BindVariableStageImage( &pStage->texture, regs );
@@ -2106,7 +2130,7 @@ static int RB_DrawShaderPasses( const drawSurf_t * const * const drawSurfs, cons
 
 			// set the state
 			GL_State( stageGLState );
-		
+
 			RB_PrepareStageTexturing( pStage, surf );
 
 			// draw it
@@ -2419,7 +2443,7 @@ RB_FogAllLights
 ==================
 */
 static void RB_FogAllLights() {
-	if ( r_skipFogLights.GetBool() || r_showOverDraw.GetInteger() != 0 
+	if ( r_skipFogLights.GetBool() || r_showOverDraw.GetInteger() != 0
 		 || backEnd.viewDef->isXraySubview /* don't fog in xray mode*/ ) {
 		return;
 	}
@@ -2841,7 +2865,7 @@ void RB_PostProcess( const void * data ) {
 
 	// only do the post process step if resolution scaling is enabled. Prevents the unnecessary copying of the framebuffer and
 	// corresponding full screen quad pass.
-	if ( rs_enable.GetInteger() == 0 ) { 
+	if ( rs_enable.GetInteger() == 0 ) {
 		return;
 	}
 

@@ -1011,7 +1011,7 @@ read requests until flen is reset.
 
 static int flen;
 
-void set_flen( int i ) { flen = i; }
+void set_flen(int i ) { flen = i; }
 
 int get_flen() { return flen; }
 
@@ -1378,7 +1378,7 @@ char *sgetS0( unsigned char **bp )
 
    if ( flen == FLEN_ERROR ) return NULL;
 
-   len = strlen( (const char*)buf ) + 1;
+   len = (int)strlen( (const char*)buf ) + 1;
    if ( len == 1 ) {
       flen += 2;
       (*bp) += 2;
@@ -2210,7 +2210,7 @@ int lwGetPolygons5( idFile *fp, int cksize, lwPolygonList *plist, int ptoffset )
          bp += 2;
       }
       j -= 1;
-      pp->surf = ( lwSurface * ) j;
+      pp->surf = ( lwSurface * ) (intptr_t) j;
 
       pp++;
       pv += nv;
@@ -2708,7 +2708,7 @@ int lwResolvePolySurfaces( lwPolygonList *polygon, lwTagList *tlist,
    lwSurface **surf, int *nsurfs )
 {
    lwSurface **s, *st;
-   int i, index;
+   int i;
 
    if ( tlist->count == 0 ) return 1;
 
@@ -2725,9 +2725,9 @@ int lwResolvePolySurfaces( lwPolygonList *polygon, lwTagList *tlist,
          st = st->next;
       }
    }
-
+   uintptr_t index;
    for ( i = 0; i < polygon->count; i++ ) {
-      index = ( int ) polygon->pol[ i ].surf;
+      index = (uintptr_t) polygon->pol[ i ].surf;
       if ( index < 0 || index > tlist->count ) return 0;
       if ( !s[ index ] ) {
          s[ index ] = lwDefaultSurface();
@@ -2829,7 +2829,8 @@ added to the lwTagList array.
 int lwGetTags( idFile *fp, int cksize, lwTagList *tlist )
 {
 	char *buf, *bp;
-	int i, len, ntags;
+	int i, ntags;
+    size_t len;
 
 	if ( cksize == 0 ) return 1;
 
@@ -2907,7 +2908,7 @@ int lwGetPolygonTags( idFile *fp, int cksize, lwTagList *tlist, lwPolygonList *p
 		if ( rlen < 0 || rlen > cksize ) return 0;
 
 		switch ( type ) {
-			case ID_SURF:  plist->pol[ i ].surf = ( lwSurface * ) j;  break;
+			case ID_SURF:  plist->pol[ i ].surf = ( lwSurface * ) (intptr_t) j;  break;
 			case ID_PART:  plist->pol[ i ].part = j;  break;
 			case ID_SMGP:  plist->pol[ i ].smoothgrp = j;  break;
 		}

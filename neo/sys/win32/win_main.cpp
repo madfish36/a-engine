@@ -2,9 +2,9 @@
 ===========================================================================
 
 Doom 3 BFG Edition GPL Source Code
-Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company. 
+Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company.
 
-This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").  
+This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").
 
 Doom 3 BFG Edition Source Code is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -85,17 +85,63 @@ void Sys_Sentry() {
 }
 
 
+/*
+==================
+Sys_SetDPIAwareness #616
+
+Code that tells windows we're High DPI aware so it doesn't scale our windows.
+Taken from Yamagi Quake II
+==================
+*/
+typedef enum D3_PROCESS_DPI_AWARENESS
+{
+	D3_PROCESS_DPI_UNAWARE = 0,
+	D3_PROCESS_SYSTEM_DPI_AWARE = 1,
+	D3_PROCESS_PER_MONITOR_DPI_AWARE = 2
+} YQ2_PROCESS_DPI_AWARENESS;
+
+void Sys_SetDPIAwareness()
+{
+	// For Vista, Win7 and Win8
+	BOOL( WINAPI * SetProcessDPIAware )() = NULL;
+
+	/* Win8.1 and later */
+	HRESULT( WINAPI * SetProcessDpiAwareness )( D3_PROCESS_DPI_AWARENESS dpiAwareness ) = NULL;
+
+
+	HINSTANCE userDLL = LoadLibrary( "USER32.DLL" );
+	if( userDLL )
+	{
+		SetProcessDPIAware = ( BOOL( WINAPI* )() ) GetProcAddress( userDLL, "SetProcessDPIAware" );
+	}
+
+	HINSTANCE shcoreDLL = LoadLibrary( "SHCORE.DLL" );
+	if( shcoreDLL )
+	{
+		SetProcessDpiAwareness = ( HRESULT( WINAPI* )( YQ2_PROCESS_DPI_AWARENESS ) ) GetProcAddress( shcoreDLL, "SetProcessDpiAwareness" );
+	}
+
+	if( SetProcessDpiAwareness )
+	{
+		SetProcessDpiAwareness( D3_PROCESS_PER_MONITOR_DPI_AWARE );
+	}
+	else if( SetProcessDPIAware )
+	{
+		SetProcessDPIAware();
+	}
+}
+
 #pragma optimize( "", on )
 
 #ifdef DEBUG
 
 
-static unsigned int debug_total_alloc = 0;
-static unsigned int debug_total_alloc_count = 0;
-static unsigned int debug_current_alloc = 0;
-static unsigned int debug_current_alloc_count = 0;
-static unsigned int debug_frame_alloc = 0;
-static unsigned int debug_frame_alloc_count = 0;
+static size_t debug_total_alloc = 0;
+static size_t debug_total_alloc_count = 0;
+static size_t debug_current_alloc = 0;
+static size_t debug_current_alloc_count = 0;
+static size_t debug_frame_alloc = 0;
+static size_t debug_frame_alloc_count = 0;
 
 idCVar sys_showMallocs( "sys_showMallocs", "0", CVAR_SYSTEM, "" );
 
@@ -105,11 +151,11 @@ typedef struct CrtMemBlockHeader
 {
 	struct _CrtMemBlockHeader *pBlockHeaderNext;	// Pointer to the block allocated just before this one:
 	struct _CrtMemBlockHeader *pBlockHeaderPrev;	// Pointer to the block allocated just after this one
-   char *szFileName;    // File name
-   int nLine;           // Line number
+	char *szFileName;								// File name
+	int nLine;										// Line number
    size_t nDataSize;    // Size of user block
-   int nBlockUse;       // Type of block
-   long lRequest;       // Allocation number
+	int nBlockUse;									// Type of block
+	long lRequest;									// Allocation number
 	byte		gap[4];								// Buffer just before (lower than) the user's memory:
 } CrtMemBlockHeader;
 
@@ -122,7 +168,7 @@ Sys_AllocHook
 	called for every malloc/new/free/delete
 ==================
 */
-int Sys_AllocHook( int nAllocType, void *pvData, size_t nSize, int nBlockUse, long lRequest, const unsigned char * szFileName, int nLine ) 
+int Sys_AllocHook( int nAllocType, void *pvData, size_t nSize, int nBlockUse, long lRequest, const unsigned char * szFileName, int nLine )
 {
 	CrtMemBlockHeader	*pHead;
 	byte				*temp;
@@ -327,7 +373,7 @@ Sys_Printf
 ==============
 */
 #define MAXPRINTMSG 4096
-void Sys_Printf( const char *fmt, ... ) {
+void Sys_Printf(VERIFY_FORMAT_STRING const char *fmt, ... ) {
 	char		msg[MAXPRINTMSG];
 
 	va_list argptr;
@@ -349,7 +395,7 @@ Sys_DebugPrintf
 ==============
 */
 #define MAXPRINTMSG 4096
-void Sys_DebugPrintf( const char *fmt, ... ) {
+void Sys_DebugPrintf(VERIFY_FORMAT_STRING const char *fmt, ... ) {
 	char msg[MAXPRINTMSG];
 
 	va_list argptr;
@@ -421,8 +467,8 @@ ID_TIME_T Sys_FileTimeStamp( idFileHandle fp ) {
 	GetFileTime( fp, NULL, NULL, &writeTime );
 
 	/*
-		FILETIME = number of 100-nanosecond ticks since midnight 
-		1 Jan 1601 UTC. time_t = number of 1-second ticks since 
+		FILETIME = number of 100-nanosecond ticks since midnight
+		1 Jan 1601 UTC. time_t = number of 1-second ticks since
 		midnight 1 Jan 1970 UTC. To translate, we subtract a
 		FILETIME representation of midnight, 1 Jan 1970 from the
 		time in question and divide by the number of 100-ns ticks
@@ -569,7 +615,7 @@ Sys_ListFiles
 int Sys_ListFiles( const char *directory, const char *extension, idStrList &list ) {
 	idStr		search;
 	struct _finddata_t findinfo;
-	int			findhandle;
+	intptr_t	findhandle;
 	int			flag;
 
 	if ( !extension) {
@@ -623,7 +669,7 @@ char *Sys_GetClipboardData() {
 				data = (char *)Mem_Alloc( GlobalSize( hClipboardData ) + 1, TAG_CRAP );
 				strcpy( data, cliptext );
 				GlobalUnlock( hClipboardData );
-				
+
 				strtok( data, "\n\r\b" );
 			}
 		}
@@ -688,7 +734,7 @@ If waitMsec is -1, don't wait for the process to exit
 Other waitMsec values will allow the workFn to be called at those intervals.
 ========================
 */
-bool Sys_Exec(	const char * appPath, const char * workingPath, const char * args, 
+bool Sys_Exec(	const char * appPath, const char * workingPath, const char * args,
 	execProcessWorkFunction_t workFn, execOutputFunction_t outputFn, const int waitMS,
 	unsigned int & exitCode ) {
 		exitCode = 0;
@@ -705,7 +751,7 @@ bool Sys_Exec(	const char * appPath, const char * workingPath, const char * args
 		HANDLE hStdInRead;
 		HANDLE hStdInWrite;
 		CreatePipe( &hStdInRead, &hStdInWrite, &secAttr, 0 );
-		SetHandleInformation( hStdInWrite, HANDLE_FLAG_INHERIT, 0 );										
+		SetHandleInformation( hStdInWrite, HANDLE_FLAG_INHERIT, 0 );
 
 		STARTUPINFO si;
 		memset( &si, 0, sizeof( si ) );
@@ -753,12 +799,12 @@ bool Sys_Exec(	const char * appPath, const char * workingPath, const char * args
 		BOOL result = CreateProcess( imageName, (LPSTR)cmdLine, NULL, NULL, TRUE, 0, NULL, workingPath, &si, &pi );
 
 		if ( result == FALSE ) {
-			TCHAR szBuf[1024]; 
+			TCHAR szBuf[1024];
 			LPVOID lpMsgBuf;
-			DWORD dw = GetLastError(); 
+			DWORD dw = GetLastError();
 
 			FormatMessage(
-				FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+				FORMAT_MESSAGE_ALLOCATE_BUFFER |
 				FORMAT_MESSAGE_FROM_SYSTEM,
 				NULL,
 				dw,
@@ -846,9 +892,9 @@ DLL Loading
 Sys_DLL_Load
 =====================
 */
-int Sys_DLL_Load( const char *dllName ) {
+intptr_t Sys_DLL_Load( const char *dllName ) {
 	HINSTANCE libHandle = LoadLibrary( dllName );
-	return (int)libHandle;
+	return (intptr_t)libHandle;
 }
 
 /*
@@ -856,8 +902,8 @@ int Sys_DLL_Load( const char *dllName ) {
 Sys_DLL_GetProcAddress
 =====================
 */
-void *Sys_DLL_GetProcAddress( int dllHandle, const char *procName ) {
-	return GetProcAddress( (HINSTANCE)dllHandle, procName ); 
+void *Sys_DLL_GetProcAddress( intptr_t dllHandle, const char *procName ) {
+	return GetProcAddress( (HINSTANCE)dllHandle, procName );
 }
 
 /*
@@ -865,7 +911,7 @@ void *Sys_DLL_GetProcAddress( int dllHandle, const char *procName ) {
 Sys_DLL_Unload
 =====================
 */
-void Sys_DLL_Unload( int dllHandle ) {
+void Sys_DLL_Unload( intptr_t dllHandle ) {
 	if ( !dllHandle ) {
 		return;
 	}
@@ -879,7 +925,7 @@ void Sys_DLL_Unload( int dllHandle ) {
 			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
 			(LPTSTR) &lpMsgBuf,
 			0,
-			NULL 
+			NULL
 		);
 		Sys_Error( "Sys_DLL_Unload: FreeLibrary failed - %s (%d)", lpMsgBuf, lastError );
 	}
@@ -908,7 +954,7 @@ Ptr should either be null, or point to a block of data that can
 be freed by the game later.
 ================
 */
-void Sys_QueEvent( sysEventType_t type, int value, int value2, int ptrLength, void *ptr, int inputDeviceNum ) {
+void Sys_QueEvent( sysEventType_t type, int value, int value2, size_t ptrLength, void *ptr, int inputDeviceNum ) {
 	sysEvent_t * ev = &eventQue[ eventHead & MASK_QUED_EVENTS ];
 
 	if ( eventHead - eventTail >= MAX_QUED_EVENTS ) {
@@ -925,7 +971,7 @@ void Sys_QueEvent( sysEventType_t type, int value, int value2, int ptrLength, vo
 	ev->evType = type;
 	ev->evValue = value;
 	ev->evValue2 = value2;
-	ev->evPtrLength = ptrLength;
+	ev->evPtrLength = static_cast<int>(ptrLength);
 	ev->evPtr = ptr;
 	ev->inputDevice = inputDeviceNum;
 }
@@ -948,12 +994,12 @@ void Sys_PumpEvents() {
 
 		// save the msg time, because wndprocs don't have access to the timestamp
 		if ( win32.sysMsgTime && win32.sysMsgTime > (int)msg.time ) {
-			// don't ever let the event times run backwards	
+			// don't ever let the event times run backwards
 //			common->Printf( "Sys_PumpEvents: win32.sysMsgTime (%i) > msg.time (%i)\n", win32.sysMsgTime, msg.time );
 		} else {
 			win32.sysMsgTime = msg.time;
 		}
- 
+
 		TranslateMessage (&msg);
       	DispatchMessage (&msg);
 	}
@@ -983,7 +1029,7 @@ void Sys_GenerateEvents() {
 	s = Sys_ConsoleInput();
 	if ( s ) {
 		char	*b;
-		int		len;
+		size_t	len;
 
 		len = strlen( s ) + 1;
 		b = (char *)Mem_Alloc( len, TAG_EVENTS );
@@ -1017,7 +1063,7 @@ sysEvent_t Sys_GetEvent() {
 		return eventQue[ ( eventTail - 1 ) & MASK_QUED_EVENTS ];
 	}
 
-	// return the empty event 
+	// return the empty event
 	memset( &ev, 0, sizeof( ev ) );
 
 	return ev;
@@ -1138,7 +1184,7 @@ void Sys_Init() {
 	if ( !idStr::Icmp( win32.sys_cpustring.GetString(), "detect" ) ) {
 		idStr string;
 
-		common->Printf( "%1.0f MHz ", Sys_ClockTicksPerSecond() / 1000000.0f );
+		common->Printf( "%1.1f GHz ", Sys_ClockTicksPerSecond() / 1000000000.0f );
 
 		win32.cpuid = Sys_GetCPUId();
 
@@ -1264,8 +1310,6 @@ void Win_Frame() {
 	}
 }
 
-extern "C" { void _chkstk( int size ); };
-void clrstk();
 
 /*
 ====================
@@ -1278,19 +1322,6 @@ void TestChkStk() {
 	buffer[0] = 1;
 }
 
-/*
-====================
-HackChkStk
-====================
-*/
-void HackChkStk() {
-	DWORD	old;
-	VirtualProtect( _chkstk, 6, PAGE_EXECUTE_READWRITE, &old );
-	*(byte *)_chkstk = 0xe9;
-	*(int *)((int)_chkstk+1) = (int)clrstk - (int)_chkstk - 5;
-
-	TestChkStk();
-}
 
 /*
 ====================
@@ -1339,22 +1370,24 @@ void EmailCrashReport( LPSTR messageText ) {
 
 	lastEmailTime = Sys_Milliseconds();
 
-	HINSTANCE mapi = LoadLibrary( "MAPI32.DLL" ); 
+	HINSTANCE mapi = LoadLibrary( "MAPI32.DLL" );
 	if( mapi ) {
 		LPMAPISENDMAIL	MAPISendMail = ( LPMAPISENDMAIL )GetProcAddress( mapi, "MAPISendMail" );
 		if( MAPISendMail ) {
-			MapiRecipDesc toProgrammers =
+			char lpszName[] = "a-decay Crash";
+			char lpszAddress[] = "SMTP:lpwstr@gmail.com";
+			MapiRecipDesc toProgrammers
 			{
-				0,										// ulReserved
+					0,									// ulReserved
 					MAPI_TO,							// ulRecipClass
-					"DOOM 3 Crash",						// lpszName
-					"SMTP:programmers@idsoftware.com",	// lpszAddress
+					lpszName,							// lpszName
+					lpszAddress, 						// lpszAddress
 					0,									// ulEIDSize
 					0									// lpEntry
 			};
-
+			char lpszSubject[] = "a-decay Fatal Error";
 			MapiMessage		message = {};
-			message.lpszSubject = "DOOM 3 Fatal Error";
+			message.lpszSubject = lpszSubject;
 			message.lpszNoteText = messageText;
 			message.nRecipCount = 1;
 			message.lpRecips = &toProgrammers;
@@ -1371,7 +1404,7 @@ void EmailCrashReport( LPSTR messageText ) {
 	}
 }
 
-int Sys_FPU_PrintStateFlags( char *ptr, int ctrl, int stat, int tags, int inof, int inse, int opof, int opse );
+const char* Sys_FPU_GetState();
 
 /*
 ====================
@@ -1382,18 +1415,8 @@ EXCEPTION_DISPOSITION __cdecl _except_handler( struct _EXCEPTION_RECORD *Excepti
 												struct _CONTEXT *ContextRecord, void * DispatcherContext ) {
 
 	static char msg[ 8192 ];
-	char FPUFlags[2048];
 
-	Sys_FPU_PrintStateFlags( FPUFlags, ContextRecord->FloatSave.ControlWord,
-										ContextRecord->FloatSave.StatusWord,
-										ContextRecord->FloatSave.TagWord,
-										ContextRecord->FloatSave.ErrorOffset,
-										ContextRecord->FloatSave.ErrorSelector,
-										ContextRecord->FloatSave.DataOffset,
-										ContextRecord->FloatSave.DataSelector );
-
-
-	sprintf( msg, 
+	sprintf( msg,
 		"Please describe what you were doing when DOOM 3 crashed!\n"
 		"If this text did not pop into your email client please copy and email it to programmers@idsoftware.com\n"
 			"\n"
@@ -1405,11 +1428,11 @@ EXCEPTION_DISPOSITION __cdecl _except_handler( struct _EXCEPTION_RECORD *Excepti
 			"\n"
 			"%s\n"
 			"\n"
-			"EAX = 0x%08x EBX = 0x%08x\n"
-			"ECX = 0x%08x EDX = 0x%08x\n"
-			"ESI = 0x%08x EDI = 0x%08x\n"
-			"EIP = 0x%08x ESP = 0x%08x\n"
-			"EBP = 0x%08x EFL = 0x%08x\n"
+			"RAX = 0x%016llx RBX = 0x%016llx\n"
+			"RCX = 0x%016llx EDX = 0x%016llx\n"
+			"RSI = 0x%016llx EDI = 0x%016llx\n"
+			"RIP = 0x%016llx ESP = 0x%016llx\n"
+			"RBP = 0x%016llx EFL = 0x%08x\n"
 			"\n"
 			"CS = 0x%04x\n"
 			"SS = 0x%04x\n"
@@ -1423,18 +1446,18 @@ EXCEPTION_DISPOSITION __cdecl _except_handler( struct _EXCEPTION_RECORD *Excepti
 			ExceptionRecord->ExceptionCode,
 			ExceptionRecord->ExceptionAddress,
 			GetExceptionCodeInfo( ExceptionRecord->ExceptionCode ),
-			ContextRecord->Eax, ContextRecord->Ebx,
-			ContextRecord->Ecx, ContextRecord->Edx,
-			ContextRecord->Esi, ContextRecord->Edi,
-			ContextRecord->Eip, ContextRecord->Esp,
-			ContextRecord->Ebp, ContextRecord->EFlags,
+			ContextRecord->Rax, ContextRecord->Rbx,
+			ContextRecord->Rcx, ContextRecord->Rdx,
+			ContextRecord->Rsi, ContextRecord->Rdi,
+			ContextRecord->Rip, ContextRecord->Rsp,
+			ContextRecord->Rbp, ContextRecord->EFlags,
 			ContextRecord->SegCs,
 			ContextRecord->SegSs,
 			ContextRecord->SegDs,
 			ContextRecord->SegEs,
 			ContextRecord->SegFs,
 			ContextRecord->SegGs,
-			FPUFlags
+			Sys_FPU_GetState()
 		);
 
 	EmailCrashReport( msg );
@@ -1461,10 +1484,11 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 
 	const HCURSOR hcurSave = ::SetCursor( LoadCursor( 0, IDC_WAIT ) );
 
-	Sys_SetPhysicalWorkMemory( 192 << 20, 1024 << 20 );
+	Sys_SetPhysicalWorkMemory(1024 << 20, 4096 << 20 );
 
 	Sys_GetCurrentMemoryStatus( exeLaunchMemoryStats );
 
+	Sys_SetDPIAwareness();
 #if 0
     DWORD handler = (DWORD)_except_handler;
     __asm
@@ -1500,7 +1524,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 	_CrtSetDbgFlag( 0 );
 #endif
 
-//	Sys_FPU_EnableExceptions( TEST_FPU_EXCEPTIONS );
+	Sys_FPU_EnableExceptions( TEST_FPU_EXCEPTIONS );
 	Sys_FPU_SetPrecision( FPU_PRECISION_DOUBLE_EXTENDED );
 
 	common->Init( 0, NULL, lpCmdLine );
@@ -1520,7 +1544,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 		Sys_ShowConsole( 0, false );
 	}
 
-#ifdef SET_THREAD_AFFINITY 
+#ifdef SET_THREAD_AFFINITY
 	// give the main thread an affinity for the first cpu
 	SetThreadAffinityMask( GetCurrentThread(), 1 );
 #endif
@@ -1547,42 +1571,6 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 
 	// never gets here
 	return 0;
-}
-
-/*
-====================
-clrstk
-
-I tried to get the run time to call this at every function entry, but
-====================
-*/
-static int	parmBytes;
-__declspec( naked ) void clrstk() {
-	// eax = bytes to add to stack
-	__asm {
-		mov		[parmBytes],eax
-        neg     eax                     ; compute new stack pointer in eax
-        add     eax,esp
-        add     eax,4
-        xchg    eax,esp
-        mov     eax,dword ptr [eax]		; copy the return address
-        push    eax
-        
-        ; clear to zero
-        push	edi
-        push	ecx
-        mov		edi,esp
-        add		edi,12
-        mov		ecx,[parmBytes]
-		shr		ecx,2
-        xor		eax,eax
-		cld
-        rep	stosd
-        pop		ecx
-        pop		edi
-        
-        ret
-	}
 }
 
 /*

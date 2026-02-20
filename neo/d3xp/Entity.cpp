@@ -1418,7 +1418,7 @@ void idEntity::ProjectOverlay( const idVec3 &origin, const idVec3 &dir, float si
 		return;
 	}
 
-	idMath::SinCos16( gameLocal.random.RandomFloat() * idMath::TWO_PI, s, c );
+	idMath::SinCos( gameLocal.random.RandomFloat() * idMath::TWO_PI, s, c );
 
 	axis[2] = -dir;
 	axis[2].NormalVectors( axistemp[0], axistemp[1] );
@@ -3614,7 +3614,7 @@ bool idEntity::HandleGuiCommands( idEntity *entityGui, const char *cmds ) {
 	if ( entityGui && cmds && *cmds ) {
 		idLexer src;
 		idToken token, token2, token3, token4;
-		src.LoadMemory( cmds, strlen( cmds ), "guiCommands" );
+		src.LoadMemory( cmds, (int) strlen( cmds ), "guiCommands" );
 		while( 1 ) {
 
 			if ( !src.ReadToken( &token ) ) {
@@ -3944,7 +3944,7 @@ idCurve_Spline<idVec3> *idEntity::GetSpline() const {
 		return NULL;
 	}
 
-	idStr str = kv->GetKey().Right( kv->GetKey().Length() - strlen( curveTag ) );
+	idStr str = kv->GetKey().Right( kv->GetKey().Length() - (int) strlen( curveTag ) );
 	if ( str.Icmp( "CatmullRomSpline" ) == 0 ) {
 		spline = new (TAG_ENTITY) idCurve_CatmullRomSpline<idVec3>();
 	} else if ( str.Icmp( "nubs" ) == 0 ) {

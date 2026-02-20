@@ -156,7 +156,7 @@ void idRenderModelLiquid::WaterDrop( int x, int y, float *page ) {
 			square = cy*cy + cx*cx;
 			if ( square < radsquare ) {
 				dist = idMath::Sqrt( (float)square * invlength );
-				page[verts_x*(cy+y) + cx+x] += idMath::Cos16( dist * idMath::PI * 0.5f ) * drop_height;
+				page[verts_x*(cy+y) + cx+x] += idMath::Cos( dist * idMath::PI * 0.5f ) * drop_height;
 			}
 		}
 	}

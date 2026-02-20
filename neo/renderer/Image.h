@@ -2,9 +2,9 @@
 ===========================================================================
 
 Doom 3 BFG Edition GPL Source Code
-Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company. 
+Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company.
 
-This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").  
+This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").
 
 Doom 3 BFG Edition Source Code is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -54,12 +54,15 @@ typedef enum {
 	TD_LOOKUP_TABLE_RGBA,	// RGBA lookup table
 	TD_COVERAGE,			// coverage map for fill depth pass when YCoCG is used
 	TD_DEPTH,				// depth buffer copy for motion blur
+	TD_BRDF_LUT,
+	TD_ENV_MAP,
 } textureUsage_t;
 
 typedef enum {
 	CF_2D,			// not a cube map
 	CF_NATIVE,		// _px, _nx, _py, etc, directly sent to GL
-	CF_CAMERA		// _forward, _back, etc, rotated and flipped as needed before sending to GL
+	CF_CAMERA,		// _forward, _back, etc, rotated and flipped as needed before sending to GL
+	CF_DDS
 } cubeFiles_t;
 
 #include "ImageOpts.h"
@@ -71,7 +74,7 @@ class idImage {
 public:
 				idImage( const char * name );
 
-	const char *	GetName() const { return imgName; }
+	const char *GetName() const { return imgName; }
 
 	// Makes this image active on the current GL texture unit.
 	// automatically enables or disables cube mapping
@@ -85,9 +88,9 @@ public:
 	// data goes from the bottom to the top line of the image, as OpenGL expects it
 	// These perform an implicit Bind() on the current texture unit
 	// FIXME: should we implement cinematics this way, instead of with explicit calls?
-	void		GenerateImage( const byte *pic, int width, int height, 
+	void		GenerateImage( const byte *pic, int width, int height,
 					   textureFilter_t filter, textureRepeat_t repeat, textureUsage_t usage );
-	void		GenerateCubeImage( const byte *pic[6], int size, 
+	void		GenerateCubeImage( const byte *pic[6], int size,
 						textureFilter_t filter, textureUsage_t usage );
 
 	void		CopyFramebuffer( int x, int y, int width, int height );
@@ -125,24 +128,24 @@ public:
 	// or resized.
 	void		PurgeImage();
 
-	// z is 0 for 2D textures, 0 - 5 for cube maps, and 0 - uploadDepth for 3D textures. Only 
-	// one plane at a time of 3D textures can be uploaded. The data is assumed to be correct for 
-	// the format, either bytes, halfFloats, floats, or DXT compressed. The data is assumed to 
-	// be in OpenGL RGBA format, the consoles may have to reorganize. pixelPitch is only needed 
-	// when updating from a source subrect. Width, height, and dest* are always in pixels, so 
+	// z is 0 for 2D textures, 0 - 5 for cube maps, and 0 - uploadDepth for 3D textures. Only
+	// one plane at a time of 3D textures can be uploaded. The data is assumed to be correct for
+	// the format, either bytes, halfFloats, floats, or DXT compressed. The data is assumed to
+	// be in OpenGL RGBA format, the consoles may have to reorganize. pixelPitch is only needed
+	// when updating from a source subrect. Width, height, and dest* are always in pixels, so
 	// they must be a multiple of four for dxt data.
-	void		SubImageUpload( int mipLevel, int destX, int destY, int destZ, 
-								int width, int height, const void * data, 
+	void		SubImageUpload( int mipLevel, int destX, int destY, int destZ,
+								int width, int height, const void * data,
 								int pixelPitch = 0 ) const;
 
-	// SetPixel is assumed to be a fast memory write on consoles, degenerating to a 
+	// SetPixel is assumed to be a fast memory write on consoles, degenerating to a
 	// SubImageUpload on PCs.  Used to update the page mapping images.
 	// We could remove this now, because the consoles don't use the intermediate page mapping
 	// textures now that they can pack everything into the virtual page table images.
 	void		SetPixel( int mipLevel, int x, int y, const void * data, int dataSize );
 
-	// some scratch images are dynamically resized based on the display window size.  This 
-	// simply purges the image and recreates it if the sizes are different, so it should not be 
+	// some scratch images are dynamically resized based on the display window size.  This
+	// simply purges the image and recreates it if the sizes are different, so it should not be
 	// done under any normal circumstances, and probably not at all on consoles.
 	void		Resize( int width, int height );
 
@@ -188,7 +191,6 @@ private:
 	GLuint				dataFormat;
 	GLuint				dataType;
 
-
 };
 
 ID_INLINE idImage::idImage( const char * name ) : imgName( name ) {
@@ -220,7 +222,7 @@ void	R_WriteTGA( const char *filename, const byte *data, int width, int height, 
 class idImageManager {
 public:
 
-	idImageManager() 
+	idImageManager()
 	{
 		insideLevelLoad = false;
 		preloadingMapImages = false;
@@ -285,6 +287,7 @@ public:
 	void CreateIntrinsicImages();
 	idImage *			defaultImage;
 	idImage *			flatNormalMap;				// 128 128 255 in all pixels
+	idImage *			specDefaultMap;				// 0 128 255 255 in all pixels
 	idImage *			alphaNotchImage;			// 2x1 texture with just 1110 and 1111 with point sampling
 	idImage *			whiteImage;					// full of 0xff
 	idImage *			blackImage;					// full of 0x00
@@ -298,10 +301,10 @@ public:
 	idImage *			currentDepthImage;				// for motion blur
 	idImage *			originalCurrentRenderImage;		// currentRenderImage before any changes for stereo rendering
 	idImage *			loadingIconImage;				// loading icon must exist always
-	idImage *			hellLoadingIconImage;				// loading icon must exist always
+	idImage *			hellLoadingIconImage;			// loading icon must exist always
 
 	//--------------------------------------------------------
-	
+
 	idImage *			AllocImage( const char *name );
 	idImage *			AllocStandaloneImage( const char *name );
 
@@ -361,4 +364,3 @@ IMAGEPROGRAM
 
 void R_LoadImageProgram( const char *name, byte **pic, int *width, int *height, ID_TIME_T *timestamp, textureUsage_t * usage = NULL );
 const char *R_ParsePastImageProgram( idLexer &src );
-

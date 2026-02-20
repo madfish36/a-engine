@@ -34,7 +34,7 @@ If you have questions concerning this license or the applicable additional terms
 typedef uint8 peerMask_t;
 static const int MAX_PLAYERS			= 8;
 
-static const int MAX_REDUNDANT_CMDS	= 3;
+static const int MAX_REDUNDANT_CMDS		= 3;
 
 static const int MAX_LOCAL_PLAYERS		= 2;
 static const int MAX_INPUT_DEVICES		= 4;

@@ -222,6 +222,8 @@ private:
 
 	SWF_NATIVE_FUNCTION_SWF_DECLARE( toUpper );
 
+	SWF_NATIVE_FUNCTION_SWF_DECLARE( msgPost );
+
 	SWF_NATIVE_VAR_DECLARE_NESTED_READONLY( platform, idSWFScriptFunction_getPlatform, Call( object, idSWFParmList() ) );
 	SWF_NATIVE_VAR_DECLARE_NESTED( blackbars, idSWF );
 	SWF_NATIVE_VAR_DECLARE_NESTED( crop, idSWF );

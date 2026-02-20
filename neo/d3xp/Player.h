@@ -290,9 +290,9 @@ public:
 	int						lastSndHitTime;			// MP hit sound - != lastHitTime because we throttle
 	int						lastSavingThrowTime;	// for the "free miss" effect
 
-	bool					pdaHasBeenRead[ MAX_PLAYER_PDA ];
-	bool					videoHasBeenViewed[ MAX_PLAYER_VIDEO ];
-	bool					audioHasBeenHeard[ MAX_PLAYER_AUDIO ][ MAX_PLAYER_AUDIO_ENTRIES ];
+	//bool					pdaHasBeenRead[ MAX_PLAYER_PDA ];
+	//bool					videoHasBeenViewed[ MAX_PLAYER_VIDEO ];
+	//bool					audioHasBeenHeard[ MAX_PLAYER_AUDIO ][ MAX_PLAYER_AUDIO_ENTRIES ];
 
 	idScriptBool			AI_FORWARD;
 	idScriptBool			AI_BACKWARD;
@@ -318,8 +318,8 @@ public:
 	idInventory				inventory;
 	idTarget_SetPrimaryObjective * primaryObjective;
 
-	int						flashlightBattery;
-	idEntityPtr<idWeapon>	flashlight;
+	//int						flashlightBattery;
+	//idEntityPtr<idWeapon>	flashlight;
 
 	idEntityPtr<idWeapon>	weapon;
 	idMenuHandler_HUD *		hudManager;
@@ -329,15 +329,15 @@ public:
 	bool					objectiveSystemOpen;
 	int						quickSlot[ NUM_QUICK_SLOTS ];
 
-	int						weapon_soulcube;
-	int						weapon_pda;
-	int						weapon_fists;
-	int						weapon_flashlight;
-	int						weapon_chainsaw;
-	int						weapon_bloodstone;
-	int						weapon_bloodstone_active1;
-	int						weapon_bloodstone_active2;
-	int						weapon_bloodstone_active3;
+	//int						weapon_soulcube;
+	//int						weapon_pda;
+	//int						weapon_fists;
+	//int						weapon_flashlight;
+	//int						weapon_chainsaw;
+	//int						weapon_bloodstone;
+	//int						weapon_bloodstone_active1;
+	//int						weapon_bloodstone_active2;
+	//int						weapon_bloodstone_active3;
 	bool					harvest_lock;
 
 	int						heartRate;
@@ -367,7 +367,7 @@ public:
 	int						controllerShakeTimeGroup;
 
 	bool					hiddenWeapon;		// if the weapon is hidden ( in noWeapons maps )
-	idEntityPtr<idProjectile> soulCubeProjectile;
+	//idEntityPtr<idProjectile> soulCubeProjectile;
 
 	idAimAssist				aimAssist;
 
@@ -566,7 +566,7 @@ public:
 	bool					CanShowWeaponViewmodel() const;
 
 	void					AddAIKill();
-	void					SetSoulCubeProjectile( idProjectile *projectile );
+	//void					SetSoulCubeProjectile( idProjectile *projectile );
 
 	void					AdjustHeartRate( int target, float timeInSecs, float delay, bool force );
 	void					SetCurrentHeartRate();
@@ -819,9 +819,9 @@ private:
 	void					Weapon_NPC();
 	void					Weapon_GUI();
 	void					UpdateWeapon();
-	void					UpdateFlashlight();
-	void					FlashlightOn();
-	void					FlashlightOff();
+	//void					UpdateFlashlight();
+	//void					FlashlightOn();
+	//void					FlashlightOff();
 	void					UpdateSpectating();
 	void					SpectateFreeFly( bool force );	// ignore the timeout to force when followed spec is no longer valid
 	void					SpectateCycle();

@@ -542,7 +542,7 @@ int idFile::WriteBool( const bool value ) {
  =================
  */
 int idFile::WriteString( const char *value ) {
-	int len = strlen( value );
+	int len = (int) strlen( value );
 	WriteInt( len );
     return Write( value, len );
 }
@@ -718,7 +718,7 @@ int idFile_Memory::Read( void *buffer, int len ) {
 	}
 
 	if ( curPtr + len > filePtr + fileSize ) {
-		len = filePtr + fileSize - curPtr;
+		len = (int) (filePtr + fileSize - curPtr);
 	}
 	memcpy( buffer, curPtr, len );
 	curPtr += len;
@@ -766,7 +766,7 @@ int idFile_Memory::Write( const void *buffer, int len ) {
 		return 0;
 	}
 
-	int alloc = curPtr + len + 1 - filePtr - allocated; // need room for len+1
+	int alloc = (int) (curPtr + len + 1 - filePtr - allocated); // need room for len+1
 	if ( alloc > 0 ) {
 		if ( maxSize != 0 ) {
 			common->Error( "idFile_Memory::Write: exceeded maximum size %d", maxSize );
@@ -819,7 +819,7 @@ idFile_Memory::Length
 =================
 */
 int idFile_Memory::Length() const {
-	return fileSize;
+	return (int) fileSize;
 }
 
 /*

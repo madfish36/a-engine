@@ -2,9 +2,9 @@
 ===========================================================================
 
 Doom 3 BFG Edition GPL Source Code
-Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company. 
+Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company.
 
-This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").  
+This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").
 
 Doom 3 BFG Edition Source Code is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -75,13 +75,13 @@ public:
 
 	int					GetSize() const { return ( size & ~MAPPED_FLAG ); }
 	int					GetAllocedSize() const { return ( ( size & ~MAPPED_FLAG ) + 15 ) & ~15; }
-	void *				GetAPIObject() const { return apiObject; }
+	unsigned int		GetAPIObject() const { return apiObject; }
 	int					GetOffset() const { return ( offsetInOtherBuffer & ~OWNS_BUFFER_FLAG ); }
 
 private:
 	int					size;					// size in bytes
 	int					offsetInOtherBuffer;	// offset in bytes
-	void *				apiObject;
+	unsigned int		apiObject;
 
 	// sizeof() confuses typeinfo...
 	static const int	MAPPED_FLAG			= 1 << ( 4 /* sizeof( int ) */ * 8 - 1 );
@@ -124,13 +124,13 @@ public:
 
 	int					GetSize() const { return ( size & ~MAPPED_FLAG ); }
 	int					GetAllocedSize() const { return ( ( size & ~MAPPED_FLAG ) + 15 ) & ~15; }
-	void *				GetAPIObject() const { return apiObject; }
+	unsigned int		GetAPIObject() const { return apiObject; }
 	int					GetOffset() const { return ( offsetInOtherBuffer & ~OWNS_BUFFER_FLAG ); }
 
 private:
 	int					size;					// size in bytes
 	int					offsetInOtherBuffer;	// offset in bytes
-	void *				apiObject;
+	unsigned int		apiObject;
 
 	// sizeof() confuses typeinfo...
 	static const int	MAPPED_FLAG			= 1 << ( 4 /* sizeof( int ) */ * 8 - 1 );
@@ -149,7 +149,7 @@ private:
 ================================================
 idJointBuffer
 
-IMPORTANT NOTICE: on the PC, binding to an offset in uniform buffer objects 
+IMPORTANT NOTICE: on the PC, binding to an offset in uniform buffer objects
 is limited to GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, which is 256 on current nvidia cards,
 so joint offsets, which are multiples of 48 bytes, must be in multiples of 16 = 768 bytes.
 ================================================
@@ -176,7 +176,7 @@ public:
 
 	int					GetNumJoints() const { return ( numJoints & ~MAPPED_FLAG ); }
 	int					GetAllocedSize() const { return ( numJoints & ~MAPPED_FLAG ) * 3 * 4 * sizeof( float ); }
-	void *				GetAPIObject() const { return apiObject; }
+	unsigned int		GetAPIObject() const { return apiObject; }
 	int					GetOffset() const { return ( offsetInOtherBuffer & ~OWNS_BUFFER_FLAG ); }
 
 	void				Swap( idJointBuffer & other );
@@ -184,7 +184,7 @@ public:
 private:
 	int					numJoints;
 	int					offsetInOtherBuffer;	// offset in bytes
-	void *				apiObject;
+	unsigned int		apiObject;
 
 	// sizeof() confuses typeinfo...
 	static const int	MAPPED_FLAG			= 1 << ( 4 /* sizeof( int ) */ * 8 - 1 );

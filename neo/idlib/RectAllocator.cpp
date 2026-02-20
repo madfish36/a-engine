@@ -123,9 +123,11 @@ void RectAllocator( const idList<idVec2i> &inputSizes, idList<idVec2i> &outputPo
 
 				// don't let an image get larger than 1024 DXT block, or PS3 crashes
 				// FIXME: pass maxSize in as a parameter
-				if ( newMax[0] > 1024 || newMax[1] > 1024 ) {
-					continue;
-				}
+
+				//MF
+				// if ( newMax[0] > 1024 || newMax[1] > 1024 ) {
+				// 	continue;
+				// }
 
 				// if we have already found a spot that keeps the image smaller, don't bother checking here
 				// This calculation biases the rect towards more square shapes instead of

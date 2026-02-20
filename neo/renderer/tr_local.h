@@ -2,9 +2,9 @@
 ===========================================================================
 
 Doom 3 BFG Edition GPL Source Code
-Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company. 
+Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company.
 
-This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").  
+This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").
 
 Doom 3 BFG Edition Source Code is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -191,6 +191,8 @@ public:
 
 	const idMaterial *		lightShader;			// guaranteed to be valid, even if parms.shader isn't
 	idImage *				falloffImage;
+	idImage *				environmentMap;
+	idImage *				lutMap;
 
 	idVec3					globalLightOrigin;		// accounting for lightCenter and parallel
 	idBounds				globalLightBounds;
@@ -243,7 +245,7 @@ public:
 
 
 	// the local bounds used to place entityRefs, either from parms for dynamic entities, or a model bounds
-	idBounds				localReferenceBounds;	
+	idBounds				localReferenceBounds;
 
 	// axis aligned bounding box in world space, derived from refernceBounds and
 	// modelMatrix in R_CreateEntityRefs()
@@ -306,8 +308,10 @@ struct viewLight_t {
 	idPlane					fogPlane;					// fog plane for backend fog volume rendering
 	idRenderMatrix			inverseBaseLightProject;	// the matrix for deforming the 'zeroOneCubeModel' to exactly cover the light volume in world space
 	const idMaterial *		lightShader;				// light shader used by backend
-	const float	*			shaderRegisters;			// shader registers used by backend
+	const float	*			 shaderRegisters;			// shader registers used by backend
 	idImage *				falloffImage;				// falloff image used by backend
+	idImage *				environmentMap;				// environment image used by backend
+	//idImage *				lutMap;						// LUT texture image used by backend
 
 	drawSurf_t *			globalShadows;				// shadow everything
 	drawSurf_t *			localInteractions;			// don't get local shadows
@@ -344,7 +348,7 @@ struct viewEntity_t {
 
 	bool					weaponDepthHack;
 	float					modelDepthHack;
-		
+
 	float					modelMatrix[16];		// local coords to global coords
 	float					modelViewMatrix[16];	// local coords to eye coords
 
@@ -401,7 +405,7 @@ struct viewDef_t {
 	// these are real physical pixel values, possibly scaled and offset from the
 	// renderView x/y/width/height
 
-	viewDef_t *			superView;				// never go into an infinite subview loop 
+	viewDef_t *			superView;				// never go into an infinite subview loop
 	const drawSurf_t *	subviewSurface;
 
 	// drawSurfs are the visible surfaces of the viewEntities, sorted
@@ -439,8 +443,8 @@ struct drawInteraction_t {
 	idVec4				diffuseColor;	// may have a light color baked into it
 	idVec4				specularColor;	// may have a light color baked into it
 	stageVertexColor_t	vertexColor;	// applies to both diffuse and specular
-
-	int					ambientLight;	// use tr.ambientNormalMap instead of normalization cube map 
+	colorStage_t		vertexColorMask;
+	int					ambientLight;	// use tr.ambientNormalMap instead of normalization cube map
 
 	// these are loaded into the vertex program
 	idVec4				bumpMatrix[2];
@@ -638,7 +642,7 @@ struct backEndCounters_t {
 
 	int		c_copyFrameBuffer;
 
-	float	c_overDraw;	
+	float	c_overDraw;
 
 	int		totalMicroSec;			// total microseconds for backend run
 	int		shadowMicroSec;
@@ -738,7 +742,7 @@ public:
 	virtual void			UnCrop();
 	virtual bool			UploadImage( const char *imageName, const byte *data, int width, int height );
 
-	
+
 
 public:
 	// internal functions
@@ -776,6 +780,8 @@ public:
 	const idMaterial *		defaultPointLight;
 	const idMaterial *		defaultProjectedLight;
 	const idMaterial *		defaultMaterial;
+	const idMaterial *		defaultAmbientLight;
+
 	idImage *				testImage;
 	idCinematic *			testVideo;
 	int						testVideoStartTime;
@@ -1026,7 +1032,7 @@ void		GLimp_Shutdown();
 // Destroys the rendering context, closes the window, resets the resolution,
 // and resets the gamma ramps.
 
-void		GLimp_SetGamma( unsigned short red[256], 
+void		GLimp_SetGamma( unsigned short red[256],
 						    unsigned short green[256],
 							unsigned short blue[256] );
 // Sets the hardware gamma ramps for gamma and brightness adjustment.
@@ -1269,7 +1275,7 @@ struct deformInfo_t {
 
 
 // if outputVertexes is not NULL, it will point to a newly allocated set of verts that includes the mirrored ones
-deformInfo_t *		R_BuildDeformInfo( int numVerts, const idDrawVert *verts, int numIndexes, const int *indexes, 
+deformInfo_t *		R_BuildDeformInfo( int numVerts, const idDrawVert *verts, int numIndexes, const int *indexes,
 										bool useUnsmoothedTangents );
 void				R_FreeDeformInfo( deformInfo_t *deformInfo );
 int					R_DeformInfoMemoryUsed( deformInfo_t *deformInfo );

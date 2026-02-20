@@ -2,9 +2,9 @@
 ===========================================================================
 
 Doom 3 BFG Edition GPL Source Code
-Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company. 
+Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company.
 
-This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").  
+This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").
 
 Doom 3 BFG Edition Source Code is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -76,7 +76,7 @@ void R_ToggleSmpFrame() {
 	frameData = &smpFrameData[smpFrame % NUM_FRAME_DATA];
 
 	// reset the memory allocation
-	const unsigned int bytesNeededForAlignment = FRAME_ALLOC_ALIGNMENT - ( (unsigned int)frameData->frameMemory & ( FRAME_ALLOC_ALIGNMENT - 1 ) );
+	const uintptr_t bytesNeededForAlignment = FRAME_ALLOC_ALIGNMENT - ( (uintptr_t)frameData->frameMemory & ( FRAME_ALLOC_ALIGNMENT - 1 ) );
 	frameData->frameMemoryAllocated.SetValue( bytesNeededForAlignment );
 	frameData->frameMemoryUsed.SetValue( 0 );
 
@@ -234,7 +234,6 @@ R_SortDrawSurfs
 */
 static void R_SortDrawSurfs( drawSurf_t ** drawSurfs, const int numDrawSurfs ) {
 #if 1
-
 	uint64 * indices = (uint64 *) _alloca16( numDrawSurfs * sizeof( indices[0] ) );
 
 	// sort the draw surfs based on:
@@ -253,7 +252,7 @@ static void R_SortDrawSurfs( drawSurf_t ** drawSurfs, const int numDrawSurfs ) {
 			idRenderMatrix::DepthBoundsForBounds( min, max, drawSurfs[i]->space->mvp, drawSurfs[i]->frontEndGeo->bounds );
 			dist = idMath::Ftoui16( min * 0xFFFF );
 		}
-		
+
 		indices[i] = ( ( numDrawSurfs - i ) & 0xFFFF ) | ( dist << 16 ) | ( (uint64) ( *(uint32 *)&sort ) << 32 );
 	}
 
@@ -262,15 +261,15 @@ static void R_SortDrawSurfs( drawSurf_t ** drawSurfs, const int numDrawSurfs ) {
 	int64 hi[MAX_LEVELS];
 
 	// Keep the top of the stack in registers to avoid load-hit-stores.
-	register int64 st_lo = 0;
-	register int64 st_hi = numDrawSurfs - 1;
-	register int64 level = 0;
+	int64 st_lo = 0;
+	int64 st_hi = numDrawSurfs - 1;
+	int64 level = 0;
 
 	for ( ; ; ) {
-		register int64 i = st_lo;
-		register int64 j = st_hi;
+		int64 i = st_lo;
+		int64 j = st_hi;
 		if ( j - i >= 4 && level < MAX_LEVELS - 1 ) {
-			register uint64 pivot = indices[( i + j ) / 2];
+			uint64 pivot = indices[( i + j ) / 2];
 			do {
 				while ( indices[i] > pivot ) i++;
 				while ( indices[j] < pivot ) j--;
@@ -289,7 +288,7 @@ static void R_SortDrawSurfs( drawSurf_t ** drawSurfs, const int numDrawSurfs ) {
 			level++;
 		} else {
 			for( ; i < j; j-- ) {
-				register int64 m = i;
+				int64 m = i;
 				for ( int64 k = i + 1; k <= j; k++ ) {
 					if ( indices[k] < indices[m] ) {
 						m = k;
@@ -310,6 +309,7 @@ static void R_SortDrawSurfs( drawSurf_t ** drawSurfs, const int numDrawSurfs ) {
 		newDrawSurfs[i] = drawSurfs[numDrawSurfs - ( indices[i] & 0xFFFF )];
 	}
 	memcpy( drawSurfs, newDrawSurfs, numDrawSurfs * sizeof( drawSurfs[0] ) );
+	_freea(indices);
 
 #else
 

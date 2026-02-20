@@ -603,13 +603,15 @@ bool R_LoadDDSCubeMap(const char *imgName, cubeFiles_t extensions, byte *pics[6]
     if (dds_header->size != sizeof(DDS_HEADER)
         || dds_header->ddspf.size != sizeof(DDS_PIXELFORMAT)
         || (dds_header->flags & DDS_HEADER_FLAGS_TEXTURE) != DDS_HEADER_FLAGS_TEXTURE
-        || (dds_header->caps & DDSCAPS_TEXTURE_MIPMAP) != DDSCAPS_TEXTURE_MIPMAP
         || (dds_header->caps2 & DDSCAPS2_CUBEMAP_ALLFACES) != DDSCAPS2_CUBEMAP_ALLFACES
         || (dds_header->height & (dds_header->height - 1)) != 0
         || (dds_header->width & (dds_header->width - 1)) != 0
         || (dds_header->width != dds_header->height)
-        || (dds_header->ddspf.flags & DDS_FOURCC) != DDS_FOURCC
-        || (dds_header->ddspf.fourCC != DDSPF_DXT1.fourCC && dds_header->ddspf.fourCC != DDSPF_DXT5.fourCC)) {
+        || ((dds_header->ddspf.flags & DDS_FOURCC) == DDS_FOURCC
+             && (dds_header->ddspf.fourCC != DDSPF_DXT1.fourCC
+             && dds_header->ddspf.fourCC != DDSPF_DXT5.fourCC))
+        ||((dds_header->ddspf.flags & DDS_RGB) == DDS_RGB)
+            && (dds_header->ddspf.RGBBitCount<24)) {
         common->Error("LoadDDSCubeMap( %s ):  invalid header \n", imgName);
     }
 

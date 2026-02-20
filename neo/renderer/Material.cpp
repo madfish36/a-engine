@@ -1023,6 +1023,10 @@ void idMaterial::ParseFragmentMap( idLexer &src, newShaderStage_t *newStage ) {
 			cubeMap = CF_CAMERA;
 			continue;
 		}
+		if ( !token.Icmp( "ddsCubeMap" ) ) {
+			cubeMap = CF_DDS;
+			continue;
+		}
 		if ( !token.Icmp( "nearest" ) ) {
 			tf = TF_NEAREST;
 			continue;
@@ -1276,7 +1280,12 @@ void idMaterial::ParseStage( idLexer &src, const textureRepeat_t trpDefault ) {
 			cubeMap = CF_CAMERA;
 			continue;
 		}
-
+		if ( !token.Icmp( "ddsCubeMap" ) ) {
+			str = R_ParsePastImageProgram( src );
+			idStr::Copynz( imageName, str, sizeof( imageName ) );
+			cubeMap = CF_DDS;
+			continue;
+		}
 		if ( !token.Icmp( "ignoreAlphaTest" ) ) {
 			ss->ignoreAlphaTest = true;
 			continue;
@@ -1336,6 +1345,7 @@ void idMaterial::ParseStage( idLexer &src, const textureRepeat_t trpDefault ) {
 			ss->vertexColorMask.registers[3] = ParseExpression( src );
 			continue;
 		}
+
 		// privatePolygonOffset
 		else if ( !token.Icmp( "privatePolygonOffset" ) ) {
 			if ( !src.ReadTokenOnLine( &token ) ) {
@@ -2044,7 +2054,7 @@ void idMaterial::ParseMaterial( idLexer &src ) {
 			continue;
 		}
 
-		else if ( !token.Icmp( "enviroment" ) ) {
+		else if ( !token.Icmp( "environment" ) ) {
 			str = R_ParsePastImageProgram( src );
 			idStr copy = str;	// so other things don't step on it
 			environmentMap = globalImages->ImageFromFile( copy, TF_DEFAULT, TR_CLAMP /* TR_CLAMP_TO_ZERO */, TD_ENV_MAP,CF_DDS );

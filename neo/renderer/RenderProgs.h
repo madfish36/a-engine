@@ -2,9 +2,9 @@
 ===========================================================================
 
 Doom 3 BFG Edition GPL Source Code
-Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company. 
+Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company.
 
-This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").  
+This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").
 
 Doom 3 BFG Edition Source Code is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -67,7 +67,7 @@ enum renderParm_t {
 	RENDERPARM_VERTEXCOLOR_ADD,
 
 	// The following are new and can be in any order
-	
+
 	RENDERPARM_COLOR,
 	RENDERPARM_VIEWORIGIN,
 	RENDERPARM_GLOBALEYEPOS,
@@ -113,6 +113,14 @@ enum renderParm_t {
 	RENDERPARM_ENABLE_SKINNING,
 	RENDERPARM_ALPHA_TEST,
 
+	//MF START
+	RENDERPARM_REFLECTIONLOBE_1,
+	RENDERPARM_REFLECTIONLOBE_2,
+	RENDERPARM_REFLECTIONLOBE_MIX,
+	RENDERPARM_REFLECTIONMODIFIER,
+	RENDERPARM_ACESEXPOSITION,
+	RENDERPARM_AMBIENTLIGHT_MIX,
+	//MF END
 	RENDERPARM_TOTAL,
 	RENDERPARM_USER = 128,
 };

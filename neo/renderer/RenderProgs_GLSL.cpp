@@ -2,9 +2,9 @@
 ===========================================================================
 
 Doom 3 BFG Edition GPL Source Code
-Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company. 
+Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company.
 
-This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").  
+This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").
 
 Doom 3 BFG Edition Source Code is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -286,7 +286,14 @@ static const char * GLSLParmNames[] = {
 
 	"rpOverbright",
 	"rpEnableSkinning",
-	"rpAlphaTest"
+	"rpAlphaTest",
+
+	"rpRflLobe1",
+	"rpRflLobe2",
+	"rpRflLobeMix",
+	"rpRflLobeModifier",
+	"rpACESModifier",
+	"rpAmbientMix"
 };
 
 /*
@@ -1030,7 +1037,7 @@ GLuint idRenderProgManager::LoadGLSLShader( GLenum target, const char * name, id
 			qglGetShaderInfoLog( shader, infologLength, &charsWritten, infoLog.Ptr() );
 
 			// catch the strings the ATI and Intel drivers output on success
-			if ( strstr( infoLog.Ptr(), "successfully compiled to run on hardware" ) != NULL || 
+			if ( strstr( infoLog.Ptr(), "successfully compiled to run on hardware" ) != NULL ||
 					strstr( infoLog.Ptr(), "No errors." ) != NULL ) {
 				//idLib::Printf( "%s program %s from %s compiled to run on hardware\n", typeName, GetName(), GetFileName() );
 			} else {
@@ -1202,9 +1209,9 @@ void idRenderProgManager::LoadGLSLProgram( const int programIndex, const int ver
 			if ( strstr( infoLog, "Vertex shader(s) linked, fragment shader(s) linked." ) != NULL || strstr( infoLog, "No errors." ) != NULL ) {
 				//idLib::Printf( "render prog %s from %s linked\n", GetName(), GetFileName() );
 			} else {
-				idLib::Printf( "While linking GLSL program %d with vertexShader %s and fragmentShader %s\n", 
-					programIndex, 
-					( vertexShaderIndex >= 0 ) ? vertexShaders[vertexShaderIndex].name.c_str() : "<Invalid>", 
+				idLib::Printf( "While linking GLSL program %d with vertexShader %s and fragmentShader %s\n",
+					programIndex,
+					( vertexShaderIndex >= 0 ) ? vertexShaders[vertexShaderIndex].name.c_str() : "<Invalid>",
 					( fragmentShaderIndex >= 0 ) ? fragmentShaders[ fragmentShaderIndex ].name.c_str() : "<Invalid>" );
 				idLib::Printf( "%s\n", infoLog );
 			}
@@ -1217,9 +1224,9 @@ void idRenderProgManager::LoadGLSLProgram( const int programIndex, const int ver
 	qglGetProgramiv( program, GL_LINK_STATUS, &linked );
 	if ( linked == GL_FALSE ) {
 		qglDeleteProgram( program );
-		idLib::Error( "While linking GLSL program %d with vertexShader %s and fragmentShader %s\n", 
-			programIndex, 
-			( vertexShaderIndex >= 0 ) ? vertexShaders[vertexShaderIndex].name.c_str() : "<Invalid>", 
+		idLib::Error( "While linking GLSL program %d with vertexShader %s and fragmentShader %s\n",
+			programIndex,
+			( vertexShaderIndex >= 0 ) ? vertexShaders[vertexShaderIndex].name.c_str() : "<Invalid>",
 			( fragmentShaderIndex >= 0 ) ? fragmentShaders[ fragmentShaderIndex ].name.c_str() : "<Invalid>" );
 		return;
 	}
@@ -1291,4 +1298,3 @@ idRenderProgManager::ZeroUniforms
 void idRenderProgManager::ZeroUniforms() {
 	memset( glslUniforms.Ptr(), 0, glslUniforms.Allocated() );
 }
-

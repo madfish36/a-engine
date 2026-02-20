@@ -740,7 +740,7 @@ void idVarDef::PrintInfo( idFile *file, int instructionPointer ) const {
 	int			jumpto;
 	etype_t		etype;
 	int			i;
-	int			len;
+	size_t		len;
 	const char	*ch;
 
 	if ( initialized == initializedConstant ) {
@@ -899,7 +899,7 @@ idScriptObject::Save
 ================
 */
 void idScriptObject::Save( idSaveGame *savefile ) const {
-	size_t size;
+	int size;
 
 	if ( type == &type_object && data == NULL ) {
 		// Write empty string for uninitialized object
@@ -1721,7 +1721,7 @@ void idProgram::CompileStats() {
 		gameLocal.DPrintf( "   %s\n", fileList[ i ].c_str() );
 		stringspace += fileList[ i ].Allocated();
 	}
-	stringspace += fileList.Size();
+	stringspace += (int)fileList.Size();
 
 	numdefs = varDefs.Num();
 	memused = varDefs.Num() * sizeof( idVarDef );
@@ -1729,19 +1729,19 @@ void idProgram::CompileStats() {
 	memused += stringspace;
 
 	for( i = 0; i < types.Num(); i++ ) {
-		memused += types[ i ]->Allocated();
+		memused += (int)types[ i ]->Allocated();
 	}
 
-	funcMem = functions.MemoryUsed();
+	funcMem = (int) functions.MemoryUsed();
 	for( i = 0; i < functions.Num(); i++ ) {
-		funcMem += functions[ i ].Allocated();
+		funcMem += (int)functions[ i ].Allocated();
 	}
 
-	memallocated = funcMem + memused + sizeof( idProgram );
+	memallocated = funcMem + memused + (int) sizeof( idProgram );
 
-	memused += statements.MemoryUsed();
-	memused += functions.MemoryUsed();	// name and filename of functions are shared, so no need to include them
-	memused += sizeof( variables );
+	memused += (int)statements.MemoryUsed();
+	memused += (int)functions.MemoryUsed();	// name and filename of functions are shared, so no need to include them
+	memused += (int)sizeof( variables );
 
 	gameLocal.Printf( "\nMemory usage:\n" );
 	gameLocal.Printf( "     Strings: %d, %d bytes\n", fileList.Num(), stringspace );

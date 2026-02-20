@@ -135,16 +135,16 @@ void idMenuWidget_Button::Update() {
 	}
 
 	// events
-	spriteObject->Set( "onPress", new ( TAG_SWF ) WrapWidgetSWFEvent( this, WIDGET_EVENT_PRESS, 0 ) );
-	spriteObject->Set( "onRelease", new ( TAG_SWF ) WrapWidgetSWFEvent( this, WIDGET_EVENT_RELEASE, 0 ) );
+	spriteObject->Set( "mfOnPress", new ( TAG_SWF ) WrapWidgetSWFEvent( this, WIDGET_EVENT_PRESS, 0 ) );
+	spriteObject->Set( "mfOnRelease", new ( TAG_SWF ) WrapWidgetSWFEvent( this, WIDGET_EVENT_RELEASE, 0 ) );
 
 	idSWFScriptObject * hitBox = spriteObject->GetObject( "hitBox" );
 	if ( hitBox == NULL ) {
 		hitBox = spriteObject;
 	}
 
-	hitBox->Set( "onRollOver", new ( TAG_SWF ) WrapWidgetSWFEvent( this, WIDGET_EVENT_ROLL_OVER, 0 ) );
-	hitBox->Set( "onRollOut", new ( TAG_SWF ) WrapWidgetSWFEvent( this, WIDGET_EVENT_ROLL_OUT, 0 ) );
+	hitBox->Set( "mfOnRollOver", new ( TAG_SWF ) WrapWidgetSWFEvent( this, WIDGET_EVENT_ROLL_OVER, 0 ) );
+	hitBox->Set( "mfOnRollOut", new ( TAG_SWF ) WrapWidgetSWFEvent( this, WIDGET_EVENT_ROLL_OUT, 0 ) );
 }
 
 /*

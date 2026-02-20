@@ -135,7 +135,7 @@ idSWFScriptObject::HasValidProperty
 ========================
 */
 bool idSWFScriptObject::HasValidProperty( const char * name ) {
-	idSWFScriptObject::swfNamedVar_t * const variable = GetVariable( name, false );
+ 	idSWFScriptObject::swfNamedVar_t * const variable = GetVariable( name, false );
 	if ( variable == NULL ) {
 		return false;
 	}

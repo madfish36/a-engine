@@ -2,9 +2,9 @@
 ===========================================================================
 
 Doom 3 BFG Edition GPL Source Code
-Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company. 
+Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company.
 
-This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").  
+This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").
 
 Doom 3 BFG Edition Source Code is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -65,6 +65,8 @@ static void MapGeoBufferSet( geoBufferSet_t &gbs ) {
 		gbs.mappedJointBase = (byte *)gbs.jointBuffer.MapBuffer( BM_WRITE );
 	}
 }
+
+
 
 /*
 ==============
@@ -217,6 +219,100 @@ vertCacheHandle_t idVertexCache::ActuallyAlloc( geoBufferSet_t & vcs, const void
 
 /*
 ==============
+idVertexCache::AllocVertex
+==============
+*/
+vertCacheHandle_t	idVertexCache::AllocVertex( const void * data, int bytes ) {
+	return ActuallyAlloc( frameData[listNum], data, bytes, CACHE_VERTEX );
+}
+
+/*
+==============
+idVertexCache::AllocIndex
+==============
+*/
+vertCacheHandle_t	idVertexCache::AllocIndex( const void * data, int bytes ) {
+	return ActuallyAlloc( frameData[listNum], data, bytes, CACHE_INDEX );
+}
+
+/*
+==============
+idVertexCache::AllocJoint
+==============
+*/
+vertCacheHandle_t	idVertexCache::AllocJoint( const void * data, int bytes ) {
+	return ActuallyAlloc( frameData[listNum], data, bytes, CACHE_JOINT );
+}
+
+/*
+==============
+idVertexCache::AllocStaticVertex
+==============
+*/
+vertCacheHandle_t	idVertexCache::AllocStaticVertex( const void * data, int bytes ) {
+	if ( staticData.vertexMemUsed.GetValue() + bytes > STATIC_VERTEX_MEMORY ) {
+		idLib::FatalError( "AllocStaticVertex failed, increase STATIC_VERTEX_MEMORY" );
+	}
+	return ActuallyAlloc( staticData, data, bytes, CACHE_VERTEX );
+}
+
+/*
+==============
+idVertexCache::AllocStaticIndex
+==============
+*/
+vertCacheHandle_t	idVertexCache::AllocStaticIndex( const void * data, int bytes ) {
+	if ( staticData.indexMemUsed.GetValue() + bytes > STATIC_INDEX_MEMORY ) {
+		idLib::FatalError( "AllocStaticIndex failed, increase STATIC_INDEX_MEMORY" );
+	}
+	return ActuallyAlloc( staticData, data, bytes, CACHE_INDEX );
+}
+
+/*
+==============
+idVertexCache::MappedVertexBuffer
+==============
+*/
+byte* idVertexCache::MappedVertexBuffer( vertCacheHandle_t handle ) {
+	release_assert( !CacheIsStatic( handle ) );
+	const uint64 offset = ( int )( handle >> VERTCACHE_OFFSET_SHIFT ) & VERTCACHE_OFFSET_MASK;
+	const uint64 frameNum = ( int )( handle >> VERTCACHE_FRAME_SHIFT ) & VERTCACHE_FRAME_MASK;
+	release_assert( frameNum == ( currentFrame & VERTCACHE_FRAME_MASK ) );
+	return frameData[ listNum ].mappedVertexBase + offset;
+}
+
+/*
+==============
+idVertexCache::MappedIndexBuffer
+==============
+*/
+byte* idVertexCache::MappedIndexBuffer( vertCacheHandle_t handle ) {
+	release_assert( !CacheIsStatic( handle ) );
+	const uint64 offset = ( int )( handle >> VERTCACHE_OFFSET_SHIFT ) & VERTCACHE_OFFSET_MASK;
+	const uint64 frameNum = ( int )( handle >> VERTCACHE_FRAME_SHIFT ) & VERTCACHE_FRAME_MASK;
+	release_assert( frameNum == ( currentFrame & VERTCACHE_FRAME_MASK ) );
+	return frameData[ listNum ].mappedIndexBase + offset;
+}
+
+/*
+==============
+idVertexCache::CacheIsCurrent
+==============
+*/
+bool idVertexCache::CacheIsCurrent( const vertCacheHandle_t handle ) {
+	const int isStatic = handle & VERTCACHE_STATIC;
+	if ( isStatic ) {
+		return true;
+	}
+	const uint64 frameNum = (int)( handle >> VERTCACHE_FRAME_SHIFT ) & VERTCACHE_FRAME_MASK;
+	if ( frameNum != ( currentFrame & VERTCACHE_FRAME_MASK ) ) {
+		return false;
+	}
+	return true;
+}
+
+/*
+==============
 idVertexCache::GetVertexBuffer
 ==============
 */
@@ -281,6 +377,15 @@ bool idVertexCache::GetJointBuffer( vertCacheHandle_t handle, idJointBuffer * jb
 
 /*
 ==============
+idVertexCache::CacheIsStatic
+==============
+*/
+bool idVertexCache::CacheIsStatic( const vertCacheHandle_t handle ) {
+	return ( handle & VERTCACHE_STATIC ) != 0;
+}
+
+/*
+==============
 idVertexCache::BeginBackEnd
 ==============
 */
@@ -290,7 +395,7 @@ void idVertexCache::BeginBackEnd() {
 	mostUsedJoint = Max( mostUsedJoint, frameData[listNum].jointMemUsed.GetValue() );
 
 	if ( r_showVertexCache.GetBool() ) {
-		idLib::Printf( "%08d: %d allocations, %dkB vertex, %dkB index, %kB joint : %dkB vertex, %dkB index, %kB joint\n", 
+		idLib::Printf( "%08d: %d allocations, %dkB vertex, %dkB index, %dkB joint : %dkB vertex, %dkB index, %dkB joint\n",
 			currentFrame, frameData[listNum].allocations,
 			frameData[listNum].vertexMemUsed.GetValue() / 1024,
 			frameData[listNum].indexMemUsed.GetValue() / 1024,
@@ -335,4 +440,3 @@ void idVertexCache::BeginBackEnd() {
 #endif
 
 }
-

@@ -38,9 +38,9 @@ If you have questions concerning this license or the applicable additional terms
 */
 
 // default scripts
-#define SCRIPT_DEFAULTDEFS			"script/doom_defs.script"
-#define SCRIPT_DEFAULT				"script/doom_main.script"
-#define SCRIPT_DEFAULTFUNC			"doom_main"
+#define SCRIPT_DEFAULTDEFS			"script/decay_defs.script"
+#define SCRIPT_DEFAULT				"script/decay_main.script"
+#define SCRIPT_DEFAULTFUNC			"decay_main"
 
 struct gameReturn_t {
 
@@ -176,9 +176,6 @@ public:
 	virtual void				Shell_ResetMenu() = 0;
 	virtual void				Shell_SyncWithSession() = 0;
 	virtual void				Shell_UpdateSavedGames() = 0;
-	virtual void				Shell_SetCanContinue( bool valid ) = 0;
-	virtual void				Shell_UpdateClientCountdown( int countdown ) = 0;
-	virtual void				Shell_UpdateLeaderboard( const idLeaderboardCallback * callback ) = 0;
 	virtual void				Shell_SetGameComplete() = 0;
 };
 

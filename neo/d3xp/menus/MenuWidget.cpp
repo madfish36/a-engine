@@ -477,6 +477,18 @@ void idMenuWidget::SetState( const widgetState_t state ) {
 
 /*
 ========================
+idMenuWidget::RegHandler
+========================
+*/
+bool idMenuWidget::RegHandler ( idStr name,  WrapWidgetSWFEvent * handler ) {
+	name.ToUpper();
+	idSWFScriptObject * spriteObject = GetSprite(  )->GetScriptObject(  );
+	spriteObject->Set( name.c_str(  ), handler );
+	return true;
+}
+
+/*
+========================
 idMenuWidget::HandleAction
 ========================
 */

@@ -315,12 +315,12 @@ void idMenuScreen_HUD::UpdateWeaponInfo( idPlayer * player ) {
 	int ammoAmount = weapon.GetEntity()->AmmoAvailable();
 
 	//Make sure the hud always knows how many bloodstone charges there are
-	int ammoRequired;
+	//int ammoRequired;
 	int bloodstoneAmmo = 0;
-	if ( player->weapon_bloodstone >= 0 ) {
-		ammo_t ammo_i = player->inventory.AmmoIndexForWeaponClass( "weapon_bloodstone_passive", &ammoRequired );
-		bloodstoneAmmo = player->inventory.HasAmmo( ammo_i, ammoRequired );
-	}
+	//if ( player->weapon_bloodstone >= 0 ) {
+	//	ammo_t ammo_i = player->inventory.AmmoIndexForWeaponClass( "weapon_bloodstone_passive", &ammoRequired );
+	//	bloodstoneAmmo = player->inventory.HasAmmo( ammo_i, ammoRequired );
+	//}
 	if ( bsInfo ) {
 		if ( bloodstoneAmmo > 0 ) {
 			bsInfo->SetVisible( true );
@@ -330,7 +330,8 @@ void idMenuScreen_HUD::UpdateWeaponInfo( idPlayer * player ) {
 		}
 	}
 
-	if ( ammoAmount == -1 || player->GetCurrentWeaponSlot() == player->weapon_bloodstone || player->GetCurrentWeaponSlot() == player->weapon_soulcube ) {
+	//if (ammoAmount == -1 || player->GetCurrentWeaponSlot() == player->weapon_bloodstone || player->GetCurrentWeaponSlot() == player->weapon_soulcube) {
+	if (ammoAmount == -1) {
 
 		ammoInfo->SetVisible( false );
 
@@ -364,11 +365,11 @@ void idMenuScreen_HUD::UpdateWeaponInfo( idPlayer * player ) {
 		bool clipLow = ( weapon.GetEntity()->ClipSize() ? inClip <= weapon.GetEntity()->LowAmmo() : false );
 
 		//Hack to stop the bloodstone ammo to display when it is being activated
-		if ( player->GetCurrentWeaponSlot() == player->weapon_bloodstone ) {
-			ammoEmpty = false;
-			clipEmpty = false;
-			clipLow = false;
-		}
+		//if ( player->GetCurrentWeaponSlot() == player->weapon_bloodstone ) {
+		//	ammoEmpty = false;
+		//	clipEmpty = false;
+		//	clipLow = false;
+		//}
 
 		if ( showClip ) {
 
@@ -1833,25 +1834,25 @@ void idMenuScreen_HUD::ShowNewItem( const char * name, const char * icon ) {
 idMenuScreen_HUD::UpdateFlashlight
 ========================
 */
-void idMenuScreen_HUD::UpdateFlashlight( idPlayer * player ) {
-
-	if ( !player || !flashlight ) {
-		return;
-	}
-
-	if ( player->flashlightBattery != flashlight_batteryDrainTimeMS.GetInteger() ) {
-		flashlight->StopFrame( 2 );
-		flashlight->SetVisible( true );
-		idSWFSpriteInstance * batteryLife = flashlight->GetScriptObject()->GetNestedSprite( "info" );
-		if ( batteryLife ) {
-			float power = ( (float)player->flashlightBattery / (float)flashlight_batteryDrainTimeMS.GetInteger() ) * 100.0f;
-			batteryLife->StopFrame( power );
-		}
-	} else {
-		flashlight->StopFrame( 1 );
-	}
-
-}
+//void idMenuScreen_HUD::UpdateFlashlight( idPlayer * player ) {
+//
+//	if ( !player || !flashlight ) {
+//		return;
+//	}
+//
+//	if ( player->flashlightBattery != flashlight_batteryDrainTimeMS.GetInteger() ) {
+//		flashlight->StopFrame( 2 );
+//		flashlight->SetVisible( true );
+//		idSWFSpriteInstance * batteryLife = flashlight->GetScriptObject()->GetNestedSprite( "info" );
+//		if ( batteryLife ) {
+//			float power = ( (float)player->flashlightBattery / (float)flashlight_batteryDrainTimeMS.GetInteger() ) * 100.0f;
+//			batteryLife->StopFrame( power );
+//		}
+//	} else {
+//		flashlight->StopFrame( 1 );
+//	}
+//
+//}
 
 /*
 ========================

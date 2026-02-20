@@ -38,7 +38,6 @@ instancing of objects.
 
 #include "../Game_local.h"
 
-#include "TypeInfo.h"
 
 
 /***********************************************************************
@@ -446,8 +445,8 @@ void * idClass::operator new( size_t s ) {
 
 	s += sizeof( int );
 	p = (int *)Mem_Alloc( s, TAG_IDCLASS );
-	*p = s;
-	memused += s;
+	*p = (int) s;
+	memused += (int) s;
 	numobjects++;
 
 	return p + 1;

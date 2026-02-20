@@ -141,7 +141,7 @@ idDemoFile::Log
 */
 void idDemoFile::Log(const char *p) {
 	if ( fLog && p && *p ) {
-		fLog->Write( p, strlen(p) );
+		fLog->Write( p, (int)strlen(p) );
 	}
 }
 
@@ -214,7 +214,7 @@ const char *idDemoFile::ReadHashString() {
 
 	if ( log && fLog ) {
 		const char *text = va( "%s > Reading hash string\n", logStr.c_str() );
-		fLog->Write( text, strlen( text ) );
+		fLog->Write( text, (int)strlen( text ) );
 	} 
 
 	ReadInt( index );
@@ -248,7 +248,7 @@ idDemoFile::WriteHashString
 void idDemoFile::WriteHashString( const char *str ) {
 	if ( log && fLog ) {
 		const char *text = va( "%s > Writing hash string\n", logStr.c_str() );
-		fLog->Write( text, strlen( text ) );
+		fLog->Write( text, (int)strlen( text ) );
 	}
 	// see if it is already in the has table
 	for ( int i = 0 ; i < demoStrings.Num() ; i++ ) {

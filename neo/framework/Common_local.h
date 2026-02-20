@@ -416,14 +416,6 @@ private:
 
 	currentGame_t		currentGame;
 	currentGame_t		idealCurrentGame;		// Defer game switching so that bad things don't happen in the middle of the frame.
-	const idMaterial *	doomClassicMaterial;
-
-	static const int			DOOMCLASSIC_RENDERWIDTH = 320 * 3;
-	static const int			DOOMCLASSIC_RENDERHEIGHT = 200 * 3;
-	static const int			DOOMCLASSIC_BYTES_PER_PIXEL = 4;
-	static const int			DOOMCLASSIC_IMAGE_SIZE_IN_BYTES = DOOMCLASSIC_RENDERWIDTH * DOOMCLASSIC_RENDERHEIGHT * DOOMCLASSIC_BYTES_PER_PIXEL;
-	
-	idArray< byte, DOOMCLASSIC_IMAGE_SIZE_IN_BYTES >	doomClassicImageData;
 
 private:
 	void	InitCommands();
@@ -494,11 +486,6 @@ private:
 	
 	void	ScrubSaveGameFileName( idStr &saveFileName ) const;
 
-	// Doom classic support
-	void	RunDoomClassicFrame();
-	void	RenderDoomClassic();
-	bool	IsPlayingDoomClassic() const { return GetCurrentGame() != DOOM3_BFG; }
-	void	PerformGameSwitch();
 };
 
 extern idCommonLocal commonLocal;

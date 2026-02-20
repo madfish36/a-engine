@@ -2,9 +2,9 @@
 ===========================================================================
 
 Doom 3 BFG Edition GPL Source Code
-Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company. 
+Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company.
 
-This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").  
+This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").
 
 Doom 3 BFG Edition Source Code is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -64,7 +64,7 @@ bool AssertFailed( const char *file, int line, const char *expression );
 
 //====================== assert in release mode =======================
 
-#define idassert( x )	{ (( void )0); } 
+#define idassert( x )	{ (( void )0); }
 
 #undef assert
 
@@ -134,5 +134,12 @@ template<int x> struct compile_time_assert_test {};
 #define ASSERTAI( x )
 #define VERIFYAI( x )	( ( x ) ? true : false )
 #endif // DEBUGAI
+
+//DEBUG LOG
+#ifdef _DEBUG
+	#define DEBUG_MSG(msg)  ( (void) ( idLib::Printf( "[%s]: %s\n", __FUNCTION__, msg) ) )
+#else
+	#define DEBUG_MSG(msg)  ( (void) 0 )
+#endif
 
 #endif	// !__SYS_ASSERT_H__

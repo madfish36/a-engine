@@ -2,9 +2,9 @@
 ===========================================================================
 
 Doom 3 BFG Edition GPL Source Code
-Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company. 
+Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company.
 
-This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").  
+This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").
 
 Doom 3 BFG Edition Source Code is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -51,6 +51,7 @@ int BitsForFormat( textureFormat_t format ) {
 		case FMT_DEPTH:		return 32;
 		case FMT_X16:		return 16;
 		case FMT_Y16_X16:	return 32;
+		case FMT_RG16F:		return 32;
 		default:
 			assert( 0 );
 			return 0;
@@ -75,11 +76,14 @@ ID_INLINE void idImage::DeriveOpts() {
 			case TD_DEPTH:
 				opts.format = FMT_DEPTH;
 				break;
-			case TD_DIFFUSE: 
+			case TD_DIFFUSE:
 				// TD_DIFFUSE gets only set to when its a diffuse texture for an interaction
 				opts.gammaMips = true;
 				opts.format = FMT_DXT5;
-				opts.colorFormat = CFM_YCOCG_DXT5;
+
+				//opts.colorFormat = CFM_YCOCG_DXT5;
+				opts.colorFormat = CFM_DEFAULT;
+
 				break;
 			case TD_SPECULAR:
 				opts.gammaMips = true;
@@ -92,8 +96,8 @@ ID_INLINE void idImage::DeriveOpts() {
 				opts.colorFormat = CFM_DEFAULT;
 				break;
 			case TD_BUMP:
-				opts.format = FMT_DXT5;
-				opts.colorFormat = CFM_NORMAL_DXT5;
+				opts.format = FMT_RGBA8;
+				opts.colorFormat = CFM_DEFAULT;
 				break;
 			case TD_FONT:
 				opts.format = FMT_DXT1;
@@ -114,6 +118,12 @@ ID_INLINE void idImage::DeriveOpts() {
 			case TD_LOOKUP_TABLE_RGB1:
 			case TD_LOOKUP_TABLE_RGBA:
 				opts.format = FMT_RGBA8;
+				break;
+			case  TD_BRDF_LUT:
+				opts.format = FMT_RG16F;
+				break;
+			case  TD_ENV_MAP:
+				opts.format = FMT_DXT1;
 				break;
 			default:
 				assert( false );
@@ -254,7 +264,6 @@ name contains GetName() upon entry
 	}
 }
 
-
 /*
 ===============
 ActuallyLoadImage
@@ -303,41 +312,41 @@ void idImage::ActuallyLoadImage( bool fromBackEnd ) {
 	binaryFileTime = im.LoadFromGeneratedFile( sourceFileTime );
 
 	// BFHACK, do not want to tweak on buildgame so catch these images here
-	if ( binaryFileTime == FILE_NOT_FOUND_TIMESTAMP && fileSystem->UsingResourceFiles() ) {
-		int c = 1;
-		while ( c-- > 0 ) {
-			if ( generatedName.Find( "guis/assets/white#__0000", false ) >= 0 ) {
-				generatedName.Replace( "white#__0000", "white#__0200" );
-				im.SetName( generatedName );
-				binaryFileTime = im.LoadFromGeneratedFile( sourceFileTime );
-				break;
-			}
-			if ( generatedName.Find( "guis/assets/white#__0100", false ) >= 0 ) {
-				generatedName.Replace( "white#__0100", "white#__0200" );
-				im.SetName( generatedName );
-				binaryFileTime = im.LoadFromGeneratedFile( sourceFileTime );
-				break;
-			}
-			if ( generatedName.Find( "textures/black#__0100", false ) >= 0 ) {
-				generatedName.Replace( "black#__0100", "black#__0200" );
-				im.SetName( generatedName );
-				binaryFileTime = im.LoadFromGeneratedFile( sourceFileTime );
-				break;
-			}
-			if ( generatedName.Find( "textures/decals/bulletglass1_d#__0100", false ) >= 0 ) {
-				generatedName.Replace( "bulletglass1_d#__0100", "bulletglass1_d#__0200" );
-				im.SetName( generatedName );
-				binaryFileTime = im.LoadFromGeneratedFile( sourceFileTime );
-				break;
-			}
-			if ( generatedName.Find( "models/monsters/skeleton/skeleton01_d#__1000", false ) >= 0 ) {
-				generatedName.Replace( "skeleton01_d#__1000", "skeleton01_d#__0100" );
-				im.SetName( generatedName );
-				binaryFileTime = im.LoadFromGeneratedFile( sourceFileTime );
-				break;
-			}
-		}
-	}
+	// if ( binaryFileTime == FILE_NOT_FOUND_TIMESTAMP && fileSystem->UsingResourceFiles() ) {
+	// 	int c = 1;
+	// 	while ( c-- > 0 ) {
+	// 		if ( generatedName.Find( "ui/assets/white#__0000", false ) >= 0 ) {
+	// 			generatedName.Replace( "white#__0000", "white#__0200" );
+	// 			im.SetName( generatedName );
+	// 			binaryFileTime = im.LoadFromGeneratedFile( sourceFileTime );
+	// 			break;
+	// 		}
+	// 		if ( generatedName.Find( "ui/assets/white#__0100", false ) >= 0 ) {
+	// 			generatedName.Replace( "white#__0100", "white#__0200" );
+	// 			im.SetName( generatedName );
+	// 			binaryFileTime = im.LoadFromGeneratedFile( sourceFileTime );
+	// 			break;
+	// 		}
+	// 		if ( generatedName.Find( "textures/black#__0100", false ) >= 0 ) {
+	// 			generatedName.Replace( "black#__0100", "black#__0200" );
+	// 			im.SetName( generatedName );
+	// 			binaryFileTime = im.LoadFromGeneratedFile( sourceFileTime );
+	// 			break;
+	// 		}
+	// 		if ( generatedName.Find( "textures/decals/bulletglass1_d#__0100", false ) >= 0 ) {
+	// 			generatedName.Replace( "bulletglass1_d#__0100", "bulletglass1_d#__0200" );
+	// 			im.SetName( generatedName );
+	// 			binaryFileTime = im.LoadFromGeneratedFile( sourceFileTime );
+	// 			break;
+	// 		}
+	// 		if ( generatedName.Find( "models/monsters/skeleton/skeleton01_d#__1000", false ) >= 0 ) {
+	// 			generatedName.Replace( "skeleton01_d#__1000", "skeleton01_d#__0100" );
+	// 			im.SetName( generatedName );
+	// 			binaryFileTime = im.LoadFromGeneratedFile( sourceFileTime );
+	// 			break;
+	// 		}
+	// 	}
+	// }
 	const bimageFile_t & header = im.GetFileHeader();
 
 	if ( ( fileSystem->InProductionMode() && binaryFileTime != FILE_NOT_FOUND_TIMESTAMP ) || ( ( binaryFileTime != FILE_NOT_FOUND_TIMESTAMP )
@@ -365,7 +374,7 @@ void idImage::ActuallyLoadImage( bool fromBackEnd ) {
 				return;
 			}
 
-			opts.textureType = TT_CUBIC;
+			opts.textureType = cubeFiles==CF_DDS? TT_CUBIC_DDS :TT_CUBIC;
 			repeat = TR_CLAMP;
 			opts.width = size;
 			opts.height = size;
@@ -394,7 +403,7 @@ void idImage::ActuallyLoadImage( bool fromBackEnd ) {
 				opts.numLevels = 1;
 				DeriveOpts();
 				AllocImage();
-				
+
 				// clear the data so it's not left uninitialized
 				idTempArray<byte> clear( opts.width * opts.height * 4 );
 				memset( clear.Ptr(), 0, clear.Size() );
@@ -410,6 +419,7 @@ void idImage::ActuallyLoadImage( bool fromBackEnd ) {
 			opts.numLevels = 0;
 			DeriveOpts();
 			im.Load2DFromMemory( opts.width, opts.height, pic, opts.numLevels, opts.format, opts.colorFormat, opts.gammaMips );
+
 
 			Mem_Free( pic );
 		}
@@ -447,12 +457,12 @@ void idImage::Bind() {
 
 	tmu_t * tmu = &backEnd.glState.tmu[texUnit];
 	// bind the texture
-	if ( opts.textureType == TT_2D ) {
+	if ( opts.textureType == TT_2D || opts.textureType == TT_2D_DDS ) {
 		if ( tmu->current2DMap != texnum ) {
 			tmu->current2DMap = texnum;
 			qglBindMultiTextureEXT( GL_TEXTURE0_ARB + texUnit, GL_TEXTURE_2D, texnum );
 		}
-	} else if ( opts.textureType == TT_CUBIC ) {
+	} else if ( opts.textureType == TT_CUBIC || opts.textureType == TT_CUBIC_DDS ) {
 		if ( tmu->currentCubeMap != texnum ) {
 			tmu->currentCubeMap = texnum;
 			qglBindMultiTextureEXT( GL_TEXTURE0_ARB + texUnit, GL_TEXTURE_CUBE_MAP_EXT, texnum );
@@ -481,7 +491,7 @@ CopyFramebuffer
 void idImage::CopyFramebuffer( int x, int y, int imageWidth, int imageHeight ) {
 
 
-	qglBindTexture( ( opts.textureType == TT_CUBIC ) ? GL_TEXTURE_CUBE_MAP_EXT : GL_TEXTURE_2D, texnum );
+	qglBindTexture( ( opts.textureType == TT_CUBIC || opts.textureType == TT_CUBIC_DDS ) ? GL_TEXTURE_CUBE_MAP_EXT : GL_TEXTURE_2D, texnum );
 
 	qglReadBuffer( GL_BACK );
 
@@ -505,7 +515,7 @@ CopyDepthbuffer
 ====================
 */
 void idImage::CopyDepthbuffer( int x, int y, int imageWidth, int imageHeight ) {
-	qglBindTexture( ( opts.textureType == TT_CUBIC ) ? GL_TEXTURE_CUBE_MAP_EXT : GL_TEXTURE_2D, texnum );
+	qglBindTexture( ( opts.textureType == TT_CUBIC || opts.textureType == TT_CUBIC_DDS ) ? GL_TEXTURE_CUBE_MAP_EXT : GL_TEXTURE_2D, texnum );
 
 	opts.width = imageWidth;
 	opts.height = imageHeight;
@@ -531,7 +541,7 @@ void idImage::UploadScratch( const byte * data, int cols, int rows ) {
 			pic[i] = data + cols * rows * 4 * i;
 		}
 
-		if ( opts.textureType != TT_CUBIC || usage != TD_LOOKUP_TABLE_RGBA ) {
+		if ( (opts.textureType != TT_CUBIC && opts.textureType != TT_CUBIC_DDS) || usage != TD_LOOKUP_TABLE_RGBA ) {
 			GenerateCubeImage( pic, cols, TF_LINEAR, TD_LOOKUP_TABLE_RGBA );
 			return;
 		}
@@ -596,8 +606,14 @@ void idImage::Print() const {
 		case TT_2D:
 			common->Printf( " " );
 			break;
+		case TT_2D_DDS:
+			common->Printf( "D" );
+			break;
 		case TT_CUBIC:
 			common->Printf( "C" );
+			break;
+		case TT_CUBIC_DDS:
+			common->Printf( "S" );
 			break;
 		default:
 			common->Printf( "<BAD TYPE:%i>", opts.textureType );
@@ -710,6 +726,6 @@ void idImage::SetSamplerState( textureFilter_t tf, textureRepeat_t tr ) {
 	}
 	filter = tf;
 	repeat = tr;
-	qglBindTexture( ( opts.textureType == TT_CUBIC ) ? GL_TEXTURE_CUBE_MAP_EXT : GL_TEXTURE_2D, texnum );
+	qglBindTexture( ( opts.textureType == TT_CUBIC || opts.textureType == TT_CUBIC_DDS ) ? GL_TEXTURE_CUBE_MAP_EXT : GL_TEXTURE_2D, texnum );
 	SetTexParameters();
 }

@@ -2,9 +2,9 @@
 ===========================================================================
 
 Doom 3 BFG Edition GPL Source Code
-Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company. 
+Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company.
 
-This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").  
+This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").
 
 Doom 3 BFG Edition Source Code is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -210,7 +210,7 @@ void R_ListImages_f( const idCmdArgs &args ) {
 			sortedArray[i].image->Print();
 			partialSize += sortedArray[i].image->StorageSize();
 			if ( ( (i+1) % 10 ) == 0 ) {
-				common->Printf( "-------- %5.1f of %5.1f megs --------\n", 
+				common->Printf( "-------- %5.1f of %5.1f megs --------\n",
 					partialSize / (1024*1024.0), totalSize / (1024*1024.0) );
 			}
 		}
@@ -355,7 +355,7 @@ Finds or loads the given image, always returning a valid image pointer.
 Loading of the image may be deferred for dynamic loading.
 ==============
 */
-idImage	*idImageManager::ImageFromFile( const char *_name, textureFilter_t filter, 
+idImage	*idImageManager::ImageFromFile( const char *_name, textureFilter_t filter,
 						 textureRepeat_t repeat, textureUsage_t usage, cubeFiles_t cubeMap ) {
 
 	if ( !_name || !_name[0] || idStr::Icmp( _name, "default" ) == 0 || idStr::Icmp( _name, "_default" ) == 0 ) {
@@ -483,7 +483,7 @@ idImage * idImageManager::ScratchImage( const char *_name, idImageOpts *imgOpts,
 
 	// clamp is the only repeat mode that makes sense for cube maps, but
 	// some platforms let them stay in repeat mode and get border seam issues
-	if ( imgOpts->textureType == TT_CUBIC && repeat != TR_CLAMP ) {
+	if ( (imgOpts->textureType == TT_CUBIC ||  imgOpts->textureType == TT_CUBIC_DDS) && repeat != TR_CLAMP ) {
 		repeat = TR_CLAMP;
 	}
 
@@ -491,7 +491,7 @@ idImage * idImageManager::ScratchImage( const char *_name, idImageOpts *imgOpts,
 	// create a new image
 	//
 	idImage* newImage = AllocImage( name );
-	if ( newImage != NULL ) {	
+	if ( newImage != NULL ) {
 		newImage->AllocImage( *imgOpts, filter, repeat );
 	}
 	return newImage;
@@ -717,7 +717,6 @@ void idImageManager::BeginLevelLoad() {
 		image->levelLoadReferenced = false;
 	}
 }
-
 
 /*
 ====================

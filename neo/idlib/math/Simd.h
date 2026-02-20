@@ -80,11 +80,11 @@ struct dominantTri_t;
 class idSIMDProcessor {
 public:
 									idSIMDProcessor() { cpuid = CPUID_NONE; }
+	virtual							~idSIMDProcessor() {}
 
 	cpuid_t							cpuid;
 
 	virtual const char * VPCALL		GetName() const = 0;
-
 	virtual	void VPCALL MinMax( float &min,			float &max,				const float *src,		const int count ) = 0;
 	virtual	void VPCALL MinMax( idVec2 &min,		idVec2 &max,			const idVec2 *src,		const int count ) = 0;
 	virtual	void VPCALL MinMax( idVec3 &min,		idVec3 &max,			const idVec3 *src,		const int count ) = 0;

@@ -164,7 +164,7 @@ public:
 	virtual sysFolder_t		IsFolder( const char * relativePath, const char *basePath = "fs_basepath" );
 	// resource tracking
 	virtual void			EnableBackgroundCache( bool enable );
-	virtual void			BeginLevelLoad( const char *name, char *_blockBuffer, int _blockBufferSize );
+	virtual void			BeginLevelLoad( const char *name, char *_blockBuffer, size_t _blockBufferSize );
 	virtual void			EndLevelLoad();
 	virtual bool			InProductionMode() { return ( resourceFiles.Num() > 0 ) |  ( com_productionMode.GetInteger() != 0 ); }
 	virtual bool			UsingResourceFiles() { return resourceFiles.Num() > 0; }
@@ -239,8 +239,8 @@ private:
 
 	idList< idResourceContainer * > resourceFiles;
 	byte *	resourceBufferPtr;
-	int		resourceBufferSize;
-	int		resourceBufferAvailable;
+	size_t	resourceBufferSize;
+	size_t	resourceBufferAvailable;
 	int		numFilesOpenedAsCached;
 
 private:
@@ -511,7 +511,7 @@ void idFileSystemLocal::EnableBackgroundCache( bool enable ) {
 idFileSystemLocal::BeginLevelLoad
 =================
 */
-void idFileSystemLocal::BeginLevelLoad( const char *name, char *_blockBuffer, int _blockBufferSize ) {
+void idFileSystemLocal::BeginLevelLoad( const char *name, char *_blockBuffer, size_t _blockBufferSize ) {
 	
 	if ( name == NULL || *name == '\0' ) {
 		return;
@@ -819,11 +819,10 @@ void idFileSystemLocal::BuildOrderedStartupContainer() {
 	}
 	FreeFileList( fl );
 
-	orderedFiles.Append( "script/doom_main.script" );
-	orderedFiles.Append( "script/doom_defs.script" );
-	orderedFiles.Append( "script/doom_defs.script" );
-	orderedFiles.Append( "script/doom_events.script" );
-	orderedFiles.Append( "script/doom_util.script" );
+	orderedFiles.Append( "script/decay_main.script" );
+	orderedFiles.Append( "script/decay_defs.script" );
+	orderedFiles.Append( "script/decay_events.script" );
+	orderedFiles.Append( "script/decay_util.script" );
 	orderedFiles.Append( "script/weapon_base.script" );
 	orderedFiles.Append( "script/ai_base.script" );
 	orderedFiles.Append( "script/weapon_fists.script" );
@@ -978,11 +977,7 @@ void idFileSystemLocal::WriteResourcePacks() {
 		if ( manifest.LoadManifest( path ) ) {
 			//manifest.Print();
 			manifest.RemoveAll( va( "strings/%s", ID_LANG_ENGLISH ) );	// remove all .lang files
-			manifest.RemoveAll( va( "strings/%s", ID_LANG_FRENCH ) );
-			manifest.RemoveAll( va( "strings/%s", ID_LANG_ITALIAN ) );
-			manifest.RemoveAll( va( "strings/%s", ID_LANG_GERMAN ) );
-			manifest.RemoveAll( va( "strings/%s", ID_LANG_SPANISH ) );
-			manifest.RemoveAll( va( "strings/%s", ID_LANG_JAPANESE ) );
+			manifest.RemoveAll( va( "strings/%s", ID_LANG_RUSSIAN) );
 			manifests.Append( manifest );
 		}
 	}
@@ -1828,7 +1823,7 @@ int idFileSystemLocal::GetFileList( const char *relativePath, const idStrList &e
 		return 0;
 	}
 
-	int pathLength = strlen( relativePath );
+	int pathLength = (int) strlen( relativePath );
 	if ( pathLength ) {
 		pathLength++;	// for the trailing '/'
 	}
@@ -2239,7 +2234,7 @@ void idFileSystemLocal::TouchFileList_f( const idCmdArgs &args ) {
 	const char *buffer = NULL;
 	idParser src( LEXFL_NOFATALERRORS | LEXFL_NOSTRINGCONCAT | LEXFL_ALLOWMULTICHARLITERALS | LEXFL_ALLOWBACKSLASHSTRINGCONCAT );
 	if ( fileSystem->ReadFile( args.Argv( 1 ), ( void** )&buffer, NULL ) && buffer ) {
-		src.LoadMemory( buffer, strlen( buffer ), args.Argv( 1 ) );
+		src.LoadMemory( buffer, (int) strlen( buffer ), args.Argv( 1 ) );
 		if ( src.IsLoaded() ) {
 			idToken token;
 			while( src.ReadToken( &token ) ) {
@@ -2266,12 +2261,12 @@ Generates a CRC checksum file for each .resources file.
 void idFileSystemLocal::GenerateResourceCRCs_f( const idCmdArgs &args ) {
 	idLib::Printf( "Generating CRCs for resource files...\n" );
 
-	std::auto_ptr<idFileList> baseResourceFileList( fileSystem->ListFiles( ".", ".resources" ) );
+	std::unique_ptr<idFileList> baseResourceFileList( fileSystem->ListFiles( ".", ".resources" ) );
 	if ( baseResourceFileList.get() != NULL ) {
 		CreateCRCsForResourceFileList ( *baseResourceFileList );
 	}
 
-	std::auto_ptr<idFileList> mapResourceFileList( fileSystem->ListFilesTree( "maps", ".resources" ) );
+	std::unique_ptr<idFileList> mapResourceFileList( fileSystem->ListFilesTree( "maps", ".resources" ) );
 	if ( mapResourceFileList.get() != NULL ) {
 		CreateCRCsForResourceFileList ( *mapResourceFileList );
 	}
@@ -2288,7 +2283,7 @@ void idFileSystemLocal::CreateCRCsForResourceFileList( const idFileList & list )
 	for ( int fileIndex = 0; fileIndex < list.GetNumFiles(); ++fileIndex ) {
 		idLib::Printf( " Processing %s.\n", list.GetFile( fileIndex ) );
 
-		std::auto_ptr<idFile_Memory> currentFile( static_cast<idFile_Memory *>( fileSystem->OpenFileReadMemory( list.GetFile( fileIndex ) ) ) );
+		std::unique_ptr<idFile_Memory> currentFile( static_cast<idFile_Memory *>( fileSystem->OpenFileReadMemory( list.GetFile( fileIndex ) ) ) );
 
 		if ( currentFile.get() == NULL ) {
 			idLib::Printf( " Error reading %s.\n", list.GetFile( fileIndex ) );
@@ -2331,14 +2326,14 @@ void idFileSystemLocal::CreateCRCsForResourceFileList( const idFileList & list )
 		}
 
 		// Get the CRC for all the CRCs.
-		const unsigned long totalCRC = CRC32_BlockChecksum( innerFileCRCs.Ptr(), innerFileCRCs.Size() );
+		const unsigned long totalCRC = CRC32_BlockChecksum( innerFileCRCs.Ptr(), (int) innerFileCRCs.Size() );
 
 		// Write the .crc file corresponding to the .resources file.
 		idStr crcFilename = list.GetFile( fileIndex );
 		crcFilename.SetFileExtension( ".crc" );
-		std::auto_ptr<idFile> crcOutputFile( fileSystem->OpenFileWrite( crcFilename, "fs_basepath" ) );
+		std::unique_ptr<idFile> crcOutputFile( fileSystem->OpenFileWrite( crcFilename, "fs_basepath" ) );
 		if ( crcOutputFile.get() == NULL ) {
-			idLib::Printf( "Error writing CRC file %s.\n", crcFilename );
+			idLib::Printf( "Error writing CRC file %s.\n", crcFilename.c_str());
 			continue;
 		}
 		

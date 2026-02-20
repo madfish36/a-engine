@@ -2,9 +2,9 @@
 ===========================================================================
 
 Doom 3 BFG Edition GPL Source Code
-Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company. 
+Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company.
 
-This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").  
+This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").
 
 Doom 3 BFG Edition Source Code is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -51,14 +51,14 @@ extern	PFNWGLRELEASEPBUFFERDCARBPROC	wglReleasePbufferDCARB;
 extern	PFNWGLDESTROYPBUFFERARBPROC	wglDestroyPbufferARB;
 extern	PFNWGLQUERYPBUFFERARBPROC	wglQueryPbufferARB;
 
-// WGL_ARB_render_texture 
+// WGL_ARB_render_texture
 extern	PFNWGLBINDTEXIMAGEARBPROC		wglBindTexImageARB;
 extern	PFNWGLRELEASETEXIMAGEARBPROC	wglReleaseTexImageARB;
 extern	PFNWGLSETPBUFFERATTRIBARBPROC	wglSetPbufferAttribARB;
 
 #define	WINDOW_STYLE	(WS_OVERLAPPED|WS_BORDER|WS_CAPTION|WS_VISIBLE | WS_THICKFRAME)
 
-void	Sys_QueEvent( sysEventType_t type, int value, int value2, int ptrLength, void *ptr, int inputDeviceNum );
+void	Sys_QueEvent( sysEventType_t type, int value, int value2, size_t ptrLength, void *ptr, int inputDeviceNum );
 
 void	Sys_CreateConsole();
 void	Sys_DestroyConsole();
@@ -91,7 +91,7 @@ LONG WINAPI MainWndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 void Conbuf_AppendText( const char *msg );
 
-typedef struct {
+typedef struct Win32Vars_t {
 	HWND			hWnd;
 	HINSTANCE		hInstance;
 
@@ -114,7 +114,7 @@ typedef struct {
 
 	HDC				hDC;							// handle to device context
 	HGLRC			hGLRC;						// handle to GL rendering context
-	PIXELFORMATDESCRIPTOR pfd;		
+	PIXELFORMATDESCRIPTOR pfd;
 	int				pixelformat;
 
 	HINSTANCE		hinstOpenGL;	// HINSTANCE for the OpenGL library

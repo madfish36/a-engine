@@ -225,7 +225,7 @@ float idConsoleLocal::DrawFPS( float y ) {
 		fps = ( fps + 500 ) / 1000;
 
 		const char * s = va( "%ifps", fps );
-		int w = strlen( s ) * BIGCHAR_WIDTH;
+		int w = (int)strlen( s ) * BIGCHAR_WIDTH;
 
 		renderSystem->DrawBigStringExt( LOCALSAFE_RIGHT - w, idMath::Ftoi( y ) + 2, s, colorWhite, true );
 	}
@@ -264,22 +264,22 @@ float idConsoleLocal::DrawFPS( float y ) {
 	renderSystem->DrawSmallStringExt( LOCALSAFE_RIGHT - w, idMath::Ftoi( y ) + 2, timeStr.c_str(), colorWhite, false );
 	y += SMALLCHAR_HEIGHT + 4;
 
-	timeStr.Format( "%sRB: %4.1f", rendererBackEndTime > maxTime * 1000 ? S_COLOR_RED : "", rendererBackEndTime / 1000.0f );
+	timeStr.Format( "%sRB: %3.2f", rendererBackEndTime > maxTime * 1000 ? S_COLOR_RED : "", rendererBackEndTime / 1000.0f );
 	w = timeStr.LengthWithoutColors() * SMALLCHAR_WIDTH;
 	renderSystem->DrawSmallStringExt( LOCALSAFE_RIGHT - w, idMath::Ftoi( y ) + 2, timeStr.c_str(), colorWhite, false );
 	y += SMALLCHAR_HEIGHT + 4;
 
-	timeStr.Format( "%sSV: %4.1f", rendererShadowsTime > maxTime * 1000 ? S_COLOR_RED : "", rendererShadowsTime / 1000.0f );
+	timeStr.Format( "%sSV: %3.2f", rendererShadowsTime > maxTime * 1000 ? S_COLOR_RED : "", rendererShadowsTime / 1000.0f );
 	w = timeStr.LengthWithoutColors() * SMALLCHAR_WIDTH;
 	renderSystem->DrawSmallStringExt( LOCALSAFE_RIGHT - w, idMath::Ftoi( y ) + 2, timeStr.c_str(), colorWhite, false );
 	y += SMALLCHAR_HEIGHT + 4;
 
-	timeStr.Format( "%sIDLE: %4.1f", rendererGPUIdleTime > maxTime * 1000 ? S_COLOR_RED : "", rendererGPUIdleTime / 1000.0f );
+	timeStr.Format( "%sIDLE: %3.2f", rendererGPUIdleTime > maxTime * 1000 ? S_COLOR_RED : "", rendererGPUIdleTime / 1000.0f );
 	w = timeStr.LengthWithoutColors() * SMALLCHAR_WIDTH;
 	renderSystem->DrawSmallStringExt( LOCALSAFE_RIGHT - w, idMath::Ftoi( y ) + 2, timeStr.c_str(), colorWhite, false );
 	y += SMALLCHAR_HEIGHT + 4;
 
-	timeStr.Format( "%sGPU: %4.1f", rendererGPUTime > maxTime * 1000 ? S_COLOR_RED : "", rendererGPUTime / 1000.0f );
+	timeStr.Format( "%sGPU: %3.2f", rendererGPUTime > maxTime * 1000 ? S_COLOR_RED : "", rendererGPUTime / 1000.0f );
 	w = timeStr.LengthWithoutColors() * SMALLCHAR_WIDTH;
 	renderSystem->DrawSmallStringExt( LOCALSAFE_RIGHT - w, idMath::Ftoi( y ) + 2, timeStr.c_str(), colorWhite, false );
 
@@ -471,7 +471,7 @@ void idConsoleLocal::Dump( const char *fileName ) {
 		buffer[x+1] = '\r';
 		buffer[x+2] = '\n';
 		buffer[x+3] = 0;
-		f->Write( buffer, strlen( buffer ) );
+		f->Write( buffer, (int)strlen( buffer ) );
 	}
 
 	fileSystem->CloseFile( f );
@@ -904,7 +904,8 @@ Draw the editline after a ] prompt
 ================
 */
 void idConsoleLocal::DrawInput() {
-	int y, autoCompleteLength;
+	int y;
+	size_t autoCompleteLength;
 
 	y = vislines - ( SMALLCHAR_HEIGHT * 2 );
 

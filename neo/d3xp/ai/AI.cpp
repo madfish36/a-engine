@@ -2990,7 +2990,7 @@ void idAI::AddFlyBob( idVec3 &vel ) {
 
 	if ( fly_bob_strength ) {
 		t = MS2SEC( gameLocal.time + entityNumber * 497 );
-		fly_bob_add = ( viewAxis[ 1 ] * idMath::Sin16( t * fly_bob_horz ) + viewAxis[ 2 ] * idMath::Sin16( t * fly_bob_vert ) ) * fly_bob_strength;
+		fly_bob_add = ( viewAxis[ 1 ] * idMath::Sin( t * fly_bob_horz ) + viewAxis[ 2 ] * idMath::Sin( t * fly_bob_vert ) ) * fly_bob_strength;
 		vel += fly_bob_add * MS2SEC( gameLocal.time - gameLocal.previousTime );
 		if ( ai_debugMove.GetBool() ) {
 			const idVec3 &origin = physicsObj.GetOrigin();
@@ -4283,8 +4283,8 @@ idProjectile *idAI::LaunchProjectile( const char *jointname, idEntity *target, b
 
 	// adjust his aim so it's not perfect.  uses sine based movement so the tracers appear less random in their spread.
 	float t = MS2SEC( gameLocal.time + entityNumber * 497 );
-	ang.pitch += idMath::Sin16( t * 5.1 ) * attack_accuracy;
-	ang.yaw	+= idMath::Sin16( t * 6.7 ) * attack_accuracy;
+	ang.pitch += idMath::Sin( t * 5.1 ) * attack_accuracy;
+	ang.yaw	+= idMath::Sin( t * 6.7 ) * attack_accuracy;
 
 	if ( clampToAttackCone ) {
 		// clamp the attack direction to be within monster's attack cone so he doesn't do

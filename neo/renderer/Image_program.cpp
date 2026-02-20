@@ -388,12 +388,12 @@ static bool R_ParseImageProgram_r( idLexer &src, byte **pic, int *width, int *he
 	// Without a YCoCG compliant black texture we will get color artifacts for any interaction
 	// material that specifies the _black texture.
 	if ( token == "_black" ) {
-		token = "textures\\black";
+		token = "textures\\common\\black";
 	}
 
 	// also check for _white
 	if ( token == "_white" ) {
-		token = "guis\\assets\\white";
+		token = "textures\\common\\white";
 	}
 
 	AppendToken( token );
@@ -633,7 +633,7 @@ R_LoadImageProgram
 void R_LoadImageProgram( const char *name, byte **pic, int *width, int *height, ID_TIME_T *timestamps, textureUsage_t * usage ) {
 	idLexer src;
 
-	src.LoadMemory( name, strlen(name), name );
+	src.LoadMemory( name, (int) strlen(name), name );
 	src.SetFlags( LEXFL_NOFATALERRORS | LEXFL_NOSTRINGCONCAT | LEXFL_NOSTRINGESCAPECHARS | LEXFL_ALLOWPATHNAMES );
 
 	parseBuffer[0] = 0;

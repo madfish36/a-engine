@@ -193,9 +193,9 @@ idQuat &idQuat::Slerp( const idQuat &from, const idQuat &to, float t ) {
 #else
 		scale0 = 1.0f - cosom * cosom;
 		sinom = idMath::InvSqrt( scale0 );
-		omega = idMath::ATan16( scale0 * sinom, cosom );
-		scale0 = idMath::Sin16( ( 1.0f - t ) * omega ) * sinom;
-		scale1 = idMath::Sin16( t * omega ) * sinom;
+		omega = idMath::ATan( scale0 * sinom, cosom );
+		scale0 = idMath::Sin( ( 1.0f - t ) * omega ) * sinom;
+		scale1 = idMath::Sin( t * omega ) * sinom;
 #endif
 	} else {
 		scale0 = 1.0f - t;

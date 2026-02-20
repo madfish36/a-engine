@@ -2,9 +2,9 @@
 ===========================================================================
 
 Doom 3 BFG Edition GPL Source Code
-Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company. 
+Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company.
 
-This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").  
+This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").
 
 Doom 3 BFG Edition Source Code is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -43,9 +43,9 @@ const int STATIC_VERTEX_MEMORY = 31 * 1024 * 1024;	// make sure it fits in VERTC
 typedef uint64 vertCacheHandle_t;
 const int VERTCACHE_STATIC = 1;					// in the static set, not the per-frame set
 const int VERTCACHE_SIZE_SHIFT = 1;
-const int VERTCACHE_SIZE_MASK = 0x7fffff;		// 8 megs 
+const int VERTCACHE_SIZE_MASK = 0x7fffff;		// 8 megs
 const int VERTCACHE_OFFSET_SHIFT = 24;
-const int VERTCACHE_OFFSET_MASK = 0x1ffffff;	// 32 megs 
+const int VERTCACHE_OFFSET_MASK = 0x1ffffff;	// 32 megs
 const int VERTCACHE_FRAME_SHIFT = 49;
 const int VERTCACHE_FRAME_MASK = 0x7fff;		// 15 bits = 32k frames to wrap around
 
@@ -82,70 +82,27 @@ public:
 	void			FreeStaticData();
 
 	// this data is only valid for one frame of rendering
-	vertCacheHandle_t	AllocVertex( const void * data, int bytes ) {
-		return ActuallyAlloc( frameData[listNum], data, bytes, CACHE_VERTEX );
-	}
-	vertCacheHandle_t	AllocIndex( const void * data, int bytes ) {
-		return ActuallyAlloc( frameData[listNum], data, bytes, CACHE_INDEX );
-	}
-	vertCacheHandle_t	AllocJoint( const void * data, int bytes ) {
-		return ActuallyAlloc( frameData[listNum], data, bytes, CACHE_JOINT );
-	}
+	vertCacheHandle_t	AllocVertex( const void * data, int bytes );
+	vertCacheHandle_t	AllocIndex( const void * data, int bytes );
+	vertCacheHandle_t	AllocJoint( const void * data, int bytes );
 
 	// this data is valid until the next map load
-	vertCacheHandle_t	AllocStaticVertex( const void * data, int bytes ) {
-		if ( staticData.vertexMemUsed.GetValue() + bytes > STATIC_VERTEX_MEMORY ) {
-			idLib::FatalError( "AllocStaticVertex failed, increase STATIC_VERTEX_MEMORY" );
-		}
-		return ActuallyAlloc( staticData, data, bytes, CACHE_VERTEX );
-	}
-	vertCacheHandle_t	AllocStaticIndex( const void * data, int bytes ) {
-		if ( staticData.indexMemUsed.GetValue() + bytes > STATIC_INDEX_MEMORY ) {
-			idLib::FatalError( "AllocStaticIndex failed, increase STATIC_INDEX_MEMORY" );
-		}
-		return ActuallyAlloc( staticData, data, bytes, CACHE_INDEX );
-	}
+	vertCacheHandle_t	AllocStaticVertex( const void * data, int bytes );
+	vertCacheHandle_t	AllocStaticIndex( const void * data, int bytes );
 
-	byte *			MappedVertexBuffer( vertCacheHandle_t handle ) {
-		release_assert( !CacheIsStatic( handle ) );
-		const uint64 offset = (int)( handle >> VERTCACHE_OFFSET_SHIFT ) & VERTCACHE_OFFSET_MASK;
-		const uint64 frameNum = (int)( handle >> VERTCACHE_FRAME_SHIFT ) & VERTCACHE_FRAME_MASK;
-		release_assert( frameNum == ( currentFrame & VERTCACHE_FRAME_MASK ) );
-		return frameData[ listNum ].mappedVertexBase + offset;
-	}
-
-	byte *			MappedIndexBuffer( vertCacheHandle_t handle ) {
-		release_assert( !CacheIsStatic( handle ) );
-		const uint64 offset = (int)( handle >> VERTCACHE_OFFSET_SHIFT ) & VERTCACHE_OFFSET_MASK;
-		const uint64 frameNum = (int)( handle >> VERTCACHE_FRAME_SHIFT ) & VERTCACHE_FRAME_MASK;
-		release_assert( frameNum == ( currentFrame & VERTCACHE_FRAME_MASK ) );
-		return frameData[ listNum ].mappedIndexBase + offset;
-	}
+	byte *			MappedVertexBuffer( vertCacheHandle_t handle );
+	byte *			MappedIndexBuffer( vertCacheHandle_t handle );
 
 	// Returns false if it's been purged
 	// This can only be called by the front end, the back end should only be looking at
 	// vertCacheHandle_t that are already validated.
-	bool			CacheIsCurrent( const vertCacheHandle_t handle ) {
-		const int isStatic = handle & VERTCACHE_STATIC;
-		if ( isStatic ) {
-			return true;
-		}
-		const uint64 frameNum = (int)( handle >> VERTCACHE_FRAME_SHIFT ) & VERTCACHE_FRAME_MASK;
-		if ( frameNum != ( currentFrame & VERTCACHE_FRAME_MASK ) ) {
-			return false;
-		}
-		return true;
-	}
-
-	static bool		CacheIsStatic( const vertCacheHandle_t handle ) {
-		return ( handle & VERTCACHE_STATIC ) != 0;
-	}
+	bool			CacheIsCurrent( const vertCacheHandle_t handle );
+	static bool		CacheIsStatic( const vertCacheHandle_t handle );
 
 	// vb/ib is a temporary reference -- don't store it
 	bool			GetVertexBuffer( vertCacheHandle_t handle, idVertexBuffer * vb );
 	bool			GetIndexBuffer( vertCacheHandle_t handle, idIndexBuffer * ib );
 	bool			GetJointBuffer( vertCacheHandle_t handle, idJointBuffer * jb );
-
 	void			BeginBackEnd();
 
 public:

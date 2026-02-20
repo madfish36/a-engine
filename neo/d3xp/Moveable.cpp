@@ -443,7 +443,7 @@ bool idMoveable::FollowInitialSplinePath() {
 			idVec3 dir = initialSplineDir * physicsObj.GetAxis();
 			idVec3 angularVelocity = dir.Cross( splineDir );
 			angularVelocity.Normalize();
-			angularVelocity *= idMath::ACos16( dir * splineDir / splineDir.Length() ) * com_engineHz_latched;
+			angularVelocity *= idMath::ACos( dir * splineDir / splineDir.Length() ) * com_engineHz_latched;
 			physicsObj.SetAngularVelocity( angularVelocity );
 			return true;
 		} else {

@@ -2,9 +2,9 @@
 ===========================================================================
 
 Doom 3 BFG Edition GPL Source Code
-Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company. 
+Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company.
 
-This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").  
+This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").
 
 Doom 3 BFG Edition Source Code is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -54,22 +54,22 @@ idSWF::idSWF( const char * filename_, idSoundWorld * soundWorld_ ) {
 	random.SetSeed( Sys_Milliseconds() );
 
 	guiSolid = declManager->FindMaterial( "guiSolid" );
-	guiCursor_arrow = declManager->FindMaterial( "ui/assets/guicursor_arrow" );
-	guiCursor_hand = declManager->FindMaterial( "ui/assets/guicursor_hand" );
+	guiCursor_arrow = declManager->FindMaterial( "ui/assets/cursors/guicursor_arrow" );
+	guiCursor_hand = declManager->FindMaterial( "ui/assets/cursors/guicursor_hand" );
 	white = declManager->FindMaterial( "_white" );
 
-	 tooltipButtonImage.Append( keyButtonImages_t( "<JOY1>", "guis/assets/hud/controller/xb360/a", "guis/assets/hud/controller/ps3/cross", 37, 37, 0 ) );
-	 tooltipButtonImage.Append( keyButtonImages_t( "<JOY2>", "guis/assets/hud/controller/xb360/b", "guis/assets/hud/controller/ps3/circle", 37, 37, 0 ) );
-	 tooltipButtonImage.Append( keyButtonImages_t( "<JOY3>", "guis/assets/hud/controller/xb360/x", "guis/assets/hud/controller/ps3/square", 37, 37, 0 ) );
-	 tooltipButtonImage.Append( keyButtonImages_t( "<JOY4>", "guis/assets/hud/controller/xb360/y", "guis/assets/hud/controller/ps3/triangle", 37, 37, 0 ) );
-	 tooltipButtonImage.Append( keyButtonImages_t( "<JOY_TRIGGER2>", "guis/assets/hud/controller/xb360/rt", "guis/assets/hud/controller/ps3/r2", 64, 52, 0 ) );
-	 tooltipButtonImage.Append( keyButtonImages_t( "<JOY_TRIGGER1>", "guis/assets/hud/controller/xb360/lt", "guis/assets/hud/controller/ps3/l2", 64, 52, 0 ) );
-	 tooltipButtonImage.Append( keyButtonImages_t( "<JOY5>", "guis/assets/hud/controller/xb360/lb", "guis/assets/hud/controller/ps3/l1", 52, 32, 0 ) );
-	 tooltipButtonImage.Append( keyButtonImages_t( "<JOY6>", "guis/assets/hud/controller/xb360/rb", "guis/assets/hud/controller/ps3/r1", 52, 32, 0 ) );
-	 tooltipButtonImage.Append( keyButtonImages_t( "<MOUSE1>", "guis/assets/hud/controller/mouse1", "", 64, 52, 0 ) );
-	 tooltipButtonImage.Append( keyButtonImages_t( "<MOUSE2>", "guis/assets/hud/controller/mouse2", "", 64, 52, 0 ) );
-	 tooltipButtonImage.Append( keyButtonImages_t( "<MOUSE3>", "guis/assets/hud/controller/mouse3", "", 64, 52, 0 ) );
-	 	
+	 //tooltipButtonImage.Append( keyButtonImages_t( "<JOY1>", "ui/assets/hud/controller/xb360/a", "ui/assets/hud/controller/ps3/cross", 37, 37, 0 ) );
+	 //tooltipButtonImage.Append( keyButtonImages_t( "<JOY2>", "ui/assets/hud/controller/xb360/b", "ui/assets/hud/controller/ps3/circle", 37, 37, 0 ) );
+	 //tooltipButtonImage.Append( keyButtonImages_t( "<JOY3>", "ui/assets/hud/controller/xb360/x", "ui/assets/hud/controller/ps3/square", 37, 37, 0 ) );
+	 //tooltipButtonImage.Append( keyButtonImages_t( "<JOY4>", "ui/assets/hud/controller/xb360/y", "ui/assets/hud/controller/ps3/triangle", 37, 37, 0 ) );
+	 //tooltipButtonImage.Append( keyButtonImages_t( "<JOY_TRIGGER2>", "ui/assets/hud/controller/xb360/rt", "ui/assets/hud/controller/ps3/r2", 64, 52, 0 ) );
+	 //tooltipButtonImage.Append( keyButtonImages_t( "<JOY_TRIGGER1>", "ui/assets/hud/controller/xb360/lt", "ui/assets/hud/controller/ps3/l2", 64, 52, 0 ) );
+	 //tooltipButtonImage.Append( keyButtonImages_t( "<JOY5>", "ui/assets/hud/controller/xb360/lb", "ui/assets/hud/controller/ps3/l1", 52, 32, 0 ) );
+	 //tooltipButtonImage.Append( keyButtonImages_t( "<JOY6>", "ui/assets/hud/controller/xb360/rb", "ui/assets/hud/controller/ps3/r1", 52, 32, 0 ) );
+	 //tooltipButtonImage.Append( keyButtonImages_t( "<MOUSE1>", "ui/assets/hud/controller/mouse1", "", 64, 52, 0 ) );
+	 //tooltipButtonImage.Append( keyButtonImages_t( "<MOUSE2>", "ui/assets/hud/controller/mouse2", "", 64, 52, 0 ) );
+	 //tooltipButtonImage.Append( keyButtonImages_t( "<MOUSE3>", "ui/assets/hud/controller/mouse3", "", 64, 52, 0 ) );
+
 	for ( int index = 0; index < tooltipButtonImage.Num(); index++ ) {
 		if ( ( tooltipButtonImage[index].xbImage != NULL ) && ( tooltipButtonImage[index].xbImage[0] != '\0' ) ) {
 			declManager->FindMaterial( tooltipButtonImage[index].xbImage );
@@ -131,7 +131,7 @@ idSWF::idSWF( const char * filename_, idSoundWorld * soundWorld_ ) {
 	} else {
 		LoadSWF( filename );
 	}
-	idStr atlasFileName = binaryFileName;
+	idStr atlasFileName = filename;
 	atlasFileName.SetFileExtension( ".tga" );
 	atlasMaterial = declManager->FindMaterial( atlasFileName );
 
@@ -181,6 +181,7 @@ idSWF::idSWF( const char * filename_, idSoundWorld * soundWorld_ ) {
 	globals->SetNative( "cropToFit", swfScriptVar_crop.Bind( this ) );
 	globals->SetNative( "crop", swfScriptVar_crop.Bind( this ) );
 
+	globals->Set( "msgPost", scriptFunction_msgPost.Bind( this ) );
 	// Do this to touch any external references (like sounds)
 	// But disable script warnings because many globals won't have been created yet
 	extern idCVar swf_debug;
@@ -235,7 +236,7 @@ idSWF::~idSWF() {
 			dictionary[i].edittext = NULL;
 		}
 	}
-	
+
 	globals->Clear();
 	tooltipButtonImage.Clear();
 	globals->Release();
@@ -430,7 +431,7 @@ idSWFScriptVar idSWF::idSWFScriptFunction_getLocalString::Call( idSWFScriptObjec
 	}
 
 	idStr val = idLocalization::GetString( parms[0].ToString() );
-	return val; 
+	return val;
 }
 
 /*
@@ -473,7 +474,7 @@ idSWFScriptFunction_getCVarInteger::Call
 ========================
 */
 idSWFScriptVar idSWF::idSWFScriptFunction_getCVarInteger::Call( idSWFScriptObject * thisObject, const idSWFParmList & parms ) {
-	return cvarSystem->GetCVarInteger( parms[0].ToString() );
+	return cvarSystem->GetCVarInteger( parms[0].ToString().c_str(  ) );
 }
 
 /*
@@ -543,7 +544,7 @@ idSWF::idSWFScriptFunction_pow::Call
 idSWFScriptVar idSWF::idSWFScriptFunction_pow::Call( idSWFScriptObject * thisObject, const idSWFParmList & parms ) {
 	if ( parms.Num() != 2 ) {
 		return idSWFScriptVar();
-	}	
+	}
 
 	float value = parms[0].ToFloat();
 	float power = parms[1].ToFloat();
@@ -558,7 +559,7 @@ idSWF::idSWFScriptFunction_pow::Call
 idSWFScriptVar idSWF::idSWFScriptFunction_sqrt::Call( idSWFScriptObject * thisObject, const idSWFParmList & parms ) {
 	if ( parms.Num() != 1 ) {
 		return idSWFScriptVar();
-	}	
+	}
 
 	float value = parms[0].ToFloat();
 	return ( idMath::Sqrt( value ) );
@@ -572,7 +573,7 @@ idSWF::idSWFScriptFunction_abs::Call
 idSWFScriptVar idSWF::idSWFScriptFunction_abs::Call( idSWFScriptObject * thisObject, const idSWFParmList & parms ) {
 	if ( parms.Num() != 1 ) {
 		return idSWFScriptVar();
-	}	
+	}
 
 	float value = idMath::Fabs( parms[0].ToFloat() );
 	return value;
@@ -706,4 +707,18 @@ idSWFScriptVar idSWF::idSWFScriptNativeVar_crop::Get( idSWFScriptObject * object
 
 void idSWF::idSWFScriptNativeVar_crop::Set( idSWFScriptObject * object, const idSWFScriptVar & value ) {
 	pThis->crop = value.ToBool();
+}
+
+/*
+===================
+idSWF::idSWFScriptFunction_msgPost::Call
+===================
+*/
+idSWFScriptVar idSWF::idSWFScriptFunction_msgPost::Call( idSWFScriptObject * thisObject, const idSWFParmList & parms ) {
+	idStr name (parms[0].ToString(  ));
+	idSWFScriptVar var= pThis->mouseObject->Get( name.c_str(  ) );
+	if ( var.IsFunction() ) {
+		var.GetFunction()->Call(thisObject, parms );
+	}
+	return idSWFScriptVar();
 }

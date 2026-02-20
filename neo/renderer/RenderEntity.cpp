@@ -89,6 +89,8 @@ idRenderLightLocal::idRenderLightLocal() {
 	archived				= false;
 	lightShader				= NULL;
 	falloffImage			= NULL;
+	environmentMap			= NULL;
+	lutMap					= NULL;
 	globalLightOrigin		= vec3_zero;
 	viewCount				= 0;
 	viewLight				= NULL;

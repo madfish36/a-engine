@@ -870,7 +870,11 @@ void idSWF::RenderEditText( idRenderSystem * gui, idSWFTextInstance * textInstan
 	}
 
 	while ( charIndex < text.Length() ) {
-		if ( text[ charIndex ] == '\n' ) {
+		if ((text[ charIndex ] == '\n' && text[ charIndex ] == '\r')
+			||(text[ charIndex ] == '\r' && text[ charIndex ] == '\n')) {
+			charIndex ++;
+		}
+		if ( text[ charIndex ] == '\n' || text[ charIndex ] == '\r'  ) {
 			if ( shape->flags & SWF_ET_MULTILINE ) {
 				currentLine->Append( '\n' );
 				x = bounds.tl.x;

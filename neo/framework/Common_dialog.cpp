@@ -664,7 +664,7 @@ void idCommonDialog::Render( bool loading ) {
 	}
 
 	// Decrement the time remaining on the save indicator or turn it off
-	if ( !dialogShowingSaveIndicatorRequested && saveIndicator->IsActive() ) { 
+	if ( !dialogShowingSaveIndicatorRequested && saveIndicator && saveIndicator->IsActive() ) {
 		ShowSaveIndicator( false );
 	}
 

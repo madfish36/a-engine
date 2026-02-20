@@ -2270,9 +2270,9 @@ void idActor::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir
 					if ( player->PowerUpActive( BERSERK ) && player->GetExpansionType() == GAME_D3XP && !damageNotByFists ) {
 						player->GetAchievementManager().EventCompletesAchievement( ACHIEVEMENT_ARTIFACT_WITH_BERSERK_PUNCH_20 );
 					}
-					if ( player->GetCurrentWeaponSlot() == player->weapon_chainsaw ) {
-						player->GetAchievementManager().EventCompletesAchievement( ACHIEVEMENT_KILL_20_ENEMY_WITH_CHAINSAW );
-					}
+					//if ( player->GetCurrentWeaponSlot() == player->weapon_chainsaw ) {
+					//	player->GetAchievementManager().EventCompletesAchievement( ACHIEVEMENT_KILL_20_ENEMY_WITH_CHAINSAW );
+					//}
 					if ( ( !name.Find( "monster_boss_vagary") || !name.Find( "vagaryaftercin") ) && player->GetExpansionType() == GAME_BASE ) {
 						player->GetAchievementManager().EventCompletesAchievement( ACHIEVEMENT_DEFEAT_VAGARY_BOSS );
 					}

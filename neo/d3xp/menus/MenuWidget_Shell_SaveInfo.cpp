@@ -145,16 +145,6 @@ void idMenuWidget_Shell_SaveInfo::ObserveEvent( const idMenuWidget & widget, con
 
 			Update();
 
-			idMenuScreen_Shell_Load * loadScreen = dynamic_cast< idMenuScreen_Shell_Load * >( GetParent() );
-			if ( loadScreen ) {
-				loadScreen->UpdateSaveEnumerations();
-			}
-
-			idMenuScreen_Shell_Save * saveScreen = dynamic_cast< idMenuScreen_Shell_Save * >( GetParent() );
-			if ( saveScreen ) {
-				saveScreen->UpdateSaveEnumerations();
-			}
-
 			break;
 		}
 	}

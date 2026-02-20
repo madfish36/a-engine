@@ -28,7 +28,7 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __FILE_SAVEGAME_H__
 #define __FILE_SAVEGAME_H__
 
-#include "zlib/zlib.h"
+#include "../libs/zlib/zlib.h"
 
 // Listing of the types of files within a savegame package
 enum saveGameType_t {
@@ -132,7 +132,7 @@ public:
 	virtual int				Write( const void * buffer, int len );
 
 	// this file is strictly streaming, you can't seek at all
-	virtual int				Length() const  { return compressedLength; }
+	virtual int				Length() const  { return (int) compressedLength; }
 	virtual void			SetLength( size_t len ) { compressedLength = len; }
 	virtual int				Tell() const { assert( 0 ); return 0; }
 	virtual int				Seek( long offset, fsOrigin_t origin ) { assert( 0 ); return 0; }

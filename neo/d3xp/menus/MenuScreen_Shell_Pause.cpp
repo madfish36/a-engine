@@ -94,35 +94,6 @@ idMenuScreen_Shell_Pause::Update
 */
 void idMenuScreen_Shell_Pause::Update() {
 
-	if ( menuData != NULL ) {
-		idMenuWidget_CommandBar * cmdBar = menuData->GetCmdBar();
-		if ( cmdBar != NULL ) {
-			cmdBar->ClearAllButtons();
-			idMenuWidget_CommandBar::buttonInfo_t * buttonInfo;
-			buttonInfo = cmdBar->GetButton( idMenuWidget_CommandBar::BUTTON_JOY1 );
-			if ( menuData->GetPlatform() != 2 ) {
-				buttonInfo->label = "#str_SWF_SELECT";
-			}
-			buttonInfo->action.Set( WIDGET_ACTION_PRESS_FOCUSED );
-			
-			bool isDead = false;
-			idPlayer * player = gameLocal.GetLocalPlayer();
-			if ( player != NULL ) {
-				if ( player->health <= 0 ) {
-					isDead = true;
-				}
-			}
-
-			if ( !isDead ) {
-				buttonInfo = cmdBar->GetButton( idMenuWidget_CommandBar::BUTTON_JOY2 );
-				if ( menuData->GetPlatform() != 2 ) {
-					buttonInfo->label = "#str_00395";
-				}
-				buttonInfo->action.Set( WIDGET_ACTION_COMMAND, PAUSE_CMD_RETURN );
-			}
-		}		
-	}
-
 	idMenuScreen::Update();
 }
 

@@ -1904,9 +1904,9 @@ void idSoulCubeMissile::Think() {
 				PostEventSec( &EV_Remove, 2.0f );
 
 				ownerEnt = owner.GetEntity();
-				if ( ownerEnt != NULL && ownerEnt->IsType( idPlayer::Type ) ) {
-					static_cast<idPlayer *>( ownerEnt )->SetSoulCubeProjectile( NULL );
-				}
+				//if ( ownerEnt != NULL && ownerEnt->IsType( idPlayer::Type ) ) {
+				//	static_cast<idPlayer *>( ownerEnt )->SetSoulCubeProjectile( NULL );
+				//}
 
 				state = FIZZLED;
 			} else if ( !killPhase ){
@@ -1978,9 +1978,9 @@ void idSoulCubeMissile::Launch( const idVec3 &start, const idVec3 &dir, const id
 	UpdateVisuals();
 	
 	ownerEnt = owner.GetEntity();
-	if ( ownerEnt != NULL && ownerEnt->IsType( idPlayer::Type ) ) {
-		static_cast<idPlayer *>( ownerEnt )->SetSoulCubeProjectile( this );
-	}
+	//if ( ownerEnt != NULL && ownerEnt->IsType( idPlayer::Type ) ) {
+	//	static_cast<idPlayer *>( ownerEnt )->SetSoulCubeProjectile( this );
+	//}
 
 }
 

@@ -213,16 +213,12 @@ ID_INLINE idVecX idVecX::operator-() const {
 	idVecX m;
 
 	m.SetTempSize( size );
-#if defined(ID_WIN_X86_SSE_INTRIN) && defined(VECX_SIMD)
+
 	ALIGN16( unsigned int signBit[4] ) = { IEEE_FLT_SIGN_MASK, IEEE_FLT_SIGN_MASK, IEEE_FLT_SIGN_MASK, IEEE_FLT_SIGN_MASK };
 	for ( int i = 0; i < size; i += 4 ) {
 		_mm_store_ps( m.p + i, _mm_xor_ps( _mm_load_ps( p + i ), (__m128 &) signBit[0] ) );
 	}
-#else
-	for ( int i = 0; i < size; i++ ) {
-		m.p[i] = -p[i];
-	}
-#endif
+
 	return m;
 }
 
@@ -233,13 +229,11 @@ idVecX::operator=
 */
 ID_INLINE idVecX &idVecX::operator=( const idVecX &a ) { 
 	SetSize( a.size );
-#if defined(ID_WIN_X86_SSE_INTRIN) && defined(VECX_SIMD)
+
 	for ( int i = 0; i < a.size; i += 4 ) {
 		_mm_store_ps( p + i, _mm_load_ps( a.p + i ) );
 	}
-#else
-	memcpy( p, a.p, a.size * sizeof( float ) );
-#endif
+
 	idVecX::tempIndex = 0;
 	return *this;
 }
@@ -254,15 +248,11 @@ ID_INLINE idVecX idVecX::operator+( const idVecX &a ) const {
 
 	assert( size == a.size );
 	m.SetTempSize( size );
-#if defined(ID_WIN_X86_SSE_INTRIN) && defined(VECX_SIMD)
+
 	for ( int i = 0; i < size; i += 4 ) {
 		_mm_store_ps( m.p + i, _mm_add_ps( _mm_load_ps( p + i ), _mm_load_ps( a.p + i ) ) );
 	}
-#else
-	for ( int i = 0; i < size; i++ ) {
-		m.p[i] = p[i] + a.p[i];
-	}
-#endif
+
 	return m;
 }
 
@@ -276,15 +266,11 @@ ID_INLINE idVecX idVecX::operator-( const idVecX &a ) const {
 
 	assert( size == a.size );
 	m.SetTempSize( size );
-#if defined(ID_WIN_X86_SSE_INTRIN) && defined(VECX_SIMD)
+
 	for ( int i = 0; i < size; i += 4 ) {
 		_mm_store_ps( m.p + i, _mm_sub_ps( _mm_load_ps( p + i ), _mm_load_ps( a.p + i ) ) );
 	}
-#else
-	for ( int i = 0; i < size; i++ ) {
-		m.p[i] = p[i] - a.p[i];
-	}
-#endif
+
 	return m;
 }
 
@@ -295,15 +281,11 @@ idVecX::operator+=
 */
 ID_INLINE idVecX &idVecX::operator+=( const idVecX &a ) {
 	assert( size == a.size );
-#if defined(ID_WIN_X86_SSE_INTRIN) && defined(VECX_SIMD)
+
 	for ( int i = 0; i < size; i += 4 ) {
 		_mm_store_ps( p + i, _mm_add_ps( _mm_load_ps( p + i ), _mm_load_ps( a.p + i ) ) );
 	}
-#else
-	for ( int i = 0; i < size; i++ ) {
-		p[i] += a.p[i];
-	}
-#endif
+
 	idVecX::tempIndex = 0;
 	return *this;
 }
@@ -315,15 +297,11 @@ idVecX::operator-=
 */
 ID_INLINE idVecX &idVecX::operator-=( const idVecX &a ) {
 	assert( size == a.size );
-#if defined(ID_WIN_X86_SSE_INTRIN) && defined(VECX_SIMD)
+
 	for ( int i = 0; i < size; i += 4 ) {
 		_mm_store_ps( p + i, _mm_sub_ps( _mm_load_ps( p + i ), _mm_load_ps( a.p + i ) ) );
 	}
-#else
-	for ( int i = 0; i < size; i++ ) {
-		p[i] -= a.p[i];
-	}
-#endif
+
 	idVecX::tempIndex = 0;
 	return *this;
 }
@@ -337,16 +315,12 @@ ID_INLINE idVecX idVecX::operator*( const float a ) const {
 	idVecX m;
 
 	m.SetTempSize( size );
-#if defined(ID_WIN_X86_SSE_INTRIN) && defined(VECX_SIMD)
+
 	__m128 va = _mm_load1_ps( & a );
 	for ( int i = 0; i < size; i += 4 ) {
 		_mm_store_ps( m.p + i, _mm_mul_ps( _mm_load_ps( p + i ), va ) );
 	}
-#else
-	for ( int i = 0; i < size; i++ ) {
-		m.p[i] = p[i] * a;
-	}
-#endif
+
 	return m;
 }
 
@@ -356,16 +330,12 @@ idVecX::operator*=
 ========================
 */
 ID_INLINE idVecX &idVecX::operator*=( const float a ) {
-#if defined(ID_WIN_X86_SSE_INTRIN) && defined(VECX_SIMD)
+
 	__m128 va = _mm_load1_ps( & a );
 	for ( int i = 0; i < size; i += 4 ) {
 		_mm_store_ps( p + i, _mm_mul_ps( _mm_load_ps( p + i ), va ) );
 	}
-#else
-	for ( int i = 0; i < size; i++ ) {
-		p[i] *= a;
-	}
-#endif
+
 	return *this;
 }
 
@@ -551,13 +521,11 @@ idVecX::Zero
 ========================
 */
 ID_INLINE void idVecX::Zero() {
-#if defined(ID_WIN_X86_SSE_INTRIN) && defined(VECX_SIMD)
+
 	for ( int i = 0; i < size; i += 4 ) {
 		_mm_store_ps( p + i, _mm_setzero_ps() );
 	}
-#else
-	memset( p, 0, size * sizeof( float ) );
-#endif
+
 }
 
 /*
@@ -567,13 +535,11 @@ idVecX::Zero
 */
 ID_INLINE void idVecX::Zero( int length ) {
 	SetSize( length );
-#if defined(ID_WIN_X86_SSE_INTRIN) && defined(VECX_SIMD)
+
 	for ( int i = 0; i < length; i += 4 ) {
 		_mm_store_ps( p + i, _mm_setzero_ps() );
 	}
-#else
-	memset( p, 0, length * sizeof( float ) );
-#endif
+
 }
 
 /*
@@ -611,16 +577,12 @@ idVecX::Negate
 ========================
 */
 ID_INLINE void idVecX::Negate() {
-#if defined(ID_WIN_X86_SSE_INTRIN) && defined(VECX_SIMD)
+
 	ALIGN16( const unsigned int signBit[4] ) = { IEEE_FLT_SIGN_MASK, IEEE_FLT_SIGN_MASK, IEEE_FLT_SIGN_MASK, IEEE_FLT_SIGN_MASK };
 	for ( int i = 0; i < size; i += 4 ) {
 		_mm_store_ps( p + i, _mm_xor_ps( _mm_load_ps( p + i ), (__m128 &) signBit[0] ) );
 	}
-#else
-	for ( int i = 0; i < size; i++ ) {
-		p[i] = -p[i];
-	}
-#endif
+
 }
 
 /*

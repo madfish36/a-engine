@@ -319,7 +319,7 @@ void idRenderWorldLocal::UpdateEntityDef( qhandle_t entityHandle, const renderEn
 
 	// trigger entities don't need to get linked in and processed,
 	// they only exist for editor use
-	if ( def->parms.hModel != NULL && !def->parms.hModel->ModelHasDrawingSurfaces() ) {
+	if ( def->parms.hModel != NULL && !def->parms.hModel->ModelHasDrawingSurfaces() && !def->parms.hModel->ModelHasShadowCastingSurfaces()) {
 		return;
 	}
 
@@ -1752,8 +1752,8 @@ void idRenderWorldLocal::DebugArrow( const idVec4 &color, const idVec3 &start, c
 	if ( arrowStep != r_debugArrowStep.GetInteger() ) {
 		arrowStep = r_debugArrowStep.GetInteger();
 		for ( i = 0, a = 0; a < 360.0f; a += arrowStep, i++ ) {
-			arrowCos[i] = idMath::Cos16( DEG2RAD( a ) );
-			arrowSin[i] = idMath::Sin16( DEG2RAD( a ) );
+			arrowCos[i] = idMath::Cos( DEG2RAD( a ) );
+			arrowSin[i] = idMath::Sin( DEG2RAD( a ) );
 		}
 		arrowCos[i] = arrowCos[0];
 		arrowSin[i] = arrowSin[0];
@@ -1817,7 +1817,7 @@ void idRenderWorldLocal::DebugCircle( const idVec4 &color, const idVec3 &origin,
 	lastPoint = origin + up;
 	for ( i = 1; i <= numSteps; i++ ) {
 		a = idMath::TWO_PI * i / numSteps;
-		point = origin + idMath::Sin16( a ) * left + idMath::Cos16( a ) * up;
+		point = origin + idMath::Sin( a ) * left + idMath::Cos( a ) * up;
 		DebugLine( color, lastPoint, point, lifetime, depthTest );
 		lastPoint = point;
 	}
@@ -1841,14 +1841,14 @@ void idRenderWorldLocal::DebugSphere( const idVec4 &color, const idSphere &spher
 	}
 
 	for ( i = 15; i <= 360; i += 15 ) {
-		s = idMath::Sin16( DEG2RAD(i) );
-		c = idMath::Cos16( DEG2RAD(i) );
+		s = idMath::Sin( DEG2RAD(i) );
+		c = idMath::Cos( DEG2RAD(i) );
 		lastp[0] = sphere.GetOrigin()[0];
 		lastp[1] = sphere.GetOrigin()[1] + sphere.GetRadius() * s;
 		lastp[2] = sphere.GetOrigin()[2] + sphere.GetRadius() * c;
 		for ( n = 0, j = 15; j <= 360; j += 15, n++ ) {
-			p[0] = sphere.GetOrigin()[0] + idMath::Sin16( DEG2RAD(j) ) * sphere.GetRadius() * s;
-			p[1] = sphere.GetOrigin()[1] + idMath::Cos16( DEG2RAD(j) ) * sphere.GetRadius() * s;
+			p[0] = sphere.GetOrigin()[0] + idMath::Sin( DEG2RAD(j) ) * sphere.GetRadius() * s;
+			p[1] = sphere.GetOrigin()[1] + idMath::Cos( DEG2RAD(j) ) * sphere.GetRadius() * s;
 			p[2] = lastp[2];
 
 			DebugLine( color, lastp, p, lifetime,depthTest );
@@ -1926,7 +1926,7 @@ void idRenderWorldLocal::DebugCone( const idVec4 &color, const idVec3 &apex, con
 
 	if ( radius1 == 0.0f ) {
 		for ( i = 20; i <= 360; i += 20 ) {
-			d = idMath::Sin16( DEG2RAD(i) ) * axis[0] + idMath::Cos16( DEG2RAD(i) ) * axis[1];
+			d = idMath::Sin( DEG2RAD(i) ) * axis[0] + idMath::Cos( DEG2RAD(i) ) * axis[1];
 			p2 = top + d * radius2;
 			DebugLine( color, lastp2, p2, lifetime );
 			DebugLine( color, p2, apex, lifetime );
@@ -1935,7 +1935,7 @@ void idRenderWorldLocal::DebugCone( const idVec4 &color, const idVec3 &apex, con
 	} else {
 		lastp1 = apex + radius1 * axis[1];
 		for ( i = 20; i <= 360; i += 20 ) {
-			d = idMath::Sin16( DEG2RAD(i) ) * axis[0] + idMath::Cos16( DEG2RAD(i) ) * axis[1];
+			d = idMath::Sin( DEG2RAD(i) ) * axis[0] + idMath::Cos( DEG2RAD(i) ) * axis[1];
 			p1 = apex + d * radius1;
 			p2 = top + d * radius2;
 			DebugLine( color, lastp1, p1, lifetime );
@@ -2001,8 +2001,8 @@ void idRenderWorldLocal::DebugScreenRect( const idVec4 &color, const idScreenRec
 	centery = ( viewDef->viewport.y2 - viewDef->viewport.y1 ) * 0.5f;
 
 	dScale = r_znear.GetFloat() + 1.0f;
-	hScale = dScale * idMath::Tan16( DEG2RAD( viewDef->renderView.fov_x * 0.5f ) );
-	vScale = dScale * idMath::Tan16( DEG2RAD( viewDef->renderView.fov_y * 0.5f ) );
+	hScale = dScale * idMath::Tan( DEG2RAD( viewDef->renderView.fov_x * 0.5f ) );
+	vScale = dScale * idMath::Tan( DEG2RAD( viewDef->renderView.fov_y * 0.5f ) );
 
 	bounds[0][0] = bounds[1][0] = dScale;
 	bounds[0][1] = -( rect.x1 - centerx ) / centerx * hScale;

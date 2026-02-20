@@ -2,9 +2,9 @@
 ===========================================================================
 
 Doom 3 BFG Edition GPL Source Code
-Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company. 
+Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company.
 
-This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").  
+This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").
 
 Doom 3 BFG Edition Source Code is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -73,10 +73,10 @@ void idImage::SubImageUpload( int mipLevel, int x, int y, int z, int width, int 
 
 	int target;
 	int uploadTarget;
-	if ( opts.textureType == TT_2D ) {
+	if ( opts.textureType == TT_2D || opts.textureType == TT_2D_DDS ) {
 		target = GL_TEXTURE_2D;
 		uploadTarget = GL_TEXTURE_2D;
-	} else if ( opts.textureType == TT_CUBIC ) {
+	} else if ( opts.textureType == TT_CUBIC || opts.textureType == TT_CUBIC_DDS) {
 		target = GL_TEXTURE_CUBE_MAP_EXT;
 		uploadTarget = GL_TEXTURE_CUBE_MAP_POSITIVE_X_EXT + z;
 	} else {
@@ -143,7 +143,13 @@ void idImage::SetTexParameters() {
 		case TT_2D:
 			target = GL_TEXTURE_2D;
 			break;
+		case TT_2D_DDS:
+			target = GL_TEXTURE_2D;
+			break;
 		case TT_CUBIC:
+			target = GL_TEXTURE_CUBE_MAP_EXT;
+			break;
+		case TT_CUBIC_DDS:
 			target = GL_TEXTURE_CUBE_MAP_EXT;
 			break;
 		default:
@@ -273,7 +279,7 @@ void idImage::SetTexParameters() {
 ========================
 idImage::AllocImage
 
-Every image will pass through this function. Allocates all the necessary MipMap levels for the 
+Every image will pass through this function. Allocates all the necessary MipMap levels for the
 Image, but doesn't put anything in them.
 
 This should not be done during normal game-play, if you can avoid it.
@@ -364,6 +370,11 @@ void idImage::AllocImage() {
 		dataFormat = GL_LUMINANCE_ALPHA;
 		dataType = GL_UNSIGNED_SHORT;
 		break;
+	case FMT_RG16F:
+			internalFormat = GL_RG16F;
+			dataFormat = GL_RG;
+			dataType = GL_HALF_FLOAT;
+			break;
 	default:
 		idLib::Error( "Unhandled image format %d in %s\n", opts.format, GetName() );
 	}
@@ -387,10 +398,10 @@ void idImage::AllocImage() {
 	int numSides;
 	int target;
 	int uploadTarget;
-	if ( opts.textureType == TT_2D ) {
+	if ( opts.textureType == TT_2D || opts.textureType == TT_2D_DDS) {
 		target = uploadTarget = GL_TEXTURE_2D;
 		numSides = 1;
-	} else if ( opts.textureType == TT_CUBIC ) {
+	} else if ( opts.textureType == TT_CUBIC || opts.textureType == TT_CUBIC_DDS ) {
 		target = GL_TEXTURE_CUBE_MAP_EXT;
 		uploadTarget = GL_TEXTURE_CUBE_MAP_POSITIVE_X_EXT;
 		numSides = 6;
@@ -405,7 +416,7 @@ void idImage::AllocImage() {
 	for ( int side = 0; side < numSides; side++ ) {
 		int w = opts.width;
 		int h = opts.height;
-		if ( opts.textureType == TT_CUBIC ) {
+		if ( opts.textureType == TT_CUBIC || opts.textureType == TT_CUBIC_DDS) {
 			h = w;
 		}
 		for ( int level = 0; level < opts.numLevels; level++ ) {

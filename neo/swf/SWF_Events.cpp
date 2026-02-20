@@ -76,7 +76,7 @@ idSWFScriptObject * idSWF::HitTest( idSWFSpriteInstance * spriteInstance, const 
 			if ( object != NULL && object->Get( "_visible" ).ToBool() ) {
 				returnObject = object;
 			}
-		} else if ( entry->type == SWF_DICT_SHAPE && ( parentObject != NULL ) ) {
+		} else if ( entry->type == SWF_DICT_SHAPE	&& ( parentObject != NULL ) ) {
 			idSWFShape * shape = entry->shape;
 			for ( int i = 0; i < shape->fillDraws.Num(); i++ ) {
 				const idSWFShapeDrawFill & fill = shape->fillDraws[i];

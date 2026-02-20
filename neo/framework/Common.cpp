@@ -2,9 +2,9 @@
 ===========================================================================
 
 Doom 3 BFG Edition GPL Source Code
-Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company. 
+Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company.
 
-This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").  
+This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").
 
 Doom 3 BFG Edition Source Code is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -35,10 +35,6 @@ If you have questions concerning this license or the applicable additional terms
 #include "../renderer/AutoRenderBink.h"
 
 #include "../sound/sound.h"
-
-#include "../../doomclassic/doom/doomlib.h"
-#include "../../doomclassic/doom/d_event.h"
-#include "../../doomclassic/doom/d_main.h"
 
 
 
@@ -108,7 +104,7 @@ idCommonLocal::idCommonLocal
 */
 idCommonLocal::idCommonLocal() :
 	readSnapshotIndex( 0 ),
-	writeSnapshotIndex( 0 ),	
+	writeSnapshotIndex( 0 ),
 	optimalTimeBuffered( 0.0f ),
 	optimalTimeBufferedWindow( 0.0f ),
 	optimalPCTBuffer( 0.5f ),
@@ -116,9 +112,8 @@ idCommonLocal::idCommonLocal() :
 	lastPacifierGuiTime( 0 ),
 	lastPacifierDialogState( false ),
 	showShellRequested( false ),
-	currentGame( DOOM3_BFG ),
-	idealCurrentGame( DOOM3_BFG ),
-	doomClassicMaterial( NULL )
+	currentGame( A_DECAY ),
+	idealCurrentGame( A_DECAY )
 	{
 
 	snapCurrent.localTime = -1;
@@ -447,7 +442,7 @@ CONSOLE_COMMAND( printMemInfo, "prints memory debugging data", NULL ) {
 		return;
 	}
 
-	f->Printf( "total(%s ) image(%s ) model(%s ) sound(%s ): %s\n", idStr::FormatNumber( mi.assetTotals ).c_str(), idStr::FormatNumber( mi.imageAssetsTotal ).c_str(), 
+	f->Printf( "total(%s ) image(%s ) model(%s ) sound(%s ): %s\n", idStr::FormatNumber( mi.assetTotals ).c_str(), idStr::FormatNumber( mi.imageAssetsTotal ).c_str(),
 		idStr::FormatNumber( mi.modelAssetsTotal ).c_str(), idStr::FormatNumber( mi.soundAssetsTotal ).c_str(), mi.filebase.c_str() );
 
 	fileSystem->CloseFile( f );
@@ -584,7 +579,7 @@ void idCommonLocal::CheckStartupStorageRequirements() {
 			idStr savePath( savepath );
 			if ( savePath.Length() >= 3 ) {
 				if ( savePath[ 1 ] == ':' && savePath[ 2 ] == '\\' &&
-					( ( savePath[ 0 ] >= 'A' && savePath[ 0 ] <= 'Z' ) || 
+					( ( savePath[ 0 ] >= 'A' && savePath[ 0 ] <= 'Z' ) ||
 					( savePath[ 0 ] >= 'a' && savePath[ 0 ] <= 'z' ) ) ) {
 						savePath = savePath.Left( 3 );
 						availableSpace = Sys_GetDriveFreeSpaceInBytes( savePath );
@@ -649,11 +644,11 @@ idCommonLocal::FilterLangList
 ===============
 */
 void idCommonLocal::FilterLangList( idStrList* list, idStr lang ) {
-	
+
 	idStr temp;
 	for( int i = 0; i < list->Num(); i++ ) {
 		temp = (*list)[i];
-		temp = temp.Right(temp.Length()-strlen("strings/"));
+		temp = temp.Right(temp.Length()-(int)strlen("strings/"));
 		temp = temp.Left(lang.Length());
 		if(idStr::Icmp(temp, lang) != 0) {
 			list->RemoveIndex(i);
@@ -677,7 +672,7 @@ void idCommonLocal::InitLanguageDict() {
 	//to add new strings to the english language dictionary
 	idFileList*	langFiles;
 	langFiles =  fileSystem->ListFilesTree( "strings", ".lang", true );
-	
+
 	idStrList langList = langFiles->GetList();
 
 	// Loop through the list and filter
@@ -806,7 +801,7 @@ idCommonLocal::InitSIMD
 =================
 */
 void idCommonLocal::InitSIMD() {
-	idSIMD::InitProcessor( "doom", com_forceGenericSIMD.GetBool() );
+	idSIMD::InitProcessor( "decay", com_forceGenericSIMD.GetBool() );
 	com_forceGenericSIMD.ClearModified();
 }
 
@@ -1044,7 +1039,7 @@ void idCommonLocal::Init( int argc, const char * const * argv, const char *cmdli
 
 		// if any archived cvars are modified after this, we will trigger a writing of the config file
 		cvarSystem->ClearModifiedFlags( CVAR_ARCHIVE );
-		
+
 		// init OpenGL, which will open a window and connect sound and input hardware
 		renderSystem->InitOpenGL();
 
@@ -1060,15 +1055,10 @@ void idCommonLocal::Init( int argc, const char * const * argv, const char *cmdli
 
 		whiteMaterial = declManager->FindMaterial( "_white" );
 
-		if ( idStr::Icmp( sys_lang.GetString(), ID_LANG_FRENCH ) == 0 ) {
-			// If the user specified french, we show french no matter what SKU
-			splashScreen = declManager->FindMaterial( "guis/assets/splash/legal_french" );
-		} else if ( idStr::Icmp( defaultLang, ID_LANG_FRENCH ) == 0 ) {
-			// If the lead sku is french (ie: europe), display figs
-			splashScreen = declManager->FindMaterial( "guis/assets/splash/legal_figs" );
+		if ( idStr::Icmp( sys_lang.GetString(), ID_LANG_RUSSIAN ) == 0 ) {
+			splashScreen = declManager->FindMaterial( "guis/assets/copyrights/legal_russian" );
 		} else {
-			// Otherwise show it in english
-			splashScreen = declManager->FindMaterial( "guis/assets/splash/legal_english" );
+			splashScreen = declManager->FindMaterial( "guis/assets/copyrights/legal_english" );
 		}
 
 		const int legalMinTime = 4000;
@@ -1115,11 +1105,8 @@ void idCommonLocal::Init( int argc, const char * const * argv, const char *cmdli
 
 		// On the PC touch them all so they get included in the resource build
 		if ( !fileSystem->UsingResourceFiles() ) {
-			declManager->FindMaterial( "guis/assets/splash/legal_english" );
-			declManager->FindMaterial( "guis/assets/splash/legal_french" );
-			declManager->FindMaterial( "guis/assets/splash/legal_figs" );
-			// register the japanese font so it gets included
-			renderSystem->RegisterFont( "DFPHeiseiGothicW7" );
+			declManager->FindMaterial("guis/assets/copyrights/legal_english");
+			declManager->FindMaterial("guis/assets/copyrights/legal_russian");
 			// Make sure all videos get touched because you can bring videos from one map to another, they need to be included in all maps
 			for ( int i = 0; i < declManager->GetNumDecls( DECL_VIDEO ); i++ ) {
 				declManager->DeclByIndex( DECL_VIDEO, i );
@@ -1182,19 +1169,6 @@ void idCommonLocal::Init( int argc, const char * const * argv, const char *cmdli
 		}
 
 		fileSystem->EndLevelLoad();
-
-		// Initialize support for Doom classic.
-		doomClassicMaterial = declManager->FindMaterial( "_doomClassic" );
-		idImage *image = globalImages->GetImage( "_doomClassic" );
-		if ( image != NULL ) {
-			idImageOpts opts;
-			opts.format = FMT_RGBA8;
-			opts.colorFormat = CFM_DEFAULT;
-			opts.width = DOOMCLASSIC_RENDERWIDTH;
-			opts.height = DOOMCLASSIC_RENDERHEIGHT;
-			opts.numLevels = 1;
-			image->AllocImage( opts, TF_LINEAR, TR_REPEAT );
-		}
 
 		com_fullyInitialized = true;
 
@@ -1295,7 +1269,7 @@ void idCommonLocal::Shutdown() {
 	// shut down the event loop
 	printf( "eventLoop->Shutdown();\n" );
 	eventLoop->Shutdown();
-	
+
 	// shutdown the decl manager
 	printf( "declManager->Shutdown();\n" );
 	declManager->Shutdown();
@@ -1306,7 +1280,7 @@ void idCommonLocal::Shutdown() {
 
 	printf( "commonDialog.Shutdown();\n" );
 	commonDialog.Shutdown();
-	
+
 	// unload the game dll
 	printf( "UnloadGameDLL();\n" );
 	UnloadGameDLL();
@@ -1369,7 +1343,7 @@ void idCommonLocal::CreateMainMenu() {
 		renderSystem->BeginLevelLoad();
 		soundSystem->BeginLevelLoad();
 		uiManager->BeginLevelLoad();
-		
+
 		// create main inside an "empty" game level load - so assets get
 		// purged automagically when we transition to a "real" map
 		game->Shell_CreateMenu( false );
@@ -1442,9 +1416,9 @@ bool idCommonLocal::WaitForSessionState( idSession::sessionState_t desiredState 
 		if ( sessionState == desiredState ) {
 			return true;
 		}
-		if ( sessionState != idSession::LOADING && 
-			sessionState != idSession::SEARCHING && 
-			sessionState != idSession::CONNECTING && 
+		if ( sessionState != idSession::LOADING &&
+			sessionState != idSession::SEARCHING &&
+			sessionState != idSession::CONNECTING &&
 			sessionState != idSession::BUSY &&
 			sessionState != desiredState ) {
 				return false;
@@ -1506,7 +1480,7 @@ bool idCommonLocal::ProcessEvent( const sysEvent_t *event ) {
 
 				game->Shell_ClosePause();
 			}
-		} 
+		}
 	}
 
 	// let the pull-down console take it if desired
@@ -1516,38 +1490,12 @@ bool idCommonLocal::ProcessEvent( const sysEvent_t *event ) {
 	if ( session->ProcessInputEvent( event ) ) {
 		return true;
 	}
-	
+
 	if ( Dialog().IsDialogActive() ) {
 		Dialog().HandleDialogEvent( event );
 		return true;
 	}
 
-	// Let Doom classic run events.
-	if ( IsPlayingDoomClassic() ) {
-		// Translate the event to Doom classic format.
-		event_t classicEvent;
-		if ( event->evType == SE_KEY ) {
-
-			if( event->evValue2 == 1 ) {
-				classicEvent.type = ev_keydown;
-			} else if( event->evValue2 == 0 ) {
-				classicEvent.type = ev_keyup;
-			}
-
-			DoomLib::SetPlayer( 0 );
-			
-			extern Globals * g;
-			if ( g != NULL ) {
-				classicEvent.data1 =  DoomLib::RemapControl( event->GetKey() );
-											
-				D_PostEvent( &classicEvent );
-			}
-			DoomLib::SetPlayer( -1 );
-		}
-
-		// Let the classics eat all events.
-		return true;
-	}
 
 	// menus / etc
 	if ( MenuEvent( event ) ) {
@@ -1574,8 +1522,8 @@ bool idCommonLocal::ProcessEvent( const sysEvent_t *event ) {
 idCommonLocal::ResetPlayerInput
 ========================
 */
-void idCommonLocal::ResetPlayerInput( int playerIndex ) { 
-	userCmdMgr.ResetPlayer( playerIndex ); 
+void idCommonLocal::ResetPlayerInput( int playerIndex ) {
+	userCmdMgr.ResetPlayer( playerIndex );
 }
 
 /*
@@ -1587,68 +1535,8 @@ void idCommonLocal::SwitchToGame( currentGame_t newGame ) {
 	idealCurrentGame = newGame;
 }
 
-/*
-========================
-idCommonLocal::PerformGameSwitch
-========================
-*/
-void idCommonLocal::PerformGameSwitch() {
-	// If the session state is past the menu, we should be in Doom 3.
-	// This will happen if, for example, we accept an invite while playing
-	// Doom or Doom 2.
-	if ( session->GetState() > idSession::IDLE ) {
-		idealCurrentGame = DOOM3_BFG;
-	}
 
-	if ( currentGame == idealCurrentGame ) {
-		return;
-	}
 
-	const int DOOM_CLASSIC_HZ = 35;
-
-	if ( idealCurrentGame == DOOM_CLASSIC || idealCurrentGame == DOOM2_CLASSIC ) {
-		// Pause Doom 3 sound.
-		if ( menuSoundWorld != NULL ) {
-			menuSoundWorld->Pause();
-		}
-
-		DoomLib::skipToNew = false;
-		DoomLib::skipToLoad = false;
-
-		// Reset match parameters for the classics.
-		DoomLib::matchParms = idMatchParameters();
-
-		// The classics use the usercmd manager too, clear it.
-		userCmdMgr.SetDefaults();
-
-		// Classics need a local user too.
-		session->UpdateSignInManager();
-		session->GetSignInManager().RegisterLocalUser( 0 );
-
-		com_engineHz_denominator = 100LL * DOOM_CLASSIC_HZ;
-		com_engineHz_latched = DOOM_CLASSIC_HZ;
-
-		DoomLib::SetCurrentExpansion( idealCurrentGame );
-		
-	} else if ( idealCurrentGame == DOOM3_BFG ) {
-		DoomLib::Interface.Shutdown();
-		com_engineHz_denominator = 100LL * com_engineHz.GetFloat();
-		com_engineHz_latched = com_engineHz.GetFloat();
-		
-		// Don't MoveToPressStart if we have an invite, we need to go
-		// directly to the lobby.
-		if ( session->GetState() <= idSession::IDLE ) {
-			session->MoveToPressStart();
-		}
-
-		// Unpause Doom 3 sound.
-		if ( menuSoundWorld != NULL ) {
-			menuSoundWorld->UnPause();
-		}
-	}
-
-	currentGame = idealCurrentGame;
-}
 
 /*
 ==================

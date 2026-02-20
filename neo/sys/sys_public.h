@@ -436,11 +436,6 @@ double			Sys_ClockTicksPerSecond();
 cpuid_t			Sys_GetProcessorId();
 const char *	Sys_GetProcessorString();
 
-// returns true if the FPU stack is empty
-bool			Sys_FPU_StackIsEmpty();
-
-// empties the FPU stack
-void			Sys_FPU_ClearStack();
 
 // returns the FPU state as a string
 const char *	Sys_FPU_GetState();
@@ -483,17 +478,11 @@ bool			Sys_UnlockMemory( void *ptr, int bytes );
 // set amount of physical work memory
 void			Sys_SetPhysicalWorkMemory( int minBytes, int maxBytes );
 
-// allows retrieving the call stack at execution points
-void			Sys_GetCallStack( address_t *callStack, const int callStackSize );
-const char *	Sys_GetCallStackStr( const address_t *callStack, const int callStackSize );
-const char *	Sys_GetCallStackCurStr( int depth );
-const char *	Sys_GetCallStackCurAddressStr( int depth );
-void			Sys_ShutdownSymbols();
 
 // DLL loading, the path should be a fully qualified OS path to the DLL file to be loaded
-int				Sys_DLL_Load( const char *dllName );
-void *			Sys_DLL_GetProcAddress( int dllHandle, const char *procName );
-void			Sys_DLL_Unload( int dllHandle );
+intptr_t		Sys_DLL_Load( const char *dllName );
+void *			Sys_DLL_GetProcAddress( intptr_t dllHandle, const char *procName );
+void			Sys_DLL_Unload( intptr_t dllHandle );
 
 // event generation
 void			Sys_GenerateEvents();
@@ -564,6 +553,7 @@ bool Sys_Exec(	const char * appPath, const char * workingPath, const char * args
 #define ID_LANG_GERMAN		"german"
 #define ID_LANG_SPANISH		"spanish"
 #define ID_LANG_JAPANESE	"japanese"
+#define ID_LANG_RUSSIAN		"russian"
 int Sys_NumLangs();
 const char * Sys_Lang( int idx );
 
@@ -691,7 +681,6 @@ public:
 	virtual cpuid_t			GetProcessorId() = 0;
 	virtual const char *	GetProcessorString() = 0;
 	virtual const char *	FPU_GetState() = 0;
-	virtual bool			FPU_StackIsEmpty() = 0;
 	virtual void			FPU_SetFTZ( bool enable ) = 0;
 	virtual void			FPU_SetDAZ( bool enable ) = 0;
 
@@ -700,13 +689,9 @@ public:
 	virtual bool			LockMemory( void *ptr, int bytes ) = 0;
 	virtual bool			UnlockMemory( void *ptr, int bytes ) = 0;
 
-	virtual void			GetCallStack( address_t *callStack, const int callStackSize ) = 0;
-	virtual const char *	GetCallStackStr( const address_t *callStack, const int callStackSize ) = 0;
-	virtual const char *	GetCallStackCurStr( int depth ) = 0;
-	virtual void			ShutdownSymbols() = 0;
 
-	virtual int				DLL_Load( const char *dllName ) = 0;
-	virtual void *			DLL_GetProcAddress( int dllHandle, const char *procName ) = 0;
+	virtual intptr_t		DLL_Load( const char *dllName ) = 0;
+	virtual void *			DLL_GetProcAddress(intptr_t dllHandle, const char *procName ) = 0;
 	virtual void			DLL_Unload( int dllHandle ) = 0;
 	virtual void			DLL_GetFileName( const char *baseName, char *dllName, int maxLength ) = 0;
 

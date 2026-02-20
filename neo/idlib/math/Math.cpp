@@ -29,8 +29,8 @@ If you have questions concerning this license or the applicable additional terms
 #pragma hdrstop
 #include "../precompiled.h"
 
-const int SMALLEST_NON_DENORMAL					= 1<<IEEE_FLT_MANTISSA_BITS;
-const int NAN_VALUE								= 0x7f800000;
+const int SMALLEST_NON_DENORMAL		= 1<<IEEE_FLT_MANTISSA_BITS;
+const int NAN_VALUE					= 0x7f800000;
 
 const float	idMath::PI				= 3.14159265358979323846f;
 const float	idMath::TWO_PI			= 2.0f * PI;
@@ -51,7 +51,6 @@ const float	idMath::INFINITY		= 1e30f;
 const float idMath::FLT_EPSILON		= 1.192092896e-07f;
 const float idMath::FLT_SMALLEST_NON_DENORMAL	= * reinterpret_cast< const float * >( & SMALLEST_NON_DENORMAL );	// 1.1754944e-038f
 
-#if defined( ID_WIN_X86_SSE_INTRIN )
 const __m128 idMath::SIMD_SP_zero				= { 0.0f, 0.0f, 0.0f, 0.0f };
 const __m128 idMath::SIMD_SP_255				= { 255.0f, 255.0f, 255.0f, 255.0f };
 const __m128 idMath::SIMD_SP_min_char			= { -128.0f, -128.0f, -128.0f, -128.0f };
@@ -62,7 +61,6 @@ const __m128 idMath::SIMD_SP_smallestNonDenorm	= { FLT_SMALLEST_NON_DENORMAL, FL
 const __m128 idMath::SIMD_SP_tiny				= { 1e-4f, 1e-4f, 1e-4f, 1e-4f };
 const __m128 idMath::SIMD_SP_rsqrt_c0			= { 3.0f, 3.0f, 3.0f, 3.0f };
 const __m128 idMath::SIMD_SP_rsqrt_c1			= { -0.5f, -0.5f, -0.5f, -0.5f };
-#endif
 
 bool		idMath::initialized		= false;
 dword		idMath::iSqrt[SQRT_TABLE_SIZE];		// inverse square root lookup table

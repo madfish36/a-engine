@@ -1624,10 +1624,11 @@ void idDeclManagerLocal::ListDecls_f( const idCmdArgs &args ) {
 	int		i, j;
 	int		totalDecls = 0;
 	int		totalText = 0;
-	int		totalStructs = 0;
+	size_t		totalStructs = 0;
 
 	for ( i = 0; i < declManagerLocal.declTypes.Num(); i++ ) {
-		int size, num;
+		int num;
+		size_t size;
 
 		if ( declManagerLocal.declTypes[i] == NULL ) {
 			continue;
@@ -2272,7 +2273,7 @@ void idDeclLocal::MakeDefault() {
 	self->FreeData();
 
 	// parse
-	self->Parse( defaultText, strlen( defaultText ), false );
+	self->Parse( defaultText, (int)strlen( defaultText ), false );
 
 	// we could still eventually hit the recursion if we have enough Error() calls inside Parse...
 	--recursionLevel;

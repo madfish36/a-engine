@@ -2,9 +2,9 @@
 ===========================================================================
 
 Doom 3 BFG Edition GPL Source Code
-Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company. 
+Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company.
 
-This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").  
+This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").
 
 Doom 3 BFG Edition Source Code is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -33,9 +33,6 @@ If you have questions concerning this license or the applicable additional terms
 #include "../sys/sys_lobby_backend.h"
 
 
-#define LAUNCH_TITLE_DOOM_EXECUTABLE		"doom1.exe"
-#define LAUNCH_TITLE_DOOM2_EXECUTABLE		"doom2.exe"
-
 idCVar com_wipeSeconds( "com_wipeSeconds", "1", CVAR_SYSTEM, "" );
 idCVar com_disableAutoSaves( "com_disableAutoSaves", "0", CVAR_SYSTEM | CVAR_BOOL, "" );
 idCVar com_disableAllSaves( "com_disableAllSaves", "0", CVAR_SYSTEM | CVAR_BOOL, "" );
@@ -52,8 +49,8 @@ const int NumScreenUpdatesToShowDialog = 25;
 ================
 idCommonLocal::LaunchExternalTitle
 
-Launches an external title  ( Doom 1, or 2 ) based on title index. 
-for PS3, a device number is sent in, for the game to register as a local 
+Launches an external title  ( Doom 1, or 2 ) based on title index.
+for PS3, a device number is sent in, for the game to register as a local
 user by default, when title initializes.
 ================
 */
@@ -62,24 +59,12 @@ void idCommonLocal::LaunchExternalTitle( int titleIndex, int device, const lobby
 	idStr deviceString( device );
 
 	// We want to pass in the current executable, so that the launching title knows which title to return to.
-	// as of right now, this feature is TBD. 
+	// as of right now, this feature is TBD.
 	const char * currentExecutablePath = "ImNotSureYet";
 	idStr launchingExecutablePath;
 
 	idCmdArgs cmdArgs;
 	cmdArgs.AppendArg( currentExecutablePath );
-	
-	if ( titleIndex == LAUNCH_TITLE_DOOM ) {
-			launchingExecutablePath.Format("%s%s", Sys_DefaultBasePath(), LAUNCH_TITLE_DOOM_EXECUTABLE );
-		cmdArgs.AppendArg( "d1bfg" );
-	} else if ( titleIndex == LAUNCH_TITLE_DOOM2 ) {
-		launchingExecutablePath.Format("%s%s", Sys_DefaultBasePath(), LAUNCH_TITLE_DOOM2_EXECUTABLE );
-		cmdArgs.AppendArg( "d2bfg" );
-
-	} else {
-
-		idLib::Warning("Unhandled Launch Title %d \n", titleIndex );
-	}
 
 	cmdArgs.AppendArg( deviceString.c_str() );
 
@@ -265,14 +250,14 @@ idCommonLocal::LoadLoadingGui
 void idCommonLocal::LoadLoadingGui( const char *mapName, bool & hellMap ) {
 
 	defaultLoadscreen = false;
-	loadGUI = new idSWF( "loading/default", NULL );	
-	
+	loadGUI = new idSWF( "loading/default", NULL );
+
 	if ( g_demoMode.GetBool() ) {
 		hellMap = false;
-		if ( loadGUI != NULL ) {					
+		if ( loadGUI != NULL ) {
 			const idMaterial * defaultMat = declManager->FindMaterial( "guis/assets/loadscreens/default" );
 			renderSystem->LoadLevelImages();
-			
+
 			loadGUI->Activate( true );
 			idSWFSpriteInstance * bgImg = loadGUI->GetRootObject().GetSprite( "bgImage" );
 			if ( bgImg != NULL ) {
@@ -300,6 +285,8 @@ void idCommonLocal::LoadLoadingGui( const char *mapName, bool & hellMap ) {
 		renderSystem->LoadLevelImages();
 	}
 
+
+
 	loadTipList.SetNum( loadTipList.Max() );
 	for ( int i = 0; i < loadTipList.Max(); ++i ) {
 		loadTipList[i] = i;
@@ -324,7 +311,7 @@ void idCommonLocal::LoadLoadingGui( const char *mapName, bool & hellMap ) {
 				overlay->SetVisible( false );
 			}
 
-			idStr desc;	
+			idStr desc;
 			idStr subTitle;
 			idStr displayName;
 			idSWFTextInstance * txtVal = NULL;
@@ -335,7 +322,7 @@ void idCommonLocal::LoadLoadingGui( const char *mapName, bool & hellMap ) {
 			if ( txtVal != NULL ) {
 				txtVal->SetText( "#str_00408" );
 				txtVal->SetStrokeInfo( true, 2.0f, 1.0f );
-			}			
+			}
 
 			const idMatchParameters & matchParameters = session->GetActingGameStateLobbyBase().GetMatchParms();
 			if ( matchParameters.gameMode == GAME_MODE_SINGLEPLAYER ) {
@@ -348,7 +335,7 @@ void idCommonLocal::LoadLoadingGui( const char *mapName, bool & hellMap ) {
 				const char * modeDescs[] = { "#str_swf_deathmatch_desc", "#str_swf_tourney_desc", "#str_swf_team_deathmatch_desc", "#str_swf_lastman_desc", "#str_swf_ctf_desc" };
 				desc = idLocalization::GetString( modeDescs[matchParameters.gameMode] );
 			}
-			
+
 			if ( !isHellMap ) {
 				txtVal = loadGUI->GetRootObject().GetNestedText( "txtName" );
 			} else {
@@ -395,10 +382,10 @@ void idCommonLocal::ExecuteMapChange() {
 
 	// Clear all dialogs before beginning the load
 	common->Dialog().ClearDialogs( true );
-	
+
 	// Remember the current load ID.
 	// This is so we can tell if we had a new loadmap request from within an existing loadmap call
-	const int cachedLoadingID = session->GetLoadingID();
+ 	const int cachedLoadingID = session->GetLoadingID();
 
 	const idMatchParameters & matchParameters = session->GetActingGameStateLobbyBase().GetMatchParms();
 
@@ -651,7 +638,7 @@ void idCommonLocal::ExecuteMapChange() {
 
 	int	msec = Sys_Milliseconds() - start;
 	common->Printf( "%6d msec to load %s\n", msec, currentMapName.c_str() );
-	//Sys_DumpMemory( false );	
+	//Sys_DumpMemory( false );
 
 	// Issue a render at the very end of the load process to update soundTime before the first frame
 	soundSystem->Render();
@@ -664,10 +651,12 @@ idCommonLocal::UpdateLevelLoadPacifier
 Pumps the session and if multiplayer, displays dialogs during the loading process.
 ===============
 */
-void idCommonLocal::UpdateLevelLoadPacifier() {	
+void idCommonLocal::UpdateLevelLoadPacifier() {
 	autoRenderIconType_t icon = AUTORENDER_DEFAULTICON;
 	bool autoswapsRunning = renderSystem->AreAutomaticBackgroundSwapsRunning( &icon );
-	if ( !insideExecuteMapChange && !autoswapsRunning ) {
+	//MF
+	//if ( !insideExecuteMapChange && !autoswapsRunning ) {
+	if ( !insideExecuteMapChange ) {
 		return;
 	}
 
@@ -823,7 +812,7 @@ bool idCommonLocal::SaveGame( const char * saveName ) {
 	pipelineFile = new (TAG_SAVEGAMES) idFile_SaveGamePipelined();
 	pipelineFile->OpenForWriting( &saveFile );
 
-	// Write SaveGame Header: 
+	// Write SaveGame Header:
 	// Game Name / Version / Map Name / Persistant Player Info
 
 	// game
@@ -871,7 +860,7 @@ bool idCommonLocal::SaveGame( const char * saveName ) {
 idCommonLocal::LoadGame
 ===============
 */
-bool idCommonLocal::LoadGame( const char * saveName ) { 
+bool idCommonLocal::LoadGame( const char * saveName ) {
 	if ( IsMultiplayer() ) {
 		common->Printf( "Can't load during net play.\n" );
 		if ( wipeForced ) {
@@ -880,7 +869,7 @@ bool idCommonLocal::LoadGame( const char * saveName ) {
 		return false;
 	}
 
-	if ( GetCurrentGame() != DOOM3_BFG ) {
+	if ( GetCurrentGame() != A_DECAY ) {
 		return false;
 	}
 
@@ -958,11 +947,12 @@ HandleCommonErrors
 ========================
 */
 bool HandleCommonErrors( const idSaveLoadParms & parms ) {
+	common->Dialog().ShowSaveIndicator( false );
+
 	if ( parms.GetError() == SAVEGAME_E_NONE ) {
 		return true;
 	}
 
-	common->Dialog().ShowSaveIndicator( false );
 
 	if ( parms.GetError() & SAVEGAME_E_CORRUPTED ) {
 		// This one might need to be handled by the game
@@ -983,7 +973,7 @@ bool HandleCommonErrors( const idSaveLoadParms & parms ) {
 		common->Dialog().AddDialog( GDM_UNABLE_TO_USE_SELECTED_STORAGE_DEVICE, DIALOG_CONTINUE, NULL, NULL, false );
 		return true;
 	} else if ( parms.GetError() & SAVEGAME_E_INVALID_FILENAME ) {
-		idLib::Warning( va( "Invalid savegame filename [%s]!", parms.directory.c_str() ) );
+		idLib::Warning( "Invalid savegame filename [%s]!", parms.directory.c_str() );
 		return true;
 	} else if ( parms.GetError() & SAVEGAME_E_DLC_NOT_FOUND ) {
 		common->Dialog().AddDialog( GDM_DLC_ERROR_MISSING_GENERIC, DIALOG_CONTINUE, NULL, NULL, false );
@@ -1131,6 +1121,7 @@ SaveGame_f
 */
 CONSOLE_COMMAND_SHIP( saveGame, "saves a game", NULL ) {
 	const char * savename = ( args.Argc() > 1 ) ? args.Argv(1) : "quick";
+	console->Close();
 	if ( commonLocal.SaveGame( savename ) ) {
 		common->Printf( "Saved: %s\n", savename );
 	}

@@ -2,9 +2,9 @@
 ===========================================================================
 
 Doom 3 BFG Edition GPL Source Code
-Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company. 
+Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company.
 
-This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").  
+This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").
 
 Doom 3 BFG Edition Source Code is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -72,37 +72,8 @@ idCVar net_usercmd_timing_debug( "net_usercmd_timing_debug", "0", CVAR_BOOL, "Pr
 
 
 // List of all defs used by the player that will stay on the fast timeline
-static char* fastEntityList[] = {
-	"player_doommarine",
-		"weapon_chainsaw",
-		"weapon_fists",
-		"weapon_flashlight",
-		"weapon_rocketlauncher",
-		"projectile_rocket",
-		"weapon_machinegun",
-		"projectile_bullet_machinegun",
-		"weapon_pistol",
-		"projectile_bullet_pistol",
-		"weapon_handgrenade",
-		"projectile_grenade",
-		"weapon_bfg",
-		"projectile_bfg",
-		"weapon_chaingun",
-		"projectile_chaingunbullet",
-		"weapon_pda",
-		"weapon_plasmagun",
-		"projectile_plasmablast",
-		"weapon_shotgun",
-		"projectile_bullet_shotgun",
-		"weapon_soulcube",
-		"projectile_soulblast",
-		"weapon_shotgun_double",
-		"projectile_shotgunbullet_double",
-		"weapon_grabber",
-		"weapon_bloodstone_active1",
-		"weapon_bloodstone_active2",
-		"weapon_bloodstone_active3",
-		"weapon_bloodstone_passive",
+static const char* fastEntityList[] = {
+		"cube",
 		NULL };
 /*
 ===========
@@ -259,7 +230,7 @@ void idGameLocal::Clear() {
 
 	eventQueue.Init();
 	savedEventQueue.Init();
-	
+
 	shellHandler = NULL;
 	selectedGroup = 0;
 	portalSkyEnt			= NULL;
@@ -304,15 +275,15 @@ void idGameLocal::Init() {
 	Printf( "gamedate: %s\n", __DATE__ );
 
 	// register game specific decl types
-	declManager->RegisterDeclType( "model",				DECL_MODELDEF,		idDeclAllocator<idDeclModelDef> );
+	declManager->RegisterDeclType( "model",			DECL_MODELDEF,		idDeclAllocator<idDeclModelDef> );
 	declManager->RegisterDeclType( "export",			DECL_MODELEXPORT,	idDeclAllocator<idDecl> );
 
 	// register game specific decl folders
-	declManager->RegisterDeclFolder( "def",				".def",				DECL_ENTITYDEF );
+	declManager->RegisterDeclFolder( "def",			".def",				DECL_ENTITYDEF );
 	declManager->RegisterDeclFolder( "fx",				".fx",				DECL_FX );
 	declManager->RegisterDeclFolder( "particles",		".prt",				DECL_PARTICLE );
 	declManager->RegisterDeclFolder( "af",				".af",				DECL_AF );
-	declManager->RegisterDeclFolder( "newpdas",			".pda",				DECL_PDA );
+	declManager->RegisterDeclFolder( "newpdas",		".pda",				DECL_PDA );
 
 	cmdSystem->AddCommand( "listModelDefs", idListDecls_f<DECL_MODELDEF>, CMD_FL_SYSTEM|CMD_FL_GAME, "lists model defs" );
 	cmdSystem->AddCommand( "printModelDefs", idPrintDecls_f<DECL_MODELDEF>, CMD_FL_SYSTEM|CMD_FL_GAME, "prints a model def", idCmdSystem::ArgCompletion_Decl<DECL_MODELDEF> );
@@ -337,7 +308,7 @@ void idGameLocal::Init() {
 
 	// load default scripts
 	program.Startup( SCRIPT_DEFAULT );
-	
+
 	smokeParticles = new (TAG_PARTICLE) idSmokeParticles;
 
 	// set up the aas
@@ -462,7 +433,7 @@ void idGameLocal::SaveGame( idFile *f, idFile *strings ) {
 
 	idSaveGame savegame( f, strings, BUILD_NUMBER );
 
-	if ( g_flushSave.GetBool( ) == true ) { 
+	if ( g_flushSave.GetBool( ) == true ) {
 		// force flushing with each write... for tracking down
 		// save game bugs.
 		f->ForceFlush();
@@ -507,7 +478,7 @@ void idGameLocal::SaveGame( idFile *f, idFile *strings ) {
 		// do we need another solution here?
 		usercmd_t dummy;
 		savegame.WriteUsercmd( dummy );
-		
+
 		savegame.WriteDict( &persistentPlayerInfo[ i ] );
 	}
 
@@ -910,7 +881,7 @@ void idGameLocal::LoadMap( const char * mapName, int randseed ) {
 	memset( entities, 0, sizeof( entities ) );
 	memset( spawnIds, -1, sizeof( spawnIds ) );
 	spawnCount = INITIAL_SPAWN_COUNT;
-	
+
 	spawnedEntities.Clear();
 	activeEntities.Clear();
 	aimAssistEntities.Clear();
@@ -945,7 +916,7 @@ void idGameLocal::LoadMap( const char * mapName, int randseed ) {
 
 	lastAIAlertEntity = NULL;
 	lastAIAlertTime = 0;
-	
+
 	previousTime	= 0;
 	time			= 0;
 	framenum		= 0;
@@ -1084,7 +1055,7 @@ void idGameLocal::LocalMapRestart( ) {
 			static_cast< idPlayer * >( entities[ i ] )->Restart();
 		}
 	}
-	
+
 	gamestate = GAMESTATE_ACTIVE;
 
 	Printf( "--------------------------------------\n" );
@@ -1496,7 +1467,7 @@ idGameLocal::MapShutdown
 */
 void idGameLocal::MapShutdown() {
 	Printf( "--------- Game Map Shutdown ----------\n" );
-	
+
 	gamestate = GAMESTATE_SHUTDOWN;
 
 	if ( gameRenderWorld ) {
@@ -1621,7 +1592,7 @@ int idGameLocal::GetLocalClientNum() const {
 	if ( !localUserHandle.IsValid() ) {
 		return 0;
 	}
-	
+
 	for ( int i = 0; i < lobbyUserIDs.Num(); i++ ) {
 		lobbyUserID_t lobbyUserID = lobbyUserIDs[i];
 		if ( localUserHandle == lobbyUserID.GetLocalUserHandle() ) {
@@ -1686,7 +1657,7 @@ void idGameLocal::CacheDictionaryMedia( const idDict *dict ) {
 	while( kv ) {
 		if ( kv->GetValue().Length() ) {
 			if ( !idStr::Icmp( kv->GetKey(), "gui_noninteractive" )
-				|| !idStr::Icmpn( kv->GetKey(), "gui_parm", 8 )	
+				|| !idStr::Icmpn( kv->GetKey(), "gui_parm", 8 )
 				|| !idStr::Icmp( kv->GetKey(), "gui_inventory" ) ) {
 				// unfortunate flag names, they aren't actually a gui
 			} else {
@@ -1785,7 +1756,7 @@ void idGameLocal::CacheDictionaryMedia( const idDict *dict ) {
 	if ( kv != NULL && kv->GetValue().Length() ) {
 		FindEntityDef( kv->GetValue(), false );
 	}
-	
+
 	kv = dict->MatchPrefix( "item", NULL );
 	while( kv != NULL ) {
 		if ( kv->GetValue().Length() ) {
@@ -1894,7 +1865,7 @@ void idGameLocal::SpawnPlayer( int clientNum ) {
 		args.Set( "classname", GetMPPlayerDefName() );
 	} else {
 		// precache the player
-		args.Set( "classname", gameLocal.world->spawnArgs.GetString( "def_player", "player_doommarine" ) );
+		args.Set( "classname", gameLocal.world->spawnArgs.GetString( "def_player", "player_nait" ) );
 	}
 
 	// It's important that we increment numClients before calling SpawnEntityDef, because some
@@ -2263,7 +2234,7 @@ void idGameLocal::RunFrame( idUserCmdMgr & cmdMgr, gameReturn_t & ret ) {
 	const renderView_t *view;
 
 	if ( g_recordTrace.GetBool() ) {
-		bool result = BeginTraceRecording( "e:\\gametrace.pix2" );
+		bool result = BeginTraceRecording( "d:\\gametrace.pix2" );
 		if ( !result ) {
 			//idLib::Printf( "BeginTraceRecording: error %d\n", GetLastError() );
 		}
@@ -2498,7 +2469,7 @@ position and firecount to the usercmd.
 */
 void idGameLocal::RunSingleUserCmd( usercmd_t & cmd, idPlayer & player ) {
 	player.HandleUserCmds( cmd );
-	
+
 	// To fix the stupid chaingun script that depends on frame counts instead of
 	// milliseconds in the case of the server running at 60Hz and the client running
 	// at 120Hz, we need to set the script's GAME_FPS value to the client's effective rate.
@@ -2507,7 +2478,7 @@ void idGameLocal::RunSingleUserCmd( usercmd_t & cmd, idPlayer & player ) {
 	if ( !player.IsLocallyControlled() ) {
 		const float usercmdMillisecondDelta = player.usercmd.clientGameMilliseconds - player.oldCmd.clientGameMilliseconds;
 		const float clientEngineHz = 1000.0f / usercmdMillisecondDelta;
-		
+
 		// Force to 60 or 120, those are the only values allowed in multiplayer.
 		const float forcedClientEngineHz = ( clientEngineHz < 90.0f ) ? 60.0f : 120.0f;
 		SetScriptFPS( forcedClientEngineHz );
@@ -2542,7 +2513,7 @@ so that we have something to process while we wait for more from the network.
 void idGameLocal::RunAllUserCmdsForPlayer( idUserCmdMgr & cmdMgr, const int playerNumber ) {
 //idLib::Printf( "Frame: %i = [%i-%i] ", gameLocal.framenum,
 //cmdMgr.readFrame[0], cmdMgr.writeFrame[0] );	// !@#
-	
+
 	// Run thinks on any players that have queued up usercmds for networking.
 	assert( playerNumber < MAX_PLAYERS );
 
@@ -2572,7 +2543,7 @@ void idGameLocal::RunAllUserCmdsForPlayer( idUserCmdMgr & cmdMgr, const int play
 	if ( common->IsClient() ) {
 		return;
 	}
-	
+
 	// Make sure to run a command for remote players. May duplicate the previous command
 	// if the server is running faster, or run an "empty" command if the buffer
 	// underflows.
@@ -2620,7 +2591,7 @@ void idGameLocal::RunAllUserCmdsForPlayer( idUserCmdMgr & cmdMgr, const int play
 		RunSingleUserCmd( emptyCmd, player );
 		lastCmdRunTimeOnServer[ playerNumber ] = gameLocal.serverTime;
 		if ( net_usercmd_timing_debug.GetBool() ) {
-			idLib::Printf( "[%d]Ran out of commands for player %d.\n", common->GetGameFrame(), playerNumber );	
+			idLib::Printf( "[%d]Ran out of commands for player %d.\n", common->GetGameFrame(), playerNumber );
 		}
 	}
 
@@ -2641,11 +2612,11 @@ void idGameLocal::RunAllUserCmdsForPlayer( idUserCmdMgr & cmdMgr, const int play
 
 		if ( hasNextCmd ) {
 			usercmd_t & currentCommand = cmdMgr.GetWritableUserCmdForPlayer( playerNumber );
-			
+
 			if ( net_usercmd_timing_debug.GetBool() ) {
 				idLib::Printf( "[%d]Pass %d, running extra cmd for player %d, %d buffered\n", common->GetGameFrame(), numPasses, playerNumber, cmdMgr.GetNumUnreadFrames( playerNumber ) );
 			}
-			
+
 			RunSingleUserCmd( currentCommand, player );
 			lastCmdRunTimeOnClient[ playerNumber ] = currentCommand.clientGameMilliseconds;
 			lastCmdRunTimeOnServer[ playerNumber ] = gameLocal.serverTime;
@@ -3178,7 +3149,7 @@ void idGameLocal::RegisterEntity( idEntity *ent, int forceSpawnId, const idDict 
 
 		firstFreeEntityIndex[ freeListType ] = freeIndex;
 	}
-	
+
 	entities[ spawn_entnum ] = ent;
 	spawnIds[ spawn_entnum ] = ( forceSpawnId >= 0 ) ? forceSpawnId : spawnCount++;
 	ent->entityNumber = spawn_entnum;
@@ -3251,7 +3222,7 @@ idEntity *idGameLocal::SpawnEntityType( const idTypeInfo &classdef, const idDict
 		obj = classdef.CreateInstance();
 		obj->CallSpawn();
 	}
-	
+
 	catch( idAllocError & ) {
 		obj = NULL;
 	}
@@ -3386,7 +3357,7 @@ idGameLocal::InhibitEntitySpawn
 ================
 */
 bool idGameLocal::InhibitEntitySpawn( idDict &spawnArgs ) {
-	
+
 	bool result = false;
 
 	if ( common->IsMultiplayer() ) {
@@ -3402,7 +3373,7 @@ bool idGameLocal::InhibitEntitySpawn( idDict &spawnArgs ) {
 	}
 	}
 
-	if ( g_skill.GetInteger() == 3 ) { 
+	if ( g_skill.GetInteger() == 3 ) {
 		const char * name = spawnArgs.GetString( "classname" );
 		// _D3XP :: remove moveable medkit packs also
 		if ( idStr::Icmp( name, "item_medkit" ) == 0 || idStr::Icmp( name, "item_medkit_small" ) == 0 ||
@@ -3535,7 +3506,7 @@ int idGameLocal::GetTargets( const idDict &args, idList< idEntityPtr<idEntity> >
 
 	list.Clear();
 
-	refLength = strlen( ref );
+	refLength = (int) strlen( ref );
 	num = args.GetNumKeyVals();
 	for( i = 0; i < num; i++ ) {
 
@@ -3931,7 +3902,7 @@ void idGameLocal::RadiusDamage( const idVec3 &origin, idEntity *inflictor, idEnt
 				}
 			}
 
-		} 
+		}
 	}
 
 	// push physics objects
@@ -4095,7 +4066,7 @@ void idGameLocal::ProjectDecal( const idVec3 &origin, const idVec3 &dir, float d
 	}
 
 	// randomly rotate the decal winding
-	idMath::SinCos16( ( angle ) ? angle : random.RandomFloat() * idMath::TWO_PI, s, c );
+	idMath::SinCos( ( angle ) ? angle : random.RandomFloat() * idMath::TWO_PI, s, c );
 
 	// winding orientation
 	axis[2] = dir;
@@ -4170,7 +4141,7 @@ void idGameLocal::SetCamera( idCamera *cam ) {
 
 		// set r_znear so that transitioning into/out of the player's head doesn't clip through the view
 		cvarSystem->SetCVarFloat( "r_znear", 1.0f );
-		
+
 		// hide all the player models
 		for( i = 0; i < numClients; i++ ) {
 			if ( entities[ i ] ) {
@@ -4186,7 +4157,7 @@ void idGameLocal::SetCamera( idCamera *cam ) {
 					// only kill entities that aren't needed for cinematics and aren't dormant
 					continue;
 				}
-				
+
 				if ( ent->IsType( idAI::Type ) ) {
 					ai = static_cast<idAI *>( ent );
 					if ( !ai->GetEnemy() || !ai->IsActive() ) {
@@ -4346,7 +4317,7 @@ void idGameLocal::RandomizeInitialSpawns() {
 	spawnSpot_t	spot;
 	int i, j;
 	int k;
-    
+
 	idEntity *ent;
 
 	if ( !common->IsServer() ) {
@@ -4358,7 +4329,7 @@ void idGameLocal::RandomizeInitialSpawns() {
 	teamSpawnSpots[1].Clear();
 	teamInitialSpots[0].Clear();
 	teamInitialSpots[1].Clear();
-    
+
 	spot.dist = 0;
 	spot.ent = FindEntityUsingDef( NULL, "info_player_deathmatch" );
 	while( spot.ent ) {
@@ -4378,7 +4349,7 @@ void idGameLocal::RandomizeInitialSpawns() {
 				assert( spot.team == 0 || spot.team == 1 );
 				teamInitialSpots[ spot.team ].Append( spot.ent );
 			}
-           
+
 			initialSpots.Append( spot.ent );
 		}
 		spot.ent = FindEntityUsingDef( spot.ent, "info_player_deathmatch" );
@@ -4393,7 +4364,7 @@ void idGameLocal::RandomizeInitialSpawns() {
 		if ( !teamSpawnSpots[0].Num() || !teamSpawnSpots[1].Num() )
 			return;
 	}
-    
+
 	if ( !spawnSpots.Num() ) {
 		common->Warning( "no info_player_deathmatch in map" );
 		return;
@@ -4418,7 +4389,7 @@ void idGameLocal::RandomizeInitialSpawns() {
 			}
 		}
 	}
-    
+
 	common->Printf( "%d spawns (%d initials)\n", spawnSpots.Num(), initialSpots.Num() );
 	// if there are no initial spots in the map, consider they can all be used as initial
 	if ( !initialSpots.Num() ) {
@@ -4436,7 +4407,7 @@ void idGameLocal::RandomizeInitialSpawns() {
 			teamInitialSpots[ k ][ j ] = ent;
 		}
 	}
-    
+
 	for ( i = 0; i < initialSpots.Num(); i++ ) {
 		j = random.RandomInt( initialSpots.Num() );
 		ent = initialSpots[ i ];
@@ -4481,7 +4452,7 @@ idEntity *idGameLocal::SelectInitialSpawnPoint( idPlayer *player ) {
 	} else {
 		useInitialSpots = player->useInitialSpawns && currentInitialSpot < initialSpots.Num();
 	}
-    
+
 	if ( player->spectating ) {
 		// plain random spot, don't bother
 		return spawnSpots[ random.RandomInt( spawnSpots.Num() ) ].ent;
@@ -4533,7 +4504,7 @@ idEntity *idGameLocal::SelectInitialSpawnPoint( idPlayer *player ) {
 						|| static_cast< idPlayer * >( entities[ j ] )->spectating ) {
 						continue;
 					}
-					
+
 					dist = ( pos - entities[ j ]->GetPhysics()->GetOrigin() ).LengthSqr();
 					if ( dist < teamSpawnSpots[ team ][ i ].dist ) {
 						teamSpawnSpots[ team ][ i ].dist = dist;
@@ -4551,7 +4522,7 @@ idEntity *idGameLocal::SelectInitialSpawnPoint( idPlayer *player ) {
 
 			return spot.ent;
 		}
-        
+
 		// find the distance to the closest active player for each spawn spot
 		for( i = 0; i < spawnSpots.Num(); i++ ) {
 			pos = spawnSpots[ i ].ent->GetPhysics()->GetOrigin();
@@ -4562,7 +4533,7 @@ idEntity *idGameLocal::SelectInitialSpawnPoint( idPlayer *player ) {
 					|| static_cast< idPlayer * >( entities[ j ] )->spectating ) {
 					continue;
 				}
-				
+
 				dist = ( pos - entities[ j ]->GetPhysics()->GetOrigin() ).LengthSqr();
 				if ( dist < spawnSpots[ i ].dist ) {
 					spawnSpots[ i ].dist = dist;
@@ -5018,38 +4989,7 @@ void idGameLocal::Shell_UpdateSavedGames() {
 	}
 }
 
-/*
-========================
-idGameLocal::Shell_SetCanContinue
-========================
-*/
-void idGameLocal::Shell_SetCanContinue( bool valid ) {
-	if ( shellHandler != NULL ) {
-		shellHandler->SetCanContinue( valid );
-	}
-}
 
-/*
-========================
-idGameLocal::Shell_SetState_GameLobby
-========================
-*/
-void idGameLocal::Shell_UpdateClientCountdown( int countdown ) {
-	if ( shellHandler != NULL ) {
-		shellHandler->SetTimeRemaining( countdown );
-	}
-}
-
-/*
-========================
-idGameLocal::Shell_SetState_GameLobby
-========================
-*/
-void idGameLocal::Shell_UpdateLeaderboard( const idLeaderboardCallback * callback ) {
-	if ( shellHandler != NULL ) {
-		shellHandler->UpdateLeaderboard( callback );
-	}
-}
 
 /*
 ========================
@@ -5067,7 +5007,7 @@ bool idGameLocal::SimulateProjectiles() {
 			const int endTime = FRAME_TO_MSEC( endFrame );
 
 			idProjectile::projectilesToSimulate[i].projectile->SimulateProjectileFrame( endTime - startTime, endTime );
-			
+
 			if ( idProjectile::projectilesToSimulate[i].projectile != NULL ) {
 				if ( endTime >= previousServerTime ) {
 					idProjectile::projectilesToSimulate[i].projectile->PostSimulate( endTime );
@@ -5080,6 +5020,6 @@ bool idGameLocal::SimulateProjectiles() {
 			}
 		}
 	}
-	
+
 	return moreProjectiles;
 }

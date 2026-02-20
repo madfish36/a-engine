@@ -341,7 +341,6 @@ void idWeapon::Save( idSaveGame *savefile ) const {
 	savefile->WriteMat3( muzzleAxis );
 
 	savefile->WriteVec3( pushVelocity );
-
 	savefile->WriteString( weaponDef->GetName() );
 	savefile->WriteFloat( meleeDistance );
 	savefile->WriteString( meleeDefName );
@@ -2049,7 +2048,7 @@ bool idWeapon::BloodSplat( float size ) {
 	normal = idVec3( gameLocal.random.CRandomFloat(), -gameLocal.random.RandomFloat(), -1 );
 	normal.Normalize();
 
-	idMath::SinCos16( gameLocal.random.RandomFloat() * idMath::TWO_PI, s, c );
+	idMath::SinCos( gameLocal.random.RandomFloat() * idMath::TWO_PI, s, c );
 
 	localAxis[2] = -normal;
 	localAxis[2].NormalVectors( axistemp[0], axistemp[1] );
@@ -2238,8 +2237,8 @@ void idWeapon::AlertMonsters() {
 	}
 
 	// jitter the trace to try to catch cases where a trace down the center doesn't hit the monster
-	end += muzzleFlash.axis * muzzleFlash.right * idMath::Sin16( MS2SEC( gameLocal.time ) * 31.34f );
-	end += muzzleFlash.axis * muzzleFlash.up * idMath::Sin16( MS2SEC( gameLocal.time ) * 12.17f );
+	end += muzzleFlash.axis * muzzleFlash.right * idMath::Sin( MS2SEC( gameLocal.time ) * 31.34f );
+	end += muzzleFlash.axis * muzzleFlash.up * idMath::Sin( MS2SEC( gameLocal.time ) * 12.17f );
 	gameLocal.clip.TracePoint( tr, muzzleFlash.origin, end, CONTENTS_OPAQUE | MASK_SHOT_RENDERMODEL | CONTENTS_FLASHLIGHT_TRIGGER, owner );
 	if ( g_debugWeapon.GetBool() ) {
 		gameRenderWorld->DebugLine( colorYellow, muzzleFlash.origin, end, 0 );

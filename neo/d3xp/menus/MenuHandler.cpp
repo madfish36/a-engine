@@ -45,7 +45,6 @@ idMenuHandler::idMenuHandler() {
 	transition = -1;
 	platform = 0;
 	gui = NULL;
-	cmdBar = NULL;
 
 	for ( int index = 0; index < MAX_SCREEN_AREAS; ++index ) {
 		menuScreens[ index ] = NULL;

@@ -1731,7 +1731,7 @@ void idTarget_RemoveWeapons::Event_Activate( idEntity *activator ) {
 			// Everywhere that we use target_removeweapons the intent is to remove ALL of the
 			// weapons that hte player has (save a few: flashlights, fists, soul cube).
 			player->RemoveAllButEssentialWeapons();
-			player->SelectWeapon( player->weapon_fists, true );
+			//player->SelectWeapon( player->weapon_fists, true );
 		}
 	}
 }

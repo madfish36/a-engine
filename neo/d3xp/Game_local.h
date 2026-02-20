@@ -47,7 +47,7 @@ extern idRenderWorld *				gameRenderWorld;
 extern idSoundWorld *				gameSoundWorld;
 
 // the "gameversion" client command will print this plus compile date
-#define	GAME_VERSION		"baseDOOM-1"
+#define	GAME_VERSION		"a-decay"
 
 // classes used by idGameLocal
 class idEntity;
@@ -516,10 +516,7 @@ public:
 	virtual void					Shell_Render();
 	virtual void					Shell_ResetMenu();
 	virtual void					Shell_SyncWithSession() ;
-	virtual void					Shell_SetCanContinue( bool valid );
 	virtual void					Shell_UpdateSavedGames();
-	virtual void					Shell_UpdateClientCountdown( int countdown );
-	virtual void					Shell_UpdateLeaderboard( const idLeaderboardCallback * callback );
 	virtual void					Shell_SetGameComplete();
 
 	void					Shell_ClearRepeater();

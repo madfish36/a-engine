@@ -698,6 +698,7 @@ void idInteraction::CreateStaticInteraction() {
 		// changed after map load time without invalidating the interaction!
 		const idMaterial * const shader = R_RemapShaderBySkin( surf->shader, 
 												entityDef->parms.customSkin, entityDef->parms.customShader );
+
 		if ( shader == NULL ) {
 			continue;
 		}

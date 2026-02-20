@@ -178,7 +178,8 @@ typedef enum {
 typedef enum {
 	SVC_IGNORE,
 	SVC_MODULATE,
-	SVC_INVERSE_MODULATE
+	SVC_INVERSE_MODULATE,
+	SVC_COLOR_MASK
 } stageVertexColor_t;
 
 static const int	MAX_FRAGMENT_IMAGES = 8;
@@ -204,6 +205,7 @@ typedef struct {
 	int					alphaTestRegister;
 	textureStage_t		texture;
 	stageVertexColor_t	vertexColor;
+	colorStage_t		vertexColorMask;
 	bool				ignoreAlphaTest;	// this stage should act as translucent, even
 											// if the surface is alpha tested
 	float				privatePolygonOffset;	// a per-stage polygon offset
@@ -481,6 +483,8 @@ public:
 
 						// NULL unless an image is explicitly specified in the shader with "lightFalloffShader <image>"
 	idImage	*			LightFalloffImage() const { return lightFalloffImage; }
+	idImage	*			EnvironmentMap() const { return environmentMap; }
+	idImage	*			LutMap() const { return lutMap; }
 
 	//------------------------------------------------------------------
 
@@ -635,6 +639,8 @@ private:
 	idStr				renderBump;			// renderbump command options, without the "renderbump" at the start
 
 	idImage	*			lightFalloffImage;	// only for light shaders
+	idImage	*			environmentMap;		// only for light shaders
+	idImage	*			lutMap;				// only for light shaders
 
 	idImage *			fastPathBumpImage;	// if any of these are set, they all will be
 	idImage *			fastPathDiffuseImage;

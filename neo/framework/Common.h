@@ -2,9 +2,9 @@
 ===========================================================================
 
 Doom 3 BFG Edition GPL Source Code
-Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company. 
+Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company.
 
-This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").  
+This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").
 
 Doom 3 BFG Edition Source Code is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -156,12 +156,10 @@ struct mpMap_t {
 	uint32			supportedModes;
 };
 
-static const int	MAX_LOGGED_STATS = 60 * 120;		// log every half second 
+static const int	MAX_LOGGED_STATS = 60 * 120;		// log every half second
 
 enum currentGame_t {
-	DOOM_CLASSIC,
-	DOOM2_CLASSIC,
-	DOOM3_BFG
+	A_DECAY
 };
 
 class idCommon {
@@ -193,7 +191,7 @@ public:
 	virtual void				UpdateScreen( bool captureToImage ) = 0;
 
 	virtual void				UpdateLevelLoadPacifier() = 0;
-	
+
 
 								// Checks for and removes command line "+set var arg" constructs.
 								// If match is NULL, all set commands will be executed, otherwise
@@ -243,7 +241,7 @@ public:
 	virtual const char *		KeysFromBinding( const char *bind ) = 0;
 
 								// Returns the binding bound to the key
-	virtual const char *		BindingFromKey( const char *key ) = 0; 
+	virtual const char *		BindingFromKey( const char *key ) = 0;
 
 								// Directly sample a button.
 	virtual int					ButtonState( int key ) = 0;

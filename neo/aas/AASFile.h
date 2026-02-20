@@ -331,21 +331,21 @@ public:
 	virtual void				PrintInfo() const = 0;
 
 protected:
-	idStr						name;
-	unsigned int				crc;
+	idStr								name;
+	unsigned int						crc;
 
-	idPlaneSet					planeList;
-	idList<aasVertex_t, TAG_AAS>			vertices;
+	idPlaneSet							planeList;
+	idList<aasVertex_t, TAG_AAS>		vertices;
 	idList<aasEdge_t, TAG_AAS>			edges;
 	idList<aasIndex_t, TAG_AAS>			edgeIndex;
 	idList<aasFace_t, TAG_AAS>			faces;
 	idList<aasIndex_t, TAG_AAS>			faceIndex;
 	idList<aasArea_t, TAG_AAS>			areas;
 	idList<aasNode_t, TAG_AAS>			nodes;
-	idList<aasPortal_t, TAG_AAS>			portals;
+	idList<aasPortal_t, TAG_AAS>		portals;
 	idList<aasIndex_t, TAG_AAS>			portalIndex;
 	idList<aasCluster_t, TAG_AAS>		clusters;
-	idAASSettings				settings;
+	idAASSettings						settings;
 };
 
 #endif /* !__AASFILE_H__ */

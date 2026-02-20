@@ -586,7 +586,6 @@ void idInterpreter::EnterFunction( const function_t *func, bool clearStack ) {
 		Error( "NULL function" );
 		return;
 	}
-
 	if ( debug ) {
 		if ( currentFunction ) {
 			gameLocal.Printf( "%d: call '%s' from '%s'(line %d)%s\n", gameLocal.time, func->Name(), currentFunction->Name(), 
@@ -654,7 +653,6 @@ void idInterpreter::LeaveFunction( idVarDef *returnDef ) {
 	// remove locals from the stack
 	PopParms( currentFunction->locals );
 	assert( localstackUsed == localstackBase );
-
 	if ( debug ) {
 		statement_t &line = gameLocal.program.GetStatement( instructionPointer );
 		gameLocal.Printf( "%d: %s(%d): exit %s", gameLocal.time, gameLocal.program.GetFilename( line.file ), line.linenumber, currentFunction->Name() );

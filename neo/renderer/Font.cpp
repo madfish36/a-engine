@@ -22,21 +22,21 @@ along with Doom 3 BFG Edition Source Code.  If not, see <http://www.gnu.org/lice
 In addition, the Doom 3 BFG Edition Source Code is also subject to certain additional terms. You should have received a copy of these additional terms immediately following the terms and conditions of the GNU General Public License which accompanied the Doom 3 BFG Edition Source Code.  If not, please request a copy in writing from id Software at the address below.
 
 If you have questions concerning this license or the applicable additional terms, you may contact in writing id Software LLC, c/o ZeniMax Media Inc., Suite 120, Rockville, Maryland 20850 USA.
-
+	 
 ===========================================================================
 */
 #pragma hdrstop
 #include "../idlib/precompiled.h"
 #include "Font.h"
 
-const char * DEFAULT_FONT = "Arial_Narrow";
+const char* DEFAULT_FONT = "adecay";
 
 static const float old_scale2 = 0.6f;
 static const float old_scale1 = 0.3f;
 
 /*
 ==============================
-Old_SelectValueForScale
+Old_SelectValueForScale			
 ==============================
 */
 ID_INLINE float Old_SelectValueForScale( float scale, float v0, float v1, float v2 ) {
@@ -79,6 +79,12 @@ idFont::~idFont
 ==============================
 */
 idFont::~idFont() {
+	if( fontInfo ){
+		Mem_Free( fontInfo->glyphData );
+		fontInfo->glyphData = NULL;
+		Mem_Free( fontInfo->charIndex );
+		fontInfo->charIndex = NULL;
+	}
 	delete fontInfo;
 }
 
@@ -412,3 +418,6 @@ void idFont::Touch() {
 		fontInfo->material->SetSort( SS_GUI );
 	}
 }
+
+
+

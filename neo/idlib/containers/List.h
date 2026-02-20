@@ -953,7 +953,7 @@ ID_INLINE bool idList<_type_,_tag_>::Remove( _type_ const & obj ) {
 //	typedef int cmp_c(const void *, const void *);
 //
 //	cmp_c *vCompare = (cmp_c *)compare;
-//	qsort( ( void * )list, ( size_t )num, sizeof( _type_ ), vCompare );
+//	qsort( ( void * )list, ( int )num, sizeof( _type_ ), vCompare );
 //}
 
 /*
@@ -998,7 +998,7 @@ ID_INLINE void idList<_type_,_tag_>::SortWithTemplate( const idSort<_type_> & so
 //	typedef int cmp_c(const void *, const void *);
 //
 //	cmp_c *vCompare = (cmp_c *)compare;
-//	qsort( ( void * )( &list[startIndex] ), ( size_t )( endIndex - startIndex + 1 ), sizeof( _type_ ), vCompare );
+//	qsort( ( void * )( &list[startIndex] ), ( int )( endIndex - startIndex + 1 ), sizeof( _type_ ), vCompare );
 //}
 
 /*

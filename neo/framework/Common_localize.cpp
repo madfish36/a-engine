@@ -46,7 +46,7 @@ void LoadMapLocalizeData(ListHash& listHash) {
 	idLexer src( LEXFL_NOFATALERRORS | LEXFL_NOSTRINGCONCAT | LEXFL_ALLOWMULTICHARLITERALS | LEXFL_ALLOWBACKSLASHSTRINGCONCAT );
 
 	if ( fileSystem->ReadFile( fileName, (void**)&buffer ) > 0 ) {
-		src.LoadMemory( buffer, strlen(buffer), fileName );
+		src.LoadMemory( buffer, (int) strlen(buffer), fileName );
 		if ( src.IsLoaded() ) {
 			idStr classname;
 			idToken token;
@@ -80,7 +80,7 @@ void LoadGuiParmExcludeList(idStrList& list) {
 	idLexer src( LEXFL_NOFATALERRORS | LEXFL_NOSTRINGCONCAT | LEXFL_ALLOWMULTICHARLITERALS | LEXFL_ALLOWBACKSLASHSTRINGCONCAT );
 
 	if ( fileSystem->ReadFile( fileName, (void**)&buffer ) > 0 ) {
-		src.LoadMemory( buffer, strlen(buffer), fileName );
+		src.LoadMemory( buffer, (int)strlen(buffer), fileName );
 		if ( src.IsLoaded() ) {
 			idStr classname;
 			idToken token;
@@ -552,7 +552,7 @@ void idCommonLocal::LocalizeMapData( const char *fileName, idLangDict &langDict 
 	common->SetRefreshOnPrint( true );
 
 	if ( fileSystem->ReadFile( fileName, (void**)&buffer ) > 0 ) {
-		src.LoadMemory( buffer, strlen(buffer), fileName );
+		src.LoadMemory( buffer, (int)strlen(buffer), fileName );
 		if ( src.IsLoaded() ) {
 			common->Printf( "Processing %s\n", fileName );
 			idStr mapFileName;
@@ -599,7 +599,7 @@ void idCommonLocal::LocalizeGui( const char *fileName, idLangDict &langDict ) {
 	char nl = 'n';
 	idLexer src( LEXFL_NOFATALERRORS | LEXFL_NOSTRINGCONCAT | LEXFL_ALLOWMULTICHARLITERALS | LEXFL_ALLOWBACKSLASHSTRINGCONCAT );
 	if ( fileSystem->ReadFile( fileName, (void**)&buffer ) > 0 ) {
-		src.LoadMemory( buffer, strlen(buffer), fileName );
+		src.LoadMemory( buffer, (int) strlen(buffer), fileName );
 		if ( src.IsLoaded() ) {
 			idFile *outFile = fileSystem->OpenFileWrite( fileName ); 
 			common->Printf( "Processing %s\n", fileName );

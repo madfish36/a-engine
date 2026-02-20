@@ -179,7 +179,7 @@ public:
 
 	// resource tracking and related things
 	virtual void			EnableBackgroundCache( bool enable ) = 0;
-	virtual void			BeginLevelLoad( const char *name, char *_blockBuffer, int _blockBufferSize  ) = 0;
+	virtual void			BeginLevelLoad( const char *name, char *_blockBuffer, size_t _blockBufferSize  ) = 0;
 	virtual void			EndLevelLoad() = 0;
 	virtual bool			InProductionMode() = 0;
 	virtual bool			UsingResourceFiles() = 0;

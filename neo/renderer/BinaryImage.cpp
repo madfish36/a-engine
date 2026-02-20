@@ -220,44 +220,54 @@ void idBinaryImage::Load2DFromDDSMemory(const byte *pic_const, textureFormat_t &
     fileData.colorFormat = colorFormat = CFM_DEFAULT;
 
     //RGBA, G16R16...
-    int szMip0=(header->height * header->width)<<2;
+    int szMip0 = (header->height * header->width);
     int szBlock = 1;
-    fileData.format = textureFormat = FMT_RGBA8;
-    if (header->ddspf.fourCC == DDSPF_DXT1.fourCC) {
+
+    if (header->ddspf.flags == DDS_RGB && header->ddspf.RGBBitCount ==32) {
+        fileData.format =  FMT_RGBA8;
+        szMip0 <<= 2;
+        szBlock = 1;
+    }else if (header->ddspf.flags == DDS_RGB && header->ddspf.RGBBitCount ==24){
+        fileData.format =  FMT_XRGB8;
+        szMip0 *= 3;
+        szBlock = 1;
+    }if (header->ddspf.fourCC == DDSPF_DXT1.fourCC) {
         fileData.format = textureFormat = FMT_DXT1;
         szBlock = 8;
-        szMip0 >>= 3;
+        szMip0 >>= 1;
     }else if (header->ddspf.fourCC == DDSPF_DXT5.fourCC) {
         fileData.format = textureFormat = FMT_DXT5;
-        szMip0 >>= 2;
+        szMip0 = (header->height * header->width);
         szBlock = 16;
     }else if (header->ddspf.fourCC == DDSPF_G16R16.fourCC) {
         fileData.format = textureFormat = FMT_RG16F;
+        szMip0 <<= 2;
+        szBlock = 1;
     }
 
     const byte *ptrData = pic_const + sizeof(DDS_HEADER) + sizeof(unsigned long);
     unsigned long h = header->height;
     unsigned long w = header->width;
-    unsigned long i = 0;
-    while ((i < header->mipMapCount) && ((w & 0x3) == 0) && ((h & 0x3) == 0)) {
-        idBinaryImageData &mipMap = images[i];
-        mipMap.height = h;
-        mipMap.width = w;
-        mipMap.destZ = 0;
-        mipMap.dataSize = szMip0;
-        mipMap.level = i;
+    for (unsigned long level = 0; level < header->mipMapCount; level++) {
+        idBinaryImageData &img = images[level];
+        img.height = h;
+        img.width = w;
+        img.destZ = 0;
+        img.dataSize = szMip0;
+        img.level = level;
 
-        mipMap.Alloc(szMip0);
-        memcpy(mipMap.data, ptrData, mipMap.dataSize);
-        ptrData += mipMap.dataSize;
+        img.Alloc(szMip0);
+        memcpy(img.data, ptrData, img.dataSize);
+
+        ptrData += img.dataSize;
 
         szMip0 = szMip0 > szBlock ? szMip0 >> 2 : szBlock;
+
         h >>= 1;
         w >>= 1;
-        i++;
     }
-    fileData.numLevels = i;
-    images.SetNum(i);
+    fileData.numLevels = header->mipMapCount;
+    images.SetNum(header->mipMapCount);
 }
 
 
@@ -390,21 +400,35 @@ void idBinaryImage::LoadCubeFromDDSMemory(const byte *pics, textureFormat_t &tex
     fileData.colorFormat = CFM_DEFAULT;
 
     int szMip0 = (header->height * header->width);
-    int szBlock = 16;
-    fileData.format = FMT_DXT5;
-    if (header->ddspf.fourCC == DDSPF_DXT1.fourCC) {
+    int szBlock = 1;
+
+    if (header->ddspf.flags == DDS_RGB && header->ddspf.RGBBitCount ==32) {
+        fileData.format =  FMT_RGBA8;
+        szMip0 <<= 2;
+        szBlock = 1;
+    }else if (header->ddspf.flags == DDS_RGB
+                && header->ddspf.RGBBitCount ==24
+                && header->ddspf.RBitMask == 0xff0000){
+        fileData.format =  FMT_BGR;
+        szMip0 *= 3;
+        szBlock = 1;
+    }else if (header->ddspf.fourCC == DDSPF_DXT5.fourCC) {
+        fileData.format = FMT_DXT5;
+        szBlock = 16;
+    }else if  (header->ddspf.fourCC == DDSPF_DXT1.fourCC) {
         fileData.format =  FMT_DXT1;
-        szBlock = 8;
+        szBlock = 4;
         szMip0 >>= 1;
+    }else {
+        return;
     }
     textureFormat = static_cast<textureFormat_t>(fileData.format);
-
     const byte *ptrData = pics + sizeof(DDS_HEADER) + sizeof(unsigned long);
     for (int side = 0; side < 6; side++) {
         int szSize = szMip0;
         unsigned long h = header->height;
         unsigned long w = header->width;
-        for (unsigned long level = 0; level < header->mipMapCount; ++level) {
+        for (unsigned long level = 0; level < header->mipMapCount; level++) {
             idBinaryImageData &img = images[level * 6 + side];
             img.height = h;
             img.width = w;

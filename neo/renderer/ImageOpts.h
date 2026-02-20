@@ -90,6 +90,8 @@ enum textureFormat_t {
 	FMT_Y16_X16,		// 32 bpp
 	FMT_RGB565,			// 16 bpp
 	FMT_RG16F,
+	FMT_RGB,
+	FMT_BGR,
 };
 
 int BitsForFormat( textureFormat_t format );

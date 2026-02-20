@@ -76,9 +76,13 @@ void idImage::SubImageUpload( int mipLevel, int x, int y, int z, int width, int 
 	if ( opts.textureType == TT_2D || opts.textureType == TT_2D_DDS ) {
 		target = GL_TEXTURE_2D;
 		uploadTarget = GL_TEXTURE_2D;
-	} else if ( opts.textureType == TT_CUBIC || opts.textureType == TT_CUBIC_DDS) {
+	} else if ( opts.textureType == TT_CUBIC ) {
 		target = GL_TEXTURE_CUBE_MAP_EXT;
 		uploadTarget = GL_TEXTURE_CUBE_MAP_POSITIVE_X_EXT + z;
+	} else if ( opts.textureType == TT_CUBIC_DDS) {
+		target = GL_TEXTURE_CUBE_MAP_EXT;
+		uploadTarget = GL_TEXTURE_CUBE_MAP_POSITIVE_X_EXT + z;
+
 	} else {
 		assert( !"invalid opts.textureType" );
 		target = GL_TEXTURE_2D;
@@ -374,6 +378,16 @@ void idImage::AllocImage() {
 			internalFormat = GL_RG16F;
 			dataFormat = GL_RG;
 			dataType = GL_HALF_FLOAT;
+			break;
+	case FMT_RGB:
+			internalFormat = GL_RGB;
+			dataFormat = GL_RGB;
+			dataType = GL_UNSIGNED_BYTE;
+			break;
+	case FMT_BGR:
+			internalFormat = GL_RGB;
+			dataFormat = GL_BGR_EXT;
+			dataType = GL_UNSIGNED_BYTE;
 			break;
 	default:
 		idLib::Error( "Unhandled image format %d in %s\n", opts.format, GetName() );

@@ -98,8 +98,8 @@ ID_INLINE void idImage::DeriveOpts() {
 				opts.colorFormat = CFM_DEFAULT;
 				break;
 			case TD_BUMP:
-				opts.format = FMT_RGBA8;
-				opts.colorFormat = CFM_DEFAULT;
+				opts.format = FMT_DXT5;
+				opts.colorFormat = CFM_NORMAL_DXT5;
 				break;
 			case TD_FONT:
 				opts.format = FMT_DXT1;

@@ -1190,6 +1190,12 @@ static void RB_RenderInteractions( const drawSurf_t *surfList, const viewLight_t
 				// model-view-projection
 				RB_SetMVP( surf->space->mvp );
 
+				//MF
+				// set model Matrix
+				float modelMatrixTranspose[16];
+				R_MatrixTranspose( surf->space->modelMatrix, modelMatrixTranspose );
+				SetVertexParms( RENDERPARM_MODELMATRIX_X, modelMatrixTranspose, 4 );
+
 				// tranform the light/view origin into model local space
 				idVec4 localLightOrigin( 0.0f );
 				idVec4 localViewOrigin( 1.0f );

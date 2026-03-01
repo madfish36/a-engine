@@ -77,60 +77,73 @@ idMaterial::CommonInit
 =============
 */
 void idMaterial::CommonInit() {
-	desc = "<none>";
-	renderBump = "";
-	contentFlags = CONTENTS_SOLID;
-	surfaceFlags = SURFTYPE_NONE;
-	materialFlags = 0;
-	sort = SS_BAD;
-	stereoEye = 0;
-	coverage = MC_BAD;
-	cullType = CT_FRONT_SIDED;
-	deform = DFRM_NONE;
-	numOps = 0;
-	ops = NULL;
-	numRegisters = 0;
-	expressionRegisters = NULL;
-	constantRegisters = NULL;
-	numStages = 0;
-	numAmbientStages = 0;
-	stages = NULL;
-	editorImage = NULL;
-	lightFalloffImage = NULL;
-	environmentMap = NULL;
-	lutMap = NULL;
-	shouldCreateBackSides = false;
-	entityGui = 0;
-	fogLight = false;
-	blendLight = false;
-	ambientLight = false;
-	noFog = false;
-	hasSubview = false;
-	allowOverlays = true;
-	unsmoothedTangents = false;
-	gui = NULL;
+	desc					= "<none>";
+	renderBump				= "";
+	contentFlags			= CONTENTS_SOLID;
+	surfaceFlags			= SURFTYPE_NONE;
+	materialFlags			= 0;
+	sort					= SS_BAD;
+	stereoEye				= 0;
+	coverage				= MC_BAD;
+	cullType				= CT_FRONT_SIDED;
+	deform					= DFRM_NONE;
+	numOps					= 0;
+	ops						= NULL;
+	numRegisters			= 0;
+	expressionRegisters		= NULL;
+	constantRegisters		= NULL;
+	numStages				= 0;
+	numAmbientStages		= 0;
+	stages					= NULL;
+	editorImage				= NULL;
+	lightFalloffImage		= NULL;
+	environmentMap			= NULL;
+	lutMap					= NULL;
+	shouldCreateBackSides	= false;
+	entityGui				= 0;
+	fogLight				= false;
+	blendLight				= false;
+	ambientLight			= false;
+	noFog					= false;
+	hasSubview				= false;
+	allowOverlays			= true;
+	unsmoothedTangents		= false;
+	gui						= NULL;
 	memset( deformRegisters, 0, sizeof( deformRegisters ) );
-	editorAlpha = 1.0;
-	spectrum = 0;
-	polygonOffset = 0;
-	suppressInSubview = false;
-	refCount = 0;
-	portalSky = false;
-	fastPathBumpImage = NULL;
-	fastPathDiffuseImage = NULL;
-	fastPathSpecularImage = NULL;
-	deformDecl = NULL;
+	editorAlpha				= 1.0;
+	spectrum				= 0;
+	polygonOffset			= 0;
+	suppressInSubview		= false;
+	refCount				= 0;
+	portalSky				= false;
+	fastPathBumpImage		= NULL;
+	fastPathDiffuseImage	= NULL;
+	fastPathSpecularImage	= NULL;
+	deformDecl				= NULL;
+	decalInfo.stayTime		= 10000;
+	decalInfo.fadeTime		= 4000;
+	decalInfo.start[0]		= 1;
+	decalInfo.start[1]		= 1;
+	decalInfo.start[2]		= 1;
+	decalInfo.start[3]		= 1;
+	decalInfo.end[0]		= 0;
+	decalInfo.end[1]		= 0;
+	decalInfo.end[2]		= 0;
+	decalInfo.end[3]		= 0;
+	diffuseModifier			= 1.0f;
+	specularModifier		= 1.0f;
+	ambientModifier			= 1.0f;
+	ambientBlur				= 0.0f;
+	brightnessModifier		= 1.0f;
+	contrastModifier		= 1.0f;
+	saturationModifier		= 1.0f;
+	glowModifier			= 1.0f;
+	glowThreshold			= 1.0f;
+	glowLobe1				= 1.0f;
+	glowLobe2				= 3.0f;
+	glowLobeMix				= 0.3f;
+	memset( deformRegisters, 0, sizeof( deformRegisters ) );
 
-	decalInfo.stayTime = 10000;
-	decalInfo.fadeTime = 4000;
-	decalInfo.start[0] = 1;
-	decalInfo.start[1] = 1;
-	decalInfo.start[2] = 1;
-	decalInfo.start[3] = 1;
-	decalInfo.end[0] = 0;
-	decalInfo.end[1] = 0;
-	decalInfo.end[2] = 0;
-	decalInfo.end[3] = 0;
 }
 
 
@@ -2053,11 +2066,11 @@ void idMaterial::ParseMaterial( idLexer &src ) {
 			lightFalloffImage = globalImages->ImageFromFile( copy, TF_DEFAULT, TR_CLAMP /* TR_CLAMP_TO_ZERO */, TD_DEFAULT );
 			continue;
 		}
-
 		else if ( !token.Icmp( "environment" ) ) {
 			str = R_ParsePastImageProgram( src );
 			idStr copy = str;	// so other things don't step on it
 			environmentMap = globalImages->ImageFromFile( copy, TF_DEFAULT, TR_CLAMP /* TR_CLAMP_TO_ZERO */, TD_ENV_MAP,CF_DDS );
+			ambientBlur = idMath::ClampFloat(0.0f,static_cast<float>(environmentMap->GetOpts().numLevels),ambientBlur);
 			continue;
 		}
 		// else if ( !token.Icmp( "lut" ) ) {
@@ -2158,6 +2171,54 @@ void idMaterial::ParseMaterial( idLexer &src ) {
 
 			// noShadows
 			SetMaterialFlag( MF_NOSHADOWS );
+			continue;
+		}else if ( !token.Icmp( "diffuseModifier" ) ) {
+			diffuseModifier = src.ParseFloat();
+			diffuseModifier = Max(diffuseModifier, 1.0f);
+			continue;
+		}else if ( !token.Icmp( "specularModifier" ) ) {
+			specularModifier = src.ParseFloat();
+			specularModifier = Max(specularModifier, 1.0f);
+			continue;
+		}else if ( !token.Icmp( "ambientModifier" ) ) {
+			ambientModifier = src.ParseFloat();
+			ambientModifier = idMath::ClampFloat(0.0f, 1.0f, ambientModifier);
+			continue;
+		}else if ( !token.Icmp( "ambientBlur" ) ) {
+			ambientBlur = src.ParseFloat();
+			ambientBlur = Max(ambientBlur, 0.0f);
+			continue;
+		}else if ( !token.Icmp( "brightnessModifier" ) ) {
+			brightnessModifier = src.ParseFloat();
+			brightnessModifier = Max(brightnessModifier, 0.0f);
+			continue;
+		}else if ( !token.Icmp( "contrastModifier" ) ) {
+			contrastModifier = src.ParseFloat();
+			contrastModifier = Max(contrastModifier, 0.0f);
+			continue;
+		}else if ( !token.Icmp( "saturationModifier" ) ) {
+			saturationModifier = src.ParseFloat();
+			saturationModifier = Max(saturationModifier, 0.0f);
+			continue;
+		}else if ( !token.Icmp( "glowModifier" ) ) {
+			glowModifier = src.ParseFloat();
+			glowModifier = Max(glowModifier, 0.0f);
+			continue;
+		}else if ( !token.Icmp( "glowThreshold" ) ) {
+			glowThreshold = src.ParseFloat();
+			glowThreshold =  idMath::ClampFloat(0.0f, 1.0f, glowThreshold);
+			continue;
+		}else if ( !token.Icmp( "glowLobe1" ) ) {
+			glowLobe1 = src.ParseFloat();
+			glowLobe1 = Max(glowLobe1, 0.0f);
+			continue;
+		}else if ( !token.Icmp( "glowLobe2" ) ) {
+			glowLobe2 = src.ParseFloat();
+			glowLobe2 = Max(glowLobe2, 0.0f);
+			continue;
+		}else if ( !token.Icmp( "glowLobeMix" ) ) {
+			glowLobeMix = src.ParseFloat();
+			glowLobeMix = idMath::ClampFloat(0.0f, 1.0f, glowLobeMix);
 			continue;
 		}
 		else if ( token == "{" ) {
@@ -2427,6 +2488,11 @@ bool idMaterial::Parse( const char *text, const int textLength, bool allowBinary
 	if ( TestMaterialFlag( MF_DEFAULTED ) ) {
 		MakeDefault();
 		return false;
+	}
+
+	if (environmentMap) {
+		numBlurLevels = environmentMap->GetOpts().numLevels;
+		idMath::ClampFloat(0.0f,numBlurLevels,ambientBlur);
 	}
 	return true;
 }

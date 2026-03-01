@@ -129,6 +129,33 @@ static void RB_SetVertexColorParms( stageVertexColor_t svc , colorStage_t colorM
 	}
 }
 
+static void RB_SetFragmentSurfaceParams(const viewLight_t * vLight, const drawSurf_t *surf) {
+
+	float tmp[4];
+
+	tmp [0] = vLight->lightDef->parms.ambientModifier * surf->material->GetAmbientModifier();
+	tmp [1] = vLight->lightDef->parms.brightnessModifier * surf->material->GetBrightnessModifier();
+	tmp [2] = vLight->lightDef->parms.contrastModifier * surf->material->GetContrastModifier();
+	tmp [3] = vLight->lightDef->parms.saturationModifier * surf->material->GetSaturationModifier();
+	// [0] Ambient / [1] Brightness / [2] Contrast / [3] Saturation
+	SetFragmentParm(RENDERPARM_ABCS_MODIFIERS, tmp);
+
+	tmp[0] = vLight->lightDef->parms.ambientBlur + surf->material->GetAmbientBlur();
+	tmp[0] = idMath::ClampFloat(0.0f,vLight->environmentMap->GetOpts().numLevels, tmp[0]);
+	tmp[1] = vLight->environmentMap->GetOpts().numLevels;
+	tmp[2] = vLight->lightDef->parms.glowModifier * surf->material->GetGlowModifier();
+	tmp[3] = vLight->lightDef->parms.glowThreshold * surf->material->GetGlowThreshold();
+	// [0] Ambient light blur / Ambient reflections level /[2] Glow strength / [3] Glow threshold
+	SetFragmentParm(RENDERPARM_AGLGT_MODIFIERS, tmp);
+
+	tmp[0] = surf->material->GetGlowLobeMix();
+	tmp[1] = surf->material->GetGlowLobe1();
+	tmp[2] = surf->material->GetGlowLobe2();
+	tmp[3] = 0.0f;
+	// [0] MIX / [1] Lobe_1 / [2]  Lobe_2
+	SetFragmentParm(RENDERPARM_GLOW_MODIFIERS, tmp);
+
+}
 /*
 ================
 RB_DrawElementsWithCounters
@@ -1106,8 +1133,10 @@ static void RB_RenderInteractions( const drawSurf_t *surfList, const viewLight_t
 			lightScale * lightRegs[ lightStage->color.registers[2] ],
 			lightRegs[ lightStage->color.registers[3] ] );
 		// apply the world-global overbright and the 2x factor for specular
-		const idVec4 diffuseColor = lightColor;
-		const idVec4 specularColor = lightColor * 2.0f;
+		//MF PBR
+		const idVec4 diffuseColor = lightColor * lightShader->GetDiffuseModifier();
+		idVec4 specularColor = lightColor * lightShader->GetSpecularModifier();
+		if( vLight->lightDef->parms.noSpecular ){ specularColor.Zero(); }
 
 		float lightTextureMatrix[16];
 		if ( lightStage->texture.hasMatrix ) {
@@ -1190,6 +1219,12 @@ static void RB_RenderInteractions( const drawSurf_t *surfList, const viewLight_t
 				// model-view-projection
 				RB_SetMVP( surf->space->mvp );
 
+				//MF
+				// set model Matrix
+				float modelMatrixTranspose[16];
+				R_MatrixTranspose( surf->space->modelMatrix, modelMatrixTranspose );
+				SetVertexParms( RENDERPARM_MODELMATRIX_X,modelMatrixTranspose, 4 );
+
 				// tranform the light/view origin into model local space
 				idVec4 localLightOrigin( 0.0f );
 				idVec4 localViewOrigin( 1.0f );
@@ -1216,6 +1251,8 @@ static void RB_RenderInteractions( const drawSurf_t *surfList, const viewLight_t
 				SetVertexParm( RENDERPARM_LIGHTPROJECTION_T, lightProjection[1].ToFloatPtr() );
 				SetVertexParm( RENDERPARM_LIGHTPROJECTION_Q, lightProjection[2].ToFloatPtr() );
 				SetVertexParm( RENDERPARM_LIGHTFALLOFF_S, lightProjection[3].ToFloatPtr() );
+
+				RB_SetFragmentSurfaceParams(vLight,surf);
 			}
 
 			// check for the fast path

@@ -159,6 +159,17 @@ void idGameEdit::ParseSpawnArgsToRenderLight( const idDict *args, renderLight_t 
 	args->GetString( "texture", "lights/squarelight1", &texture );
 	// allow this to be NULL
 	renderLight->shader = declManager->FindMaterial( texture, false );
+
+	args->GetFloat("diffuseModifier", renderLight->shader->GetDiffuseModifier(),renderLight->diffuseModifier);
+	args->GetFloat("specularModifier", renderLight->shader->GetSpecularModifier(),renderLight->specularModifier);
+	args->GetFloat("ambientModifier", renderLight->shader->GetAmbientModifier(),renderLight->ambientModifier);
+	args->GetFloat("ambientBlur", renderLight->shader->GetAmbientBlur(),renderLight->ambientBlur);
+	args->GetFloat("brightnessModifier", renderLight->shader->GetBrightnessModifier(),renderLight->brightnessModifier);
+	args->GetFloat("contrastModifier", renderLight->shader->GetContrastModifier(),renderLight->contrastModifier);
+	args->GetFloat("saturationModifier", renderLight->shader->GetSaturationModifier(),renderLight->saturationModifier);
+	args->GetFloat("glowModifier",renderLight->shader->GetGlowModifier(),renderLight->glowModifier);
+	args->GetFloat("glowThreshold", renderLight->shader->GetGlowThreshold(),renderLight->glowThreshold);
+
 }
 
 /*

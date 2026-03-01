@@ -400,8 +400,13 @@ static void LoadDDS(const char *name, byte **pic, int *width, int *height, ID_TI
     }
     if (width) { *width = dds_header->width; }
     if (height) { *height = dds_header->height; }
-
-
+    if (!(  (dds_header->ddspf.flags == DDS_RGB && dds_header->ddspf.RGBBitCount ==32)
+        ||(dds_header->ddspf.flags == DDS_RGB && dds_header->ddspf.RGBBitCount ==24)
+        ||(dds_header->ddspf.fourCC == DDSPF_DXT1.fourCC)
+        ||(dds_header->ddspf.fourCC == DDSPF_DXT5.fourCC)
+        ||(dds_header->ddspf.fourCC == DDSPF_G16R16.fourCC))) {
+        common->Error("LoadDDS( %s ):  unknown format. \n", name);
+        }
     byte *dds = (byte *) R_StaticAlloc(fileSize, TAG_IMAGE);
 
     memcpy(dds, buffer, fileSize);

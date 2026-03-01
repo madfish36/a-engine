@@ -337,7 +337,7 @@ static void R_DeriveLightData( idRenderLightLocal * light ) {
 	}
 
 	// get the falloff image
-	light->falloffImage = light->lightShader->LightFalloffImage();
+	light->falloffImage = light->lightShader->GetLightFalloffImage();
 
 	if ( light->falloffImage == NULL ) {
 		// use the falloff from the default shader of the correct type
@@ -349,7 +349,7 @@ static void R_DeriveLightData( idRenderLightLocal * light ) {
 			// Touch the default shader. to make sure it's decl has been parsed ( it might have been purged ).
 			declManager->Touch( static_cast< const idDecl *>( defaultShader ) );
 
-			light->falloffImage = defaultShader->LightFalloffImage();
+			light->falloffImage = defaultShader->GetLightFalloffImage();
 
 		} else {
 			// projected lights by default don't diminish with distance
@@ -358,22 +358,22 @@ static void R_DeriveLightData( idRenderLightLocal * light ) {
 			// Touch the light shader. to make sure it's decl has been parsed ( it might have been purged ).
 			declManager->Touch( static_cast< const idDecl *>( defaultShader ) );
 
-			light->falloffImage = defaultShader->LightFalloffImage();
+			light->falloffImage = defaultShader->GetLightFalloffImage();
 		}
 	}
-	light->environmentMap = light->lightShader->EnvironmentMap();
+	light->environmentMap = light->lightShader->GetEnvironmentMap();
 	if (light->environmentMap == NULL ) {
 		const idMaterial * defaultShader;
 		defaultShader = tr.defaultAmbientLight;
 		declManager->Touch( static_cast< const idDecl *>( defaultShader ) );
-		light->environmentMap = defaultShader->EnvironmentMap();
+		light->environmentMap = defaultShader->GetEnvironmentMap();
 	}
-	light->lutMap = light->lightShader->LutMap();
+	light->lutMap = light->lightShader->GetLutMap();
 	if (light->lutMap == NULL ) {
 		const idMaterial * defaultShader;
 		defaultShader = tr.defaultAmbientLight;
 		declManager->Touch( static_cast< const idDecl *>( defaultShader ) );
-		light->lutMap = defaultShader->LutMap();
+		light->lutMap = defaultShader->GetLutMap();
 	}
 	// ------------------------------------
 	// compute the light projection matrix

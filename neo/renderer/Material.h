@@ -2,9 +2,9 @@
 ===========================================================================
 
 Doom 3 BFG Edition GPL Source Code
-Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company. 
+Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company.
 
-This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").  
+This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").
 
 Doom 3 BFG Edition Source Code is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -132,7 +132,7 @@ typedef enum {
 } expRegister_t;
 
 typedef struct {
-	expOpType_t		opType;	
+	expOpType_t		opType;
 	int				a, b, c;
 } expOp_t;
 
@@ -339,7 +339,7 @@ class idSoundEmitter;
 
 class idMaterial : public idDecl {
 public:
-						idMaterial();
+	idMaterial();
 	virtual				~idMaterial();
 
 	virtual size_t		Size() const;
@@ -482,13 +482,25 @@ public:
 	bool				LightEffectsBackSides() const { return fogLight || ambientLight || blendLight; }
 
 						// NULL unless an image is explicitly specified in the shader with "lightFalloffShader <image>"
-	idImage	*			LightFalloffImage() const { return lightFalloffImage; }
-	idImage	*			EnvironmentMap() const { return environmentMap; }
-	idImage	*			LutMap() const { return lutMap; }
+	idImage	*			GetLightFalloffImage() const { return lightFalloffImage; }
+	idImage	*			GetEnvironmentMap() const { return environmentMap; }
+	idImage	*			GetLutMap() const { return lutMap; }
 
-	//------------------------------------------------------------------
+	float				GetDiffuseModifier() const { return diffuseModifier; }
+	float				GetSpecularModifier() const { return specularModifier; }
+	float				GetAmbientModifier() const { return ambientModifier; }
+	float				GetAmbientBlur() const { return ambientBlur; }
+	float				GetBrightnessModifier() const { return brightnessModifier; }
+	float				GetContrastModifier() const { return contrastModifier; }
+	float				GetSaturationModifier() const { return saturationModifier; }
+	float				GetGlowModifier() const { return glowModifier; }
+	float				GetGlowThreshold() const { return glowThreshold; }
+	float				GetGlowLobe1() const { return glowLobe1; }
+	float				GetGlowLobe2() const { return glowLobe2; }
+	float				GetGlowLobeMix() const { return glowLobeMix; }
+	float				GetNumBlurLevels() const { return numBlurLevels; }
 
-						// returns the renderbump command line for this shader, or an empty string if not present
+	// returns the renderbump command line for this shader, or an empty string if not present
 	const char *		GetRenderBump() const { return renderBump; };
 
 						// set specific material flag(s)
@@ -518,7 +530,7 @@ public:
 	const int			GetStereoEye() const { return stereoEye; }
 
 						// this is only used by the gui system to force sorting order
-						// on images referenced from tga's instead of materials. 
+						// on images referenced from tga's instead of materials.
 						// this is done this way as there are 2000 tgas the guis use
 	void				SetSort( float s ) const { sort = s; };
 
@@ -586,11 +598,11 @@ public:
 						// Regs should point to a float array large enough to hold GetNumRegisters() floats.
 						// FloatTime is passed in because different entities, which may be running in parallel,
 						// can be in different time groups.
-	void				EvaluateRegisters( 
-							float *			registers, 
+	void				EvaluateRegisters(
+							float *			registers,
 							const float		localShaderParms[MAX_ENTITY_SHADER_PARMS],
-							const float		globalShaderParms[MAX_GLOBAL_SHADER_PARMS], 
-							const float		floatTime, 
+							const float		globalShaderParms[MAX_GLOBAL_SHADER_PARMS],
+							const float		floatTime,
 							idSoundEmitter *soundEmitter ) const;
 
 						// if a material only uses constants (no entityParm or globalparm references), this
@@ -657,9 +669,9 @@ private:
 	float				polygonOffset;
 
 	int					contentFlags;		// content flags
-	int					surfaceFlags;		// surface flags	
+	int					surfaceFlags;		// surface flags
 	mutable int			materialFlags;		// material flags
-	
+
 	decalInfo_t			decalInfo;
 
 
@@ -674,7 +686,7 @@ private:
 	materialCoverage_t	coverage;
 	cullType_t			cullType;			// CT_FRONT_SIDED, CT_BACK_SIDED, or CT_TWO_SIDED
 	bool				shouldCreateBackSides;
-	
+
 	bool				fogLight;
 	bool				blendLight;
 	bool				ambientLight;
@@ -684,7 +696,7 @@ private:
 
 	int					numOps;
 	expOp_t *			ops;				// evaluate to make expressionRegisters
-																										
+
 	int					numRegisters;																			//
 	float *				expressionRegisters;
 
@@ -692,7 +704,7 @@ private:
 
 	int					numStages;
 	int					numAmbientStages;
-																										
+
 	shaderStage_t *		stages;
 
 	struct mtrParsingData_s	*pd;			// only used during parsing
@@ -709,6 +721,24 @@ private:
 	bool				suppressInSubview;
 	bool				portalSky;
 	int					refCount;
+
+	//--light
+	float				diffuseModifier;	// diffuseDirect  *= diffuseModifier
+	float				specularModifier;	//specularDirect *= specularModifier
+	float				ambientModifier;	// (direct + ambientModifier * ambient)
+	float				ambientBlur;		//vec3 irradiance = textureLod(samp5, N, ambientBlur).rgb;
+	float				numBlurLevels;
+	float				brightnessModifier; //color *= brightnessModifier;
+	float				contrastModifier;   //color = color * (contrastModifier - (contrastModifier-1) * color)
+	float				saturationModifier; //color = color * saturationModifier - (luma * (saturationModifier - 1.0));
+	float				glowModifier;		//float glow = (m * m) * glowModifier;
+	float				glowThreshold;		//float m = max(luma - glowThreshold, 0.0);
+
+	//--surface
+	float				glowLobe1;
+	float				glowLobe2;
+	float				glowLobeMix;
+
 };
 
 typedef idList<const idMaterial *, TAG_MATERIAL> idMatList;

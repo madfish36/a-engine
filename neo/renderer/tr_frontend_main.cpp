@@ -309,7 +309,6 @@ static void R_SortDrawSurfs( drawSurf_t ** drawSurfs, const int numDrawSurfs ) {
 		newDrawSurfs[i] = drawSurfs[numDrawSurfs - ( indices[i] & 0xFFFF )];
 	}
 	memcpy( drawSurfs, newDrawSurfs, numDrawSurfs * sizeof( drawSurfs[0] ) );
-	_freea(indices);
 
 #else
 

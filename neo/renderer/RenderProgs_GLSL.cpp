@@ -288,12 +288,10 @@ static const char * GLSLParmNames[] = {
 	"rpEnableSkinning",
 	"rpAlphaTest",
 
-	"rpRflLobe1",
-	"rpRflLobe2",
-	"rpRflLobeMix",
-	"rpRflLobeModifier",
-	"rpACESModifier",
-	"rpAmbientMix"
+	"rpABCSModifier",
+	"rpAGLGTModifier",
+	"rpGlowModifier",
+
 };
 
 /*

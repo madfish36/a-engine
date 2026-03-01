@@ -202,6 +202,18 @@ typedef struct renderLight_s {
 	const idMaterial *		shader;				// NULL = either lights/defaultPointLight or lights/defaultProjectedLight
 	float					shaderParms[MAX_ENTITY_SHADER_PARMS];		// can be used in any way by shader
 	idSoundEmitter *		referenceSound;		// for shader sound tables, allowing effects to vary with sounds
+
+	//--light
+	float				diffuseModifier;	// diffuseDirect  *= diffuseModifier
+	float				specularModifier;	// specularDirect *= specularModifier
+	float				ambientModifier;	// (direct + ambientModifier * ambient)
+	float				ambientBlur;		// vec3 irradiance = textureLod(samp5, N, ambientBlur).rgb;
+	float				brightnessModifier; // color *= brightnessModifier;
+	float				contrastModifier;   // color = color * (contrastModifier - (contrastModifier-1) * color)
+	float				saturationModifier; // color = color * saturationModifier - (luma * (saturationModifier - 1.0));
+	float				glowModifier;		// float glow = (m * m) * glowModifier;
+	float				glowThreshold;		// float m = max(luma - glowThreshold, 0.0);
+
 } renderLight_t;
 
 

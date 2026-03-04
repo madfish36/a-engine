@@ -407,12 +407,10 @@ static void LoadDDS(const char *name, byte **pic, int *width, int *height, ID_TI
         ||(dds_header->ddspf.fourCC == DDSPF_G16R16.fourCC))) {
         common->Error("LoadDDS( %s ):  unknown format. \n", name);
         }
-    byte *dds = (byte *) R_StaticAlloc(fileSize, TAG_IMAGE);
-
-    memcpy(dds, buffer, fileSize);
-
+    *pic = (byte *) R_StaticAlloc(fileSize, TAG_IMAGE);
+    memcpy(*pic, buffer, fileSize);
     fileSystem->FreeFile(buffer);
-    *pic = dds;
+
 }
 
 /*
@@ -620,14 +618,10 @@ bool R_LoadDDSCubeMap(const char *imgName, cubeFiles_t extensions, byte *pics[6]
         common->Error("LoadDDSCubeMap( %s ):  invalid header \n", imgName);
     }
 
-
-    byte *dds = (byte *) R_StaticAlloc(fileSize, TAG_IMAGE);
-
-    memcpy(dds, buffer, fileSize);
-
     if (pics) {
         memset(pics, 0, 6 * sizeof(pics[0]));
-        pics[0] = dds;
+        pics[0] = (byte *) R_StaticAlloc(fileSize, TAG_IMAGE);
+        memcpy(pics[0], buffer, fileSize);
     }
     if (outSize) { *outSize = dds_header->width; }
     if (timestamp) { *timestamp = 0; }

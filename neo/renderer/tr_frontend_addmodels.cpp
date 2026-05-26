@@ -2,9 +2,9 @@
 ===========================================================================
 
 Doom 3 BFG Edition GPL Source Code
-Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company. 
+Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company.
 
-This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").  
+This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").
 
 Doom 3 BFG Edition Source Code is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -501,8 +501,13 @@ void R_AddSingleModel( viewEntity_t * vEntity ) {
 	//---------------------------
 	// add all the model surfaces
 	//---------------------------
-	for ( int surfaceNum = 0; surfaceNum < model->NumSurfaces(); surfaceNum++ ) {
-		const modelSurface_t *surf = model->Surface( surfaceNum );
+	int lod = model->LODByDistance(localViewOrigin);
+	if (lod<0) {
+		return;
+	}
+	for ( int lodSurfaceNum = 0; lodSurfaceNum < model->LODNumSurfaces(lod); lodSurfaceNum++ ) {
+		const modelSurface_t *surf = model->LODSurface( lodSurfaceNum, lod );
+		int surfaceNum = model->LODSurfaceId(lodSurfaceNum,lod);
 
 		// for debugging, only show a single surface at a time
 		if ( r_singleSurface.GetInteger() >= 0 && surfaceNum != r_singleSurface.GetInteger() ) {
@@ -584,7 +589,7 @@ void R_AddSingleModel( viewEntity_t * vEntity ) {
 		drawSurf_t * baseDrawSurf = NULL;
 		if ( surfaceDirectlyVisible ) {
 			// make sure we have an ambient cache and all necessary normals / tangents
-			if ( !vertexCache.CacheIsCurrent( tri->indexCache ) ) {
+ 			if ( !vertexCache.CacheIsCurrent( tri->indexCache ) ) {
 				tri->indexCache = vertexCache.AllocIndex( tri->indexes, ALIGN( tri->numIndexes * sizeof( triIndex_t ), INDEX_CACHE_ALIGN ) );
 			}
 			if ( !vertexCache.CacheIsCurrent( tri->ambientCache ) ) {
@@ -598,7 +603,7 @@ void R_AddSingleModel( viewEntity_t * vEntity ) {
 			}
 
 			// add the surface for drawing
-			// we can re-use some of the values for light interaction surfaces			
+			// we can re-use some of the values for light interaction surfaces
 			baseDrawSurf = (drawSurf_t *)R_FrameAlloc( sizeof( *baseDrawSurf ), FRAME_ALLOC_DRAW_SURFACE );
 			baseDrawSurf->frontEndGeo = tri;
 			baseDrawSurf->space = vEntity;
@@ -668,7 +673,7 @@ void R_AddSingleModel( viewEntity_t * vEntity ) {
 					continue;
 				}
 			}
-			
+
 			// "invisible ink" lights and shaders (imp spawn drawing on walls, etc)
 			if ( shader->Spectrum() != lightDef->lightShader->Spectrum() ) {
 				continue;
@@ -986,7 +991,7 @@ void R_LinkDrawSurfToView( drawSurf_t * drawSurf, viewDef_t * viewDef ) {
 		viewDef->drawSurfs = (drawSurf_t **)R_FrameAlloc( viewDef->maxDrawSurfs * sizeof( viewDef->drawSurfs[0] ), FRAME_ALLOC_DRAW_SURFACE_POINTER );
 		memcpy( viewDef->drawSurfs, old, count );
 	}
-	
+
 	viewDef->drawSurfs[viewDef->numDrawSurfs] = drawSurf;
 	viewDef->numDrawSurfs++;
 }

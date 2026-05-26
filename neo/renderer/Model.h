@@ -2,9 +2,9 @@
 ===========================================================================
 
 Doom 3 BFG Edition GPL Source Code
-Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company. 
+Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company.
 
-This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").  
+This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").
 
 Doom 3 BFG Edition Source Code is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -146,6 +146,18 @@ public:
 	const idMD5Joint *			parent;
 };
 
+typedef struct modelLOD_s {
+	int		threshold;
+	int		surfNum;
+	int *	surfaces;
+	modelLOD_s() {threshold=0;surfNum=0;surfaces=NULL;}
+}modelLOD_t;
+
+class idSort_LOD : public idSort_Quick< modelLOD_t, idSort_LOD > {
+public:
+	int Compare( const  modelLOD_t & a, const  modelLOD_t & b ) const { return b.threshold - a.threshold; }
+};
+
 
 // the init methods may be called again on an already created model when
 // a reloadModels is issued
@@ -186,7 +198,7 @@ public:
 	// which can regenerate the data with LoadModel()
 	virtual void				PurgeModel() = 0;
 
-	// resets any model information that needs to be reset on a same level load etc.. 
+	// resets any model information that needs to be reset on a same level load etc..
 	// currently only implemented for liquids
 	virtual void				Reset() = 0;
 
@@ -301,6 +313,21 @@ public:
 	// if false, the model doesn't need to be added to the view unless it is
 	// directly visible, because it can't cast shadows into the view
 	virtual bool				ModelHasShadowCastingSurfaces() const { return true; };
+
+	//find LOD  by distance
+	virtual int					LODByDistance(const idVec3 &dist ) const {return 0;};
+
+	// returns the number of surfaces for LOD
+	virtual int					LODNumSurfaces(int lod=0) const {return NumSurfaces();};
+
+	// get a pointer to a surface
+	virtual const modelSurface_t *LODSurface( int surfaceNum , int lod=0) const {return Surface( surfaceNum );};
+
+	// get a pointer to a surface
+	virtual int LODSurfaceId( int surfaceNum , int lod=0) const {return surfaceNum;};
+
+	virtual void LODSetLODThreshold( int lod, int distance ) {};
+
 };
 
 #endif /* !__MODEL_H__ */

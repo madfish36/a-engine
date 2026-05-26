@@ -1593,6 +1593,11 @@ void idMaterial::ParseStage( idLexer &src, const textureRepeat_t trpDefault ) {
 			continue;
 		}
 
+		if ( !token.Icmp( "writeDepth" ) ) {
+			ss->writeDepth = true;
+			continue;
+		}
+
 		if ( !token.Icmp( "vertexParm2" ) ) {
 			ParseVertexParm2( src, &newStage );
 			continue;
@@ -2416,6 +2421,8 @@ bool idMaterial::Parse( const char *text, const int textLength, bool allowBinary
 		if ( sort == SS_POST_PROCESS ) {
 			// post-process effects fill the depth buffer as they draw, so only the
 			// topmost post-process effect is rendered
+			pStage->drawStateBits |= GLS_DEPTHFUNC_LESS;
+		}else if (pStage->writeDepth){
 			pStage->drawStateBits |= GLS_DEPTHFUNC_LESS;
 		} else if ( coverage == MC_TRANSLUCENT || pStage->ignoreAlphaTest ) {
 			// translucent surfaces can extend past the exactly marked depth buffer

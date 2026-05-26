@@ -2,9 +2,9 @@
 ===========================================================================
 
 Doom 3 BFG Edition GPL Source Code
-Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company. 
+Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company.
 
-This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").  
+This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").
 
 Doom 3 BFG Edition Source Code is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -52,6 +52,7 @@ idRenderModelStatic::idRenderModelStatic
 idRenderModelStatic::idRenderModelStatic() {
 	name = "<undefined>";
 	bounds.Clear();
+	avgSize = 0;
 	lastModifiedFrame = 0;
 	lastArchivedFrame = 0;
 	overlaysAdded = 0;
@@ -87,8 +88,8 @@ idRenderModelStatic::Print
 void idRenderModelStatic::Print() const {
 	common->Printf( "%s\n", name.c_str() );
 	common->Printf( "Static model.\n" );
-	common->Printf( "bounds: (%f %f %f) to (%f %f %f)\n", 
-		bounds[0][0], bounds[0][1], bounds[0][2], 
+	common->Printf( "bounds: (%f %f %f) to (%f %f %f)\n",
+		bounds[0][0], bounds[0][1], bounds[0][2],
 		bounds[1][0], bounds[1][1], bounds[1][2] );
 
 	common->Printf( "    verts  tris material\n" );
@@ -97,7 +98,7 @@ void idRenderModelStatic::Print() const {
 
 		srfTriangles_t *tri = surf->geometry;
 		const idMaterial *material = surf->shader;
-		
+
 		if ( !tri ) {
 			common->Printf( "%2i: %s, NULL surface geometry\n", i, material->GetName() );
 			continue;
@@ -109,7 +110,7 @@ void idRenderModelStatic::Print() const {
 		} else {
 			common->Printf( "\n" );
 		}
-	}	
+	}
 }
 
 /*
@@ -327,10 +328,10 @@ bool idRenderModelStatic::LoadBinaryModel( idFile * file, const ID_TIME_T source
 	if ( magic != BRM_MAGIC ) {
 		return false;
 	}
-	
+
 	file->ReadBig( timeStamp );
 
-	if ( !fileSystem->InProductionMode() && sourceTimeStamp != timeStamp ) {
+	if ( !fileSystem->InProductionMode() && sourceTimeStamp < timeStamp ) {
 		return false;
 	}
 
@@ -356,7 +357,7 @@ bool idRenderModelStatic::LoadBinaryModel( idFile * file, const ID_TIME_T source
 			bool temp;
 
 			surfaces[i].geometry = R_AllocStaticTriSurf();
-			
+
 			// Read the contents of srfTriangles_t
 			srfTriangles_t & tri = *surfaces[i].geometry;
 
@@ -395,7 +396,7 @@ bool idRenderModelStatic::LoadBinaryModel( idFile * file, const ID_TIME_T source
 				for ( int j = 0; j < numInFile; j++ ) {
 					file->ReadVec4( tri.preLightShadowVertexes[ j ].xyzw );
 				}
-			} 
+			}
 
 			file->ReadBig( tri.numIndexes );
 			tri.indexes = NULL;
@@ -463,8 +464,22 @@ bool idRenderModelStatic::LoadBinaryModel( idFile * file, const ID_TIME_T source
 		}
 	}
 
+	//LOD
+	int numLODs;
+	file->ReadBig( numLODs );
+	lods.SetNum(numLODs);
+	for ( int i = 0; i < numLODs; i++ ) {
+		file->ReadBig(lods[i].threshold);
+		file->ReadBig(lods[i].surfNum);
+		lods[i].surfaces = (int * ) R_StaticAlloc(lods[i].surfNum*sizeof(int), TAG_MODEL);
+		for ( int j = 0; j < lods[i].surfNum; j++ ) {
+			file->ReadBig(lods[i].surfaces[j]);
+		}
+	}
+
 	file->ReadVec3( bounds[0] );
 	file->ReadVec3( bounds[1] );
+	file->ReadBig( avgSize );
 
 	file->ReadBig( overlaysAdded );
 	file->ReadBig( lastModifiedFrame );
@@ -493,7 +508,7 @@ void idRenderModelStatic::WriteBinaryModel( idFile * file, ID_TIME_T *_timeStamp
 		common->Printf( "Failed to WriteBinaryModel\n" );
 		return;
 	}
-	
+
 	file->WriteBig( BRM_MAGIC );
 
 	if ( _timeStamp != NULL ) {
@@ -606,8 +621,19 @@ void idRenderModelStatic::WriteBinaryModel( idFile * file, ID_TIME_T *_timeStamp
 		}
 	}
 
+	//LOD
+	file->WriteBig( lods.Num() );
+	for ( int i = 0; i < lods.Num(); i++ ) {
+		file->WriteBig(lods[i].threshold);
+		file->WriteBig(lods[i].surfNum);
+		for ( int j = 0; j < lods[i].surfNum; j++ ) {
+			file->WriteBig(lods[i].surfaces[j]);
+		}
+	}
+
 	file->WriteVec3( bounds[0] );
 	file->WriteVec3( bounds[1] );
+	file->WriteBig(avgSize);
 	file->WriteBig( overlaysAdded );
 	file->WriteBig( lastModifiedFrame );
 	file->WriteBig( lastArchivedFrame );
@@ -1030,6 +1056,14 @@ void idRenderModelStatic::FinishSurfaces() {
 
 		}
 	}
+	idVec3 size;
+	size.x = idMath::Abs(bounds[1].x - bounds[0].x);
+	size.y = idMath::Abs(bounds[1].y - bounds[0].y);
+	size.z = idMath::Abs(bounds[1].z - bounds[0].z);
+
+	avgSize = (size.x * size.y + size.y * size.z + size.z * size.x);
+	avgSize = 2 * avgSize * idMath::ONEOVER_PI;
+
 }
 
 /*
@@ -1042,6 +1076,8 @@ typedef struct matchVert_s {
 	int		v, tv;
 	byte	color[4];
 	idVec3	normal;
+	int		surf;
+	idVec2	uv;
 } matchVert_t;
 
 bool idRenderModelStatic::ConvertASEToModelSurfaces( const struct aseModel_s *ase ) {
@@ -1079,19 +1115,19 @@ bool idRenderModelStatic::ConvertASEToModelSurfaces( const struct aseModel_s *as
 	// the modeling programs can save out multiple surfaces with a common
 	// material, but we would like to mege them together where possible
 	// meaning that this->NumSurfaces() <= ase->objects.currentElements
-	mergeTo = (int *)_alloca( ase->objects.Num() * sizeof( *mergeTo ) ); 
+	mergeTo = (int *)_alloca( ase->objects.Num() * sizeof( *mergeTo ) );
 	surf.geometry = NULL;
 	if ( ase->materials.Num() == 0 ) {
 		// if we don't have any materials, dump everything into a single surface
 		surf.shader = tr.defaultMaterial;
 		surf.id = 0;
 		this->AddSurface( surf );
-		for ( i = 0; i < ase->objects.Num(); i++ ) { 
+		for ( i = 0; i < ase->objects.Num(); i++ ) {
 			mergeTo[i] = 0;
 		}
 	} else if ( !r_mergeModelSurfaces.GetBool() ) {
 		// don't merge any
-		for ( i = 0; i < ase->objects.Num(); i++ ) { 
+		for ( i = 0; i < ase->objects.Num(); i++ ) {
 			mergeTo[i] = i;
 			object = ase->objects[i];
 			material = ase->materials[object->materialRef];
@@ -1101,7 +1137,7 @@ bool idRenderModelStatic::ConvertASEToModelSurfaces( const struct aseModel_s *as
 		}
 	} else {
 		// search for material matches
-		for ( i = 0; i < ase->objects.Num(); i++ ) { 
+		for ( i = 0; i < ase->objects.Num(); i++ ) {
 			object = ase->objects[i];
 			material = ase->materials[object->materialRef];
 			im1 = declManager->FindMaterial( material->name );
@@ -1227,7 +1263,7 @@ bool idRenderModelStatic::ConvertASEToModelSurfaces( const struct aseModel_s *as
 					common->Error( "ConvertASEToModelSurfaces: bad vertex index in ASE file %s", name.c_str() );
 				}
 
-				// collapse the position if it was slightly offset 
+				// collapse the position if it was slightly offset
 				v = vRemap[v];
 
 				// we may or may not have texcoords to compare
@@ -1391,7 +1427,7 @@ bool idRenderModelStatic::ConvertLWOToModelSurfaces( const struct st_lwObject *l
 
 	// the modeling programs can save out multiple surfaces with a common
 	// material, but we would like to merge them together where possible
-	mergeTo = (int *)_alloca( i * sizeof( mergeTo[0] ) ); 
+	mergeTo = (int *)_alloca( i * sizeof( mergeTo[0] ) );
 	memset( &surf, 0, sizeof( surf ) );
 
 	if ( !r_mergeModelSurfaces.GetBool() ) {
@@ -1703,6 +1739,7 @@ bool idRenderModelStatic::ConvertLWOToModelSurfaces( const struct st_lwObject *l
 	return true;
 }
 
+
 /*
 =================
 idRenderModelStatic::ConvertLWOToASE
@@ -1803,7 +1840,7 @@ struct aseModel_s *idRenderModelStatic::ConvertLWOToASE( const struct st_lwObjec
 				common->Warning( "ConvertLWOToASE: model %s has too many verts for a poly! Make sure you triplet it down", fileName );
 				continue;
 			}
-	
+
 			mesh->faces[faceIndex].faceNormal.x = poly->norm[0];
 			mesh->faces[faceIndex].faceNormal.y = poly->norm[2];
 			mesh->faces[faceIndex].faceNormal.z = poly->norm[1];
@@ -1880,7 +1917,7 @@ bool idRenderModelStatic::ConvertMAToModelSurfaces (const struct maModel_s *ma )
 	maObject_t *	object;
 	maMesh_t *		mesh;
 	maMaterial_t *	material;
-	
+
 	const idMaterial *im1, *im2;
 	srfTriangles_t *tri;
 	int				objectNum;
@@ -1912,7 +1949,7 @@ bool idRenderModelStatic::ConvertMAToModelSurfaces (const struct maModel_s *ma )
 	// the modeling programs can save out multiple surfaces with a common
 	// material, but we would like to mege them together where possible
 	// meaning that this->NumSurfaces() <= ma->objects.currentElements
-	mergeTo = (int *)_alloca( ma->objects.Num() * sizeof( *mergeTo ) ); 
+	mergeTo = (int *)_alloca( ma->objects.Num() * sizeof( *mergeTo ) );
 
 	surf.geometry = NULL;
 	if ( ma->materials.Num() == 0 ) {
@@ -1920,12 +1957,12 @@ bool idRenderModelStatic::ConvertMAToModelSurfaces (const struct maModel_s *ma )
 		surf.shader = tr.defaultMaterial;
 		surf.id = 0;
 		this->AddSurface( surf );
-		for ( i = 0; i < ma->objects.Num(); i++ ) { 
+		for ( i = 0; i < ma->objects.Num(); i++ ) {
 			mergeTo[i] = 0;
 		}
 	} else if ( !r_mergeModelSurfaces.GetBool() ) {
 		// don't merge any
-		for ( i = 0; i < ma->objects.Num(); i++ ) { 
+		for ( i = 0; i < ma->objects.Num(); i++ ) {
 			mergeTo[i] = i;
 			object = ma->objects[i];
 			if(object->materialRef >= 0) {
@@ -1939,7 +1976,7 @@ bool idRenderModelStatic::ConvertMAToModelSurfaces (const struct maModel_s *ma )
 		}
 	} else {
 		// search for material matches
-		for ( i = 0; i < ma->objects.Num(); i++ ) { 
+		for ( i = 0; i < ma->objects.Num(); i++ ) {
 			object = ma->objects[i];
 			if(object->materialRef >= 0) {
 				material = ma->materials[object->materialRef];
@@ -1986,7 +2023,7 @@ bool idRenderModelStatic::ConvertMAToModelSurfaces (const struct maModel_s *ma )
 		}
 
 		bool normalsParsed = mesh->normalsParsed;
-		
+
 		// completely ignore any explict normals on surfaces with a renderbump command
 		// which will guarantee the best contours and least vertexes.
 		const char *rb = im1->GetRenderBump();
@@ -2073,7 +2110,7 @@ bool idRenderModelStatic::ConvertMAToModelSurfaces (const struct maModel_s *ma )
 					common->Error( "ConvertMAToModelSurfaces: bad vertex index in MA file %s", name.c_str() );
 				}
 
-				// collapse the position if it was slightly offset 
+				// collapse the position if it was slightly offset
 				v = vRemap[v];
 
 				// we may or may not have texcoords to compare
@@ -2233,7 +2270,8 @@ bool idRenderModelStatic::LoadLWO( const char *fileName ) {
 		return false;
 	}
 
-	ConvertLWOToModelSurfaces( lwo );
+	//ConvertLWOToModelSurfaces( lwo );
+	ConvertLWOToModelSurfacesLOD( lwo );
 
 	lwFreeObject( lwo );
 
@@ -2283,6 +2321,13 @@ void idRenderModelStatic::PurgeModel() {
 		jointsInverted = NULL;
 	}
 
+	for ( int i = 0; i < lods.Num(); i++ ) {
+		modelLOD_t lod = lods[i];
+		R_StaticFree(lod.surfaces);
+	}
+	lods.Clear();
+
+
 	purged = true;
 }
 
@@ -2315,19 +2360,19 @@ void idRenderModelStatic::ReadFromDemoFile( class idDemoFile *f ) {
 
 	int i, j, numSurfaces;
 	f->ReadInt( numSurfaces );
-	
+
 	for ( i = 0; i < numSurfaces; i++ ) {
 		modelSurface_t	surf;
-		
+
 		surf.shader = declManager->FindMaterial( f->ReadHashString() );
-		
+
 		srfTriangles_t	*tri = R_AllocStaticTriSurf();
-		
+
 		f->ReadInt( tri->numIndexes );
 		R_AllocStaticTriSurfIndexes( tri, tri->numIndexes );
 		for ( j = 0; j < tri->numIndexes; ++j )
 			f->ReadInt( (int&)tri->indexes[j] );
-		
+
 		f->ReadInt( tri->numVerts );
 		R_AllocStaticTriSurfVerts( tri, tri->numVerts );
 
@@ -2342,9 +2387,9 @@ void idRenderModelStatic::ReadFromDemoFile( class idDemoFile *f ) {
 			f->ReadUnsignedChar( tri->verts[j].color[2] );
 			f->ReadUnsignedChar( tri->verts[j].color[3] );
 		}
-		
+
 		surf.geometry = tri;
-		
+
 		this->AddSurface( surf );
 	}
 	this->FinishSurfaces();
@@ -2370,9 +2415,9 @@ void idRenderModelStatic::WriteToDemoFile( class idDemoFile *f ) {
 
 	for ( i = 0; i < surfaces.Num(); i++ ) {
 		const modelSurface_t	*surf = &surfaces[i];
-		
+
 		f->WriteHashString( surf->shader->GetName() );
-		
+
 		srfTriangles_t *tri = surf->geometry;
 		f->WriteInt( tri->numIndexes );
 		for ( j = 0; j < tri->numIndexes; ++j )
@@ -2479,4 +2524,306 @@ bool idRenderModelStatic::FindSurfaceWithId( int id, int &surfaceNum ) const {
 		}
 	}
 	return false;
+}
+
+bool idRenderModelStatic::ConvertLWOToModelSurfacesLOD(const struct st_lwObject *lwo) {
+	constexpr uint32_t LOD_NAME_PREFIX = 0x5F444F4C; // Mean "LOD_"
+	idHashTableT<int, int> sizeToLodMap;
+	idHashTableT< uintptr_t ,  int> lodMap;
+	//Surfaces
+	idHashTable< int> surfMergedMap;
+	idHashTableT<uintptr_t,int> surfMap;
+	idHashTableT<unsigned long long,int> LODSurfMap;
+	//global surfaces
+	idHashTableT<int, modelSurface_t *> modelSurfaceMap;
+	//points hashmap
+	matchVert_t ** buckets;
+	matchVert_t * storage;
+
+	float	normalEpsilon;
+	if ( fastLoad ) {
+		normalEpsilon = 1.0f;	// don't merge unless completely exact
+	} else {
+		normalEpsilon = 1.0f - r_slopNormal.GetFloat();
+	}
+
+	//Перенумеровать сурфайсы
+	for(lwSurface * surf = lwo->surf; surf ; surf=surf->next) {
+		uintptr_t key = reinterpret_cast<uintptr_t>(surf);
+		int val = surfMap.Num();
+		if (r_mergeModelSurfaces.GetBool()) {
+			int * pVal;
+			if (!surfMergedMap.Get(surf->name,&pVal)) {
+				val=surfMergedMap.Num();
+				surfMergedMap.Set(surf->name,val);
+			}else {
+				val=*pVal;
+			}
+		}
+		surfMap.Set(key,val);
+	}
+
+
+	for (lwLayer * layer = lwo->layer;layer;layer=layer->next) {
+		//перенумеровать LOD
+		uintptr_t lod = reinterpret_cast<uintptr_t>(layer);
+		int lodIdx;
+		int scrsz = 100;
+		if (layer->name && LOD_NAME_PREFIX==*(uint32_t*)layer->name) {
+			char * end;
+			scrsz = (int)strtol(layer->name+4,&end,10);
+		}
+		int * pVal;
+		if (! sizeToLodMap.Get(scrsz,&pVal)) {
+			lodIdx = sizeToLodMap.Num();
+			sizeToLodMap.Set(scrsz,sizeToLodMap.Num());
+		}else {
+			lodIdx = *pVal;
+		}
+		lodMap.Set(lod,lodIdx);
+
+		//Ручная points hashmap
+		buckets = (matchVert_t**)R_ClearedStaticAlloc(layer->point.count* sizeof(matchVert_t*));
+		// the maximum possible number of combined vertexes is the number of indexes
+		storage = (matchVert_t *)R_ClearedStaticAlloc( layer->polygon.count * 3 * sizeof( storage[0] ) );
+		int storageOffset = 0;
+		for (int p = 0;p< layer->polygon.count; p++) {
+			lwPolygon polygon = layer->polygon.pol[p];
+			if (polygon.nverts!=3) {
+				continue;
+			}
+
+			//получить сквозной номер surface по lod и surface
+			uintptr_t surf = reinterpret_cast<uintptr_t>(polygon.surf);
+			int *surfIdx;
+			surfMap.Get(surf,&surfIdx);
+			unsigned long long lsKey= ((unsigned long long)lodIdx << 32) | (*surfIdx);
+			int * pVal;
+			int surfGlobal;
+			if (!LODSurfMap.Get(lsKey,&pVal)) {
+				surfGlobal = LODSurfMap.Num();
+				LODSurfMap.Set(lsKey,surfGlobal);
+			}else {
+				surfGlobal=*pVal;
+			}
+
+			//start convert lwoSurface to modelSurface_t find or create new
+			modelSurface_t ** pModelSurface;
+			modelSurface_t * modelSurface;
+			if (!modelSurfaceMap.Get(surfGlobal,&pModelSurface)) {
+				modelSurface = (modelSurface_t*)Mem_Alloc16(sizeof(modelSurface_t),TAG_MODEL);
+				modelSurface->id = surfGlobal;
+				modelSurface->shader = declManager->FindMaterial( polygon.surf->name );
+				modelSurface->geometry = R_AllocStaticTriSurf();
+				modelSurface->geometry->numVerts = 0;
+				modelSurface->geometry->numIndexes = 0;
+				modelSurface->geometry->generateNormals = false;
+				R_AllocStaticTriSurfIndexes( modelSurface->geometry, layer->polygon.count * 3 );
+				R_AllocStaticTriSurfVerts( modelSurface->geometry, layer->polygon.count * 3 );
+				modelSurfaceMap.Set(surfGlobal,modelSurface);
+			}else {
+				modelSurface = *pModelSurface;
+			}
+
+			for (int pv = 0; pv<polygon.nverts; ++pv) {
+
+				lwPolVert vertex = polygon.v[pv];
+
+				idVec3 xyz;
+				xyz.x = layer->point.pt[vertex.index].pos[0];
+				xyz.y = layer->point.pt[vertex.index].pos[2];
+				xyz.z = layer->point.pt[vertex.index].pos[1];
+
+				idVec3 normal;
+				normal.x = vertex.norm[0];
+				normal.y = vertex.norm[2];
+				normal.z = vertex.norm[1];
+
+
+				// LWO models aren't all that pretty when it comes down to the floating point values they store
+  				normal.FixDegenerateNormal();
+
+				byte color[4];
+				color[0] = polygon.surf->color.rgb[0] * 255;
+				color[1] = polygon.surf->color.rgb[1] * 255;
+				color[2] = polygon.surf->color.rgb[2] * 255;
+				color[3] = 255;
+
+				idVec2 uv;
+				// first set attributes from the vertex
+				lwPoint	*pt = &layer->point.pt[vertex.index];
+				int nvm;
+				for ( nvm = 0; nvm < pt->nvmaps; nvm++ ) {
+					lwVMapPt *vm = &pt->vm[nvm];
+
+					if ( vm->vmap->type == LWID_('T','X','U','V') ) {
+						uv.x = vm->vmap->val[vm->index][0];
+						uv.y = 1.0f-vm->vmap->val[vm->index][1];
+					}
+					if ( vm->vmap->type == LWID_('R','G','B','A') ) {
+						for ( int chan = 0; chan < 4; chan++ ) {
+							color[chan] = 255 * vm->vmap->val[vm->index][chan];
+						}
+					}
+				}
+
+				// then override with polygon attributes
+				for ( nvm = 0; nvm < polygon.v[pv].nvmaps; nvm++ ) {
+					lwVMapPt *vm = &polygon.v[pv].vm[nvm];
+
+					if ( vm->vmap->type == LWID_('T','X','U','V') ) {
+						uv.x = vm->vmap->val[vm->index][0];
+						uv.y = 1.0f-vm->vmap->val[vm->index][1];
+					}
+					if ( vm->vmap->type == LWID_('R','G','B','A') ) {
+						for ( int chan = 0; chan < 4; chan++ ) {
+							color[chan] = 255 * vm->vmap->val[vm->index][chan];
+						}
+					}
+				}
+
+				// find a matching vert
+				matchVert_t * lastmv, *mv;
+				for ( lastmv = NULL, mv = buckets[vertex.index]; mv != NULL; lastmv = mv, mv = mv->next ) {
+					if (mv->surf!=surfGlobal) {
+						continue;
+					}
+					if ( mv->uv != uv ) {
+						continue;
+					}
+					if ( *(unsigned *)mv->color != *(unsigned *)color ) {
+						continue;
+					}
+					// if ( !normalsParsed ) {
+					// 	// if we are going to create the normals, just
+					// 	// matching texcoords is enough
+					// 	break;
+					// }
+					if ( mv->normal * normal > normalEpsilon ) {
+						break;		// we already have this one
+					}
+				}
+ 				if ( !mv ) {
+					// allocate a new match vert and link to hash chain
+					mv = &storage[ storageOffset ];
+					storageOffset ++;
+ 					mv->surf = surfGlobal;
+ 					mv->v = modelSurface->geometry->numVerts;
+					mv->uv = uv;
+					mv->normal = normal;
+					*(unsigned *)mv->color = *(unsigned *)color;
+					mv->next = NULL;
+					if ( lastmv ) {
+						lastmv->next = mv;
+					} else {
+						buckets[vertex.index] = mv;
+					}
+
+					idDrawVert & vert = modelSurface->geometry->verts[modelSurface->geometry->numVerts];
+					modelSurface->geometry->numVerts++;
+					vert.Clear();
+					vert.xyz = xyz;
+					vert.SetTexCoord(uv);
+					vert.SetNormal(normal);
+					*(unsigned int *)vert.color=*(unsigned int *) color;
+				}
+				modelSurface->geometry->indexes[modelSurface->geometry->numIndexes]=mv->v;
+				modelSurface->geometry->numIndexes++;
+			}
+		}
+
+		R_StaticFree(storage);
+		R_StaticFree(buckets);
+
+	}
+
+	lods.SetNum(sizeToLodMap.Num());
+	for (int i =0 ; i<LODSurfMap.Num();i++) {
+		unsigned long long key;
+		if (LODSurfMap.GetIndexKey(i, key)) {
+			lods[(int)(key>>32)].surfNum++;
+		}
+	}
+	for (int i=0;i<sizeToLodMap.Num();i++) {
+		int  key;
+		int val;
+		sizeToLodMap.GetIndexKey(i,key);
+		val = *sizeToLodMap.GetIndex(i);
+		lods[val].surfaces = (int * ) R_StaticAlloc(lods[val].surfNum*sizeof(int), TAG_MODEL);
+		lods[val].surfNum = 0;
+		lods[val].threshold = key*key;
+	}
+
+	for (int i =0 ; i<LODSurfMap.Num();i++) {
+		unsigned long long key;
+		if (LODSurfMap.GetIndexKey(i, key)) {
+			lods[(int)(key>>32)].surfaces[lods[(int)(key>>32)].surfNum]=*LODSurfMap.GetIndex(i);
+			lods[(int)(key>>32)].surfNum++;
+		}
+	}
+	lods.SortWithTemplate(idSort_LOD());
+	surfaces.SetNum(modelSurfaceMap.Num());
+	for (int i =0 ; i<modelSurfaceMap.Num();i++) {
+		modelSurface_t * surface=*modelSurfaceMap.GetIndex(i);
+		R_ResizeStaticTriSurfVerts( surface->geometry, surface->geometry->numVerts );
+		R_ResizeStaticTriSurfIndexes(surface->geometry, surface->geometry->numIndexes);
+		surfaces[i]=*surface;
+	}
+
+	return true;
+}
+
+int	idRenderModelStatic::LODByDistance(const idVec3 &dist) const {
+	if (lods.Num()<=1) {
+		return 0;
+	}
+	//bounds.GetCenter()-dist;
+	const float distanceSqr = (bounds.GetCenter()-dist).LengthSqr();
+	float  ScreenRelativeSize = 2500.0f * avgSize/(distanceSqr+0.01f);
+
+	for (int i = 0; i < lods.Num(); i++) {
+		if (ScreenRelativeSize > lods[i].threshold ) {
+			//return (i > 0) ? i - 1 : 0;
+			return i;
+		}
+	}
+	return -1;
+}
+
+int	idRenderModelStatic::LODNumSurfaces(int lod) const {
+	if (lods.Num()<=1) {
+		return NumSurfaces();
+	}
+	if (lod>lods.Num()){
+		return -1;
+	}
+	return lods[lod].surfNum;
+};
+
+const modelSurface_t * idRenderModelStatic::LODSurface( int surfaceNum , int lod) const {
+	if (lods.Num()<=1) {
+		return Surface(surfaceNum);
+	}
+	if (lod>lods.Num()){
+		return NULL;
+	}
+	int surfIdx = lods[lod].surfaces[surfaceNum];
+	return &surfaces[surfIdx];
+};
+
+
+int idRenderModelStatic::LODSurfaceId( int surfaceNum , int lod) const {
+	if (lods.Num()<=1) {
+		return surfaceNum;
+	}
+	if (lod>lods.Num()){
+		return -1;
+	}
+	return lods[lod].surfaces[surfaceNum];
+};
+
+void idRenderModelStatic::LODSetLODThreshold( int lod, int distance ) {
+	if (lods.Num()>=lod) {
+		lods[lod].threshold = distance*distance;
+	}
 }

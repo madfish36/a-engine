@@ -431,7 +431,7 @@ void idImage::ActuallyLoadImage( bool fromBackEnd ) {
 	AllocImage();
 
 
-	for ( int i = 0; i < im.NumImages(); i++ ) {
+	for ( int i = 0; ( i < opts.numLevels && i < im.NumImages() ); i++ ) {
 		const bimageImage_t & img = im.GetImageHeader( i );
 		const byte * data = im.GetImageData( i );
 		SubImageUpload( img.level, 0, 0, img.destZ, img.width, img.height, data );

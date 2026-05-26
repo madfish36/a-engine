@@ -2,9 +2,9 @@
 ===========================================================================
 
 Doom 3 BFG Edition GPL Source Code
-Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company. 
+Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company.
 
-This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").  
+This file is part of the Doom 3 BFG Edition GPL Source Code ("Doom 3 BFG Edition Source Code").
 
 Doom 3 BFG Edition Source Code is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -555,10 +555,10 @@ typedef struct st_lwTagList {
 /* an object */
 
 typedef struct st_lwObject {
-	ID_TIME_T			timeStamp;
+	ID_TIME_T		timeStamp;
 	lwLayer *		layer;               /* linked list of layers */
 	lwEnvelope *	env;                 /* linked list of envelopes */
-	lwClip *		clip;                /* linked list of clips */
+	lwClip *		   clip;                /* linked list of clips */
 	lwSurface *		surf;                /* linked list of surfaces */
 	lwTagList		taglist;
 	int				nlayers;

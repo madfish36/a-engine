@@ -208,6 +208,7 @@ typedef struct {
 	colorStage_t		vertexColorMask;
 	bool				ignoreAlphaTest;	// this stage should act as translucent, even
 											// if the surface is alpha tested
+	bool				writeDepth;
 	float				privatePolygonOffset;	// a per-stage polygon offset
 
 	newShaderStage_t	*newStage;			// vertex / fragment program based stage

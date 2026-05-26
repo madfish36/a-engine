@@ -702,6 +702,8 @@ static void RB_FillDepthBufferGeneric( const drawSurf_t * const * drawSurfs, int
 				}
 
 				GL_Color( color );
+				//MF two-sided materials ind depth buffer
+				GL_Cull( shader->GetCullType() );
 
 #ifdef USE_CORE_PROFILE
 				GL_State( stageGLState );
@@ -711,7 +713,21 @@ static void RB_FillDepthBufferGeneric( const drawSurf_t * const * drawSurfs, int
 				GL_State( stageGLState | GLS_ALPHATEST_FUNC_GREATER | GLS_ALPHATEST_MAKE_REF( idMath::Ftob( 255.0f * regs[ pStage->alphaTestRegister ] ) ) );
 #endif
 
-				if ( drawSurf->jointCache ) {
+				// see if we are a new-style stage
+				newShaderStage_t *newStage = pStage->newStage;
+				if ( newStage != NULL ) {
+
+					renderProgManager.BindShader( newStage->glslProgram, newStage->glslProgram );
+
+					for ( int j = 0; j < newStage->numVertexParms; j++ ) {
+						float parm[4];
+						parm[0] = regs[ newStage->vertexParms[j][0] ];
+						parm[1] = regs[ newStage->vertexParms[j][1] ];
+						parm[2] = regs[ newStage->vertexParms[j][2] ];
+						parm[3] = regs[ pStage->alphaTestRegister ];
+						SetVertexParm( (renderParm_t)( RENDERPARM_USER + j ), parm );
+					}
+				}else if ( drawSurf->jointCache ) {
 					renderProgManager.BindShader_TextureVertexColorSkinned();
 				} else {
 					renderProgManager.BindShader_TextureVertexColor();
@@ -721,6 +737,7 @@ static void RB_FillDepthBufferGeneric( const drawSurf_t * const * drawSurfs, int
 
 				// bind the texture
 				GL_SelectTexture( 0 );
+
 				pStage->texture.image->Bind();
 
 				// set texture matrix and texGens
@@ -2032,10 +2049,14 @@ static int RB_DrawShaderPasses( const drawSurf_t * const * const drawSurfs, cons
 					continue;
 				}
 				renderLog.OpenBlock( "New Shader Stage" );
-
 				GL_State( stageGLState );
 
+
 				renderProgManager.BindShader( newStage->glslProgram, newStage->glslProgram );
+
+				// set the texture matrix if needed
+				RB_LoadShaderTextureMatrix( surf->shaderRegisters, &pStage->texture );
+				RB_SetVertexColorParms( pStage->vertexColor, pStage->vertexColorMask );
 
 				for ( int j = 0; j < newStage->numVertexParms; j++ ) {
 					float parm[4];

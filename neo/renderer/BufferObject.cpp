@@ -312,13 +312,15 @@ void * idVertexBuffer::MapBuffer( bufferMapType_t mapType ) const {
 	qglBindBufferARB( GL_ARRAY_BUFFER_ARB, bufferObject );
 	if ( mapType == BM_READ ) {
 		//buffer = qglMapBufferARB( GL_ARRAY_BUFFER_ARB, GL_READ_ONLY_ARB );
-		buffer = qglMapBufferRange( GL_ARRAY_BUFFER_ARB, 0, GetAllocedSize(), GL_MAP_READ_BIT | GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_UNSYNCHRONIZED_BIT );
+		//buffer = qglMapBufferRange( GL_ARRAY_BUFFER_ARB, 0, GetAllocedSize(), GL_MAP_READ_BIT | GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_UNSYNCHRONIZED_BIT );
+		buffer = qglMapBufferRange( GL_ARRAY_BUFFER_ARB, 0, GetAllocedSize(), GL_MAP_READ_BIT | GL_MAP_UNSYNCHRONIZED_BIT );
+
 		if ( buffer != NULL ) {
 			buffer = (byte *)buffer + GetOffset();
 		}
 	} else if ( mapType == BM_WRITE ) {
 		//buffer = qglMapBufferARB( GL_ARRAY_BUFFER_ARB, GL_WRITE_ONLY_ARB );
-//		buffer = qglMapBufferRange( GL_ARRAY_BUFFER_ARB, 0, GetAllocedSize(), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_UNSYNCHRONIZED_BIT );
+		//buffer = qglMapBufferRange( GL_ARRAY_BUFFER_ARB, 0, GetAllocedSize(), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_UNSYNCHRONIZED_BIT );
 		buffer = qglMapBufferRange( GL_ARRAY_BUFFER_ARB, 0, GetAllocedSize(), GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT );
 		if ( buffer != NULL ) {
 			buffer = (byte *)buffer + GetOffset();
@@ -567,6 +569,7 @@ void * idIndexBuffer::MapBuffer( bufferMapType_t mapType ) const {
 		}
 	} else if ( mapType == BM_WRITE ) {
 		//buffer = qglMapBufferARB( GL_ELEMENT_ARRAY_BUFFER_ARB, GL_WRITE_ONLY_ARB );
+		//buffer = qglMapBufferRange( GL_ELEMENT_ARRAY_BUFFER_ARB, 0, GetAllocedSize(), GL_MAP_WRITE_BIT| GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_UNSYNCHRONIZED_BIT );
 		buffer = qglMapBufferRange( GL_ELEMENT_ARRAY_BUFFER_ARB, 0, GetAllocedSize(), GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT );
 		if ( buffer != NULL ) {
 			buffer = (byte *)buffer + GetOffset();
@@ -790,7 +793,7 @@ float * idJointBuffer::MapBuffer( bufferMapType_t mapType ) const {
 	assert( GetOffset() == 0 );
 	//buffer = qglMapBufferARB( GL_UNIFORM_BUFFER, GL_WRITE_ONLY_ARB );
 	//buffer = qglMapBufferRange( GL_UNIFORM_BUFFER, 0, GetAllocedSize(), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_UNSYNCHRONIZED_BIT );
-	buffer = qglMapBufferRange( GL_UNIFORM_BUFFER, 0, GetAllocedSize(), GL_MAP_WRITE_BIT |  GL_MAP_UNSYNCHRONIZED_BIT );
+	buffer = qglMapBufferRange( GL_UNIFORM_BUFFER, 0, GetAllocedSize(), GL_MAP_WRITE_BIT  |  GL_MAP_UNSYNCHRONIZED_BIT );
 	if ( buffer != NULL ) {
 		buffer = (byte *)buffer + GetOffset();
 	}
